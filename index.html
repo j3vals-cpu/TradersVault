@@ -5481,14 +5481,17 @@ async function validateToken(token) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        token,
+        token: token,
         app_version: '1.7.3',
         os: 'windows',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
-        pnl: getPnlSnapshot()
+        pnl: typeof getPnlSnapshot === 'function' ? getPnlSnapshot() : null
       })
     });
-    return await r.json();
+    if (!r.ok) return null;
+    var data = await r.json();
+    if (data.error) return null;
+    return data;
   } catch(e) { return null; }
 }
 
@@ -6054,7 +6057,7 @@ function openGainsCard() {
     + '<div style="display:flex;gap:10px;width:' + scaledW + 'px;margin-top:' + (scale < 1 ? Math.round(-(1-scale)*400) + 'px' : '0') + ';">'
       + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">â¬ Save as PNG</button>'
       + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">ð Copy to Clipboard</button>'
-      + '<button onclick="closeGainsCard()" style="height:42px;padding:0 16px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;font-family:inherit;">\u2715</button>'
+      + '<button onclick="closeGainsCard()" style="height:42px;padding:0 20px;background:rgba(255,75,75,.1);border:1px solid rgba(255,75,75,.3);border-radius:9px;color:#ff4d6d;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;z-index:10;position:relative;">\u2715</button>'
     + '</div>'
     + '<div id="gainsCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;"></div>'
     + '</div>';
@@ -6074,20 +6077,32 @@ function gainsCardToCanvas(callback) {
     return;
   }
   if (typeof html2canvas !== 'undefined') {
-    html2canvas(card, {
+    // Clone card at full size to avoid scale issues
+    var clone = card.cloneNode(true);
+    clone.style.transform = 'none';
+    clone.style.position = 'fixed';
+    clone.style.left = '-9999px';
+    clone.style.top = '0';
+    clone.style.width = '960px';
+    clone.style.zIndex = '-1';
+    document.body.appendChild(clone);
+    html2canvas(clone, {
       backgroundColor: '#07070e',
       scale: 2,
       logging: false,
       useCORS: true,
-      allowTaint: true,
-      removeContainer: true
-    }).then(callback).catch(function(err) {
+      allowTaint: true
+    }).then(function(canvas) {
+      document.body.removeChild(clone);
+      callback(canvas);
+    }).catch(function(err) {
+      document.body.removeChild(clone);
       var st = document.getElementById('gainsCardStatus');
       if (st) { st.style.color = '#ff4d6d'; st.textContent = 'Render error: ' + err.message; }
     });
   } else {
     var st = document.getElementById('gainsCardStatus');
-    if (st) { st.style.color = '#ff4d6d'; st.textContent = 'html2canvas not loaded'; }
+    if (st) { st.style.color = '#ff4d6d'; st.textContent = 'Restart app to fix export'; }
   }
 }
 
