@@ -5252,12 +5252,6 @@ var tvUpdateInfo = null;
 
 // ── Startup: check saved session or show login ──────────────────
 (function initAuth() {
-  // ── LOGIN BYPASSED — platform not yet configured ──
-  // Remove this block and uncomment below once Supabase + Vercel are set up
-  hideLoginScreen();
-  return;
-
-  /* UNCOMMENT WHEN PLATFORM IS LIVE:
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem('tv_session') || 'null'); } catch(e) {}
 
@@ -5268,7 +5262,6 @@ var tvUpdateInfo = null;
   } else {
     setTimeout(showLoginScreen, 2000);
   }
-  */
 })();
 
 function showLoginScreen() {
