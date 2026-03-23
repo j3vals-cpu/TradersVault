@@ -8,7 +8,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimize: () => ipcRenderer.invoke('window-minimize'),
   maximize: () => ipcRenderer.invoke('window-maximize'),
   close: () => ipcRenderer.invoke('window-close'),
-  // Click-through: send panel bounding boxes to main process
+  quit: () => ipcRenderer.invoke('app-quit'),
+  // Persistent file storage
+  saveData: (key, value) => ipcRenderer.invoke('save-data', key, value),
+  loadData: (key) => ipcRenderer.invoke('load-data', key),
+  getDataPath: () => ipcRenderer.invoke('get-data-path'),
+  // Click-through hit rects
   setHitRects: (rects) => ipcRenderer.send('set-hit-rects', rects),
   platform: process.platform,
   isElectron: true,

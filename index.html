@@ -518,6 +518,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .btn-save{height:32px;padding:0 16px;background:var(--gold);border:none;border-radius:7px;color:#07070a;font-family:'Cabinet Grotesk',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .18s;}
 .btn-save:hover{background:#f0c45a;}
 </style>
+<script src="html2canvas.min.js" defer></script>
 </head>
 <body>
 <!-- âââ VAULT DOOR LOADING SCREEN âââ -->
@@ -533,7 +534,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-size:22px;font-weight:900;letter-spacing:.5px;margin-bottom:2px;">TRADERS <span style="color:#e8b84b;">VAULT</span></div>
       <div style="font-family:'Geist Mono',monospace;font-size:9px;color:rgba(201,168,76,.45);letter-spacing:3px;margin-bottom:2px;">VAULTED DESK</div>
-      <div style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:3px;">v1.5.4 Â· J3</div>
+      <div style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:3px;">v1.7.3 Â· J3</div>
     </div>
     <!-- Tabs -->
     <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:20px;">
@@ -772,7 +773,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div class="logo-gem" style="background:none;box-shadow:none;padding:0;overflow:hidden;"><img class="app-logo-img" style="width:32px;height:32px;object-fit:contain;border-radius:8px;" alt="Traders Vault"></div>
     <div class="logo-stack">
       <div class="logo-txt" id="logoTxt">Traders Vault</div>
-      <div class="logo-sub">Vaulted Desk &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.5.4</div>
+      <div class="logo-sub">Vaulted Desk &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.7.3</div>
     </div>
   </div>
   <div class="tb-div"></div>
@@ -1453,27 +1454,54 @@ var DEFAULT_LAYOUT={
   bot:      {x:540,  y:460, w:560, h:440},
 };
 
+// Save: file-based (Electron) + localStorage fallback
+var _saveTimer = null;
 function save(){
-  localStorage.setItem('vn5',JSON.stringify({
+  var data = {
     notes:state.notes,todos:state.todos,habits:state.habits,planner:state.planner,
     firms:state.firms,accounts:state.accounts,propTracker:state.propTracker,
     strategy:state.strategy,windows:state.windows,botState:state.botState
-  }));
+  };
+  try { localStorage.setItem('vn5',JSON.stringify(data)); } catch(e){}
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function(){
+    if (window.electronAPI && window.electronAPI.saveData) {
+      window.electronAPI.saveData('vault-state', data);
+    }
+  }, 500);
 }
+function saveNow(){
+  var data = {
+    notes:state.notes,todos:state.todos,habits:state.habits,planner:state.planner,
+    firms:state.firms,accounts:state.accounts,propTracker:state.propTracker,
+    strategy:state.strategy,windows:state.windows,botState:state.botState
+  };
+  try { localStorage.setItem('vn5',JSON.stringify(data)); } catch(e){}
+  if (window.electronAPI && window.electronAPI.saveData) {
+    window.electronAPI.saveData('vault-state', data);
+    if (typeof tvSession !== 'undefined' && tvSession) {
+      window.electronAPI.saveData('vault-session', tvSession);
+    }
+  }
+}
+window.addEventListener('beforeunload', saveNow)
 
-function load(){
-  try{
-    var r=JSON.parse(localStorage.getItem('vn5')||'{}');
-    state.notes=r.notes||[];state.todos=r.todos||[];state.habits=r.habits||[];
-    state.planner=r.planner||{};state.firms=r.firms||[];state.accounts=r.accounts||[];
-    state.propTracker=r.propTracker||[];
-    state.strategy=r.strategy||{premarket:[],setup:[],risk:[],postmarket:[]};
-    state.botState=r.botState||null;
-    state.windows=r.windows||{};
-    if(!state.firms.length) state.firms.push({id:'apex1',name:'Apex',color:'#e8b84b'});
-    // Ensure strategy keys exist
-    ['premarket','setup','risk','postmarket'].forEach(function(k){if(!state.strategy[k])state.strategy[k]=[];});
-  }catch(e){}
+async function load(){
+  var r = null;
+  if (window.electronAPI && window.electronAPI.loadData) {
+    try { r = await window.electronAPI.loadData('vault-state'); } catch(e){}
+  }
+  if (!r) {
+    try { r = JSON.parse(localStorage.getItem('vn5')||'{}'); } catch(e){ r = {}; }
+  }
+  state.notes=r.notes||[];state.todos=r.todos||[];state.habits=r.habits||[];
+  state.planner=r.planner||{};state.firms=r.firms||[];state.accounts=r.accounts||[];
+  state.propTracker=r.propTracker||[];
+  state.strategy=r.strategy||{premarket:[],setup:[],risk:[],postmarket:[]};
+  state.botState=r.botState||null;
+  state.windows=r.windows||{};
+  if(!state.firms.length) state.firms.push({id:'apex1',name:'Apex',color:'#e8b84b'});
+  ['premarket','setup','risk','postmarket'].forEach(function(k){if(!state.strategy[k])state.strategy[k]=[];});
 }
 
 function uid(){return Math.random().toString(36).slice(2,9);}
@@ -3946,7 +3974,7 @@ function fxCalc(){
 
 // INIT â all definitions above, calls below
 // âââââââââââââââââââââââââââââââââââââââââââ
-load();
+load().then(function(){
 initHeader();
 buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);
 buildSlotHours(new Date().getHours());
@@ -3968,6 +3996,7 @@ startClock();
 buildQuickColors();
 applyWinTints();
 fetchNews(false);
+}); // end load().then
 </script>
 
 <script>
@@ -4868,7 +4897,7 @@ function testDiscordWebhook() {
     title: 'â Traders Vault â Vaulted Desk Connected',
     description: 'Your Discord integration is working correctly.',
     color: 0x22d46a,
-    footer: { text: 'Traders Vault â Vaulted Desk v1.5.2' },
+    footer: { text: 'Traders Vault â Vaulted Desk v1.7.3' },
     timestamp: new Date().toISOString()
   }]).then(function() {
     if (st) { st.style.color = 'var(--green)'; st.textContent = 'â Test message sent successfully'; }
@@ -5298,7 +5327,7 @@ function startHeartbeat() {
           user_id: tvSession.userId || tvSession.id || '',
           email: tvSession.email || '',
           token: tvSession.token,
-          app_version: '1.5.4',
+          app_version: '1.7.3',
           os: 'windows',
           session_id: tvSession.sessionId || '',
           pnl: getPnlSnapshot()
@@ -5312,23 +5341,30 @@ function startHeartbeat() {
   }, 5 * 60 * 1000);
 }
 
-(function initAuth() {
-  // ââ LOGIN BYPASSED â platform not yet configured ââ
-  // Remove this block and uncomment below once Supabase + Vercel are set up
-  // login active
-
-  /* UNCOMMENT WHEN PLATFORM IS LIVE:
+(async function initAuth() {
   var saved = null;
-  try { saved = JSON.parse(localStorage.getItem('tv_session') || 'null'); } catch(e) {}
+  // Try file-based session first (Electron), then localStorage
+  if (window.electronAPI && window.electronAPI.loadData) {
+    try { saved = await window.electronAPI.loadData('vault-session'); } catch(e){}
+  }
+  if (!saved) {
+    try { saved = JSON.parse(localStorage.getItem('tv_session') || 'null'); } catch(e) {}
+  }
 
   if (saved && saved.token && saved.expires > Date.now()) {
     tvSession = saved;
     hideLoginScreen();
     validateSessionSilent(saved.token);
   } else {
-    setTimeout(showLoginScreen, 2000);
+    localStorage.removeItem('tv_session');
+    tvSession = null;
+    function tryShowLogin(attempts) {
+      var el = document.getElementById('tvLoginScreen');
+      if (el) { showLoginScreen(); }
+      else if (attempts < 20) { setTimeout(function() { tryShowLogin(attempts + 1); }, 200); }
+    }
+    setTimeout(function() { tryShowLogin(0); }, 400);
   }
-  */
 })();
 
 function showLoginScreen() {
@@ -5446,7 +5482,7 @@ async function validateToken(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token,
-        app_version: '1.5.4',
+        app_version: '1.7.3',
         os: 'windows',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
         pnl: getPnlSnapshot()
@@ -5461,12 +5497,14 @@ async function validateSessionSilent(token) {
   if (v) {
     applyLicenceBadge(v);
     checkForUpdate(v);
-    startHeartbeat();
-    // Apply server-pushed branding if present
     if (v.branding) applyServerBranding(v.branding);
     if (!v.valid && tvSession && !tvSession.skipped) {
       showUpgradePrompt(v);
     }
+  } else {
+    tvSession = null;
+    localStorage.removeItem('tv_session');
+    showLoginScreen();
   }
 }
 
@@ -5476,7 +5514,7 @@ function applyServerBranding(b) {
   if (b.appname) applyAppTitle(b.appname);
   // Sub-brand in topbar
   var sub = document.querySelector('.logo-sub');
-  if (sub && b.sub) sub.innerHTML = b.sub + ' &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.5.4';
+  if (sub && b.sub) sub.innerHTML = b.sub + ' &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.7.3';
   // Login screen
   var loginSub = document.querySelector('#tvLoginScreen .logo-sub-brand');
   if (loginSub && b.sub) loginSub.textContent = b.sub;
@@ -5499,14 +5537,19 @@ function applyServerBranding(b) {
 
 // ââ Save session ââââââââââââââââââââââââââââââââââââââââââââââââ
 function saveSession(token, expiresIn, validate) {
+  var thirtyDays = 30 * 24 * 60 * 60;
+  var expiry = Math.max(expiresIn || 3600, thirtyDays);
   var session = {
-    token,
-    expires:   Date.now() + (expiresIn * 1000),
+    token: token,
+    expires: Date.now() + (expiry * 1000),
     sessionId: Math.random().toString(36).slice(2),
-    user:      validate
+    user: validate
   };
   tvSession = session;
-  localStorage.setItem('tv_session', JSON.stringify(session));
+  try { localStorage.setItem('tv_session', JSON.stringify(session)); } catch(e){}
+  if (window.electronAPI && window.electronAPI.saveData) {
+    window.electronAPI.saveData('vault-session', session);
+  }
 }
 
 // ââ Licence badge in topbar âââââââââââââââââââââââââââââââââââââ
@@ -5984,7 +6027,7 @@ function openGainsCard() {
     + '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1;">'
       + '<div style="display:flex;align-items:center;gap:16px;">'
         + '<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">' + _cardUrl + '</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">' + _cardSub + '</div></div>'
-        + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.5.4</div>'
+        + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.7.3</div>'
       + '</div>'
       + '<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRADER</div>'
     + '</div>'
@@ -6025,37 +6068,26 @@ function closeGainsCard() {
 
 function gainsCardToCanvas(callback) {
   var card = document.getElementById('gainsCardCanvas');
-  if (!card) return;
-
-  // Use html2canvas if available, otherwise fallback to SVG export
+  if (!card) {
+    var st = document.getElementById('gainsCardStatus');
+    if (st) { st.style.color = '#ff4d6d'; st.textContent = 'Card element not found'; }
+    return;
+  }
   if (typeof html2canvas !== 'undefined') {
     html2canvas(card, {
-      backgroundColor: null,
+      backgroundColor: '#07070e',
       scale: 2,
       logging: false,
-      useCORS: true
-    }).then(callback);
+      useCORS: true,
+      allowTaint: true,
+      removeContainer: true
+    }).then(callback).catch(function(err) {
+      var st = document.getElementById('gainsCardStatus');
+      if (st) { st.style.color = '#ff4d6d'; st.textContent = 'Render error: ' + err.message; }
+    });
   } else {
-    // Inline SVG fallback â render the card as an SVG image
-    // Get computed styles
-    var w = card.offsetWidth, h = card.offsetHeight;
-    var xml = new XMLSerializer().serializeToString(card);
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + (w*2) + '" height="' + (h*2) + '">'
-      + '<foreignObject x="0" y="0" width="' + w + '" height="' + h + '" style="transform:scale(2);transform-origin:0 0;">'
-      + '<div xmlns="http://www.w3.org/1999/xhtml">' + card.outerHTML + '</div>'
-      + '</foreignObject></svg>';
-    var blob = new Blob([svg], {type:'image/svg+xml'});
-    var url = URL.createObjectURL(blob);
-    var img = new Image();
-    img.onload = function() {
-      var canvas = document.createElement('canvas');
-      canvas.width = w * 2; canvas.height = h * 2;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
-      callback(canvas);
-    };
-    img.src = url;
+    var st = document.getElementById('gainsCardStatus');
+    if (st) { st.style.color = '#ff4d6d'; st.textContent = 'html2canvas not loaded'; }
   }
 }
 

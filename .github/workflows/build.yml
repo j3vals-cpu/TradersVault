@@ -5,9 +5,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,10 +29,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get version
+      - name: Get version from package.json
         id: pkg
         shell: bash
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
@@ -37,16 +43,15 @@ jobs:
           path: dist/*.exe
           retention-days: 30
 
-      - name: Create GitHub Release
+      - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.pkg.outputs.version }}
           name: Traders Vault v${{ steps.pkg.outputs.version }}
-          body: |
-            ### Traders Vault v${{ steps.pkg.outputs.version }}
-            - Fixed: API URL pointing to tradersvault.app/api
-            - Fixed: Login screen active
-          files: dist/*.exe
+          body_path: CHANGELOG.md
+          files: |
+            dist/Traders Vault Setup ${{ steps.pkg.outputs.version }}.exe
+            dist/TradersVault-portable.exe
           draft: false
           prerelease: false
         env:
