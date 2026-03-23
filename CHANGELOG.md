@@ -1,35 +1,27 @@
-Traders Vault v1.7.3 — Windows 10/11
+Traders Vault v1.7.4 — Windows 10/11
 
-## What's New in v1.7.3
+## What's New in v1.7.4
 
-### Fixed: Data Persistence
-- All data (notes, accounts, prop firms, strategies, to-dos) now saves to disk
-- Data survives app restarts, updates, and reinstalls
-- Auto-saves on every action + forced save when closing
+### Fixed: Text Encoding
+- Fixed 5,050 garbled characters throughout the app (â symbols replaced with proper Unicode)
+- All em dashes, bullets, checkmarks, arrows, and box-drawing characters display correctly
 
-### Fixed: Login & Session
-- Login screen now shows reliably on first launch
-- Session persists for 30 days (was 1 hour)
-- Session saved to file, survives restart — no re-login needed
-- Auto-creates profile on first signup
+### Fixed: Update System
+- Update banner now shows download link when a new version is available
+- Version check uses correct version number (was comparing against old 1.5.4)
 
-### Fixed: Close & Taskbar
-- Close button fully quits the app (no more background processes)
-- App shows properly in Windows taskbar
-- Quit buttons in dock bar and footer
+### Fixed: Login & Licence
+- Expired/invalid sessions now properly show login screen (was showing "licence needed")
+- validateToken properly handles error responses from server
 
 ### Fixed: PnL Gains Card
-- Save as PNG and Copy to Clipboard now work
-- Uses html2canvas for reliable rendering
+- Close button now clearly visible and clickable (styled red with "✕ Close" text)
+- Card renders at full size before export (fixes scale issues with html2canvas)
+- Copy to clipboard and Save as PNG both work reliably
 
-### Improved: Startup
-- Branded splash screen while loading
-- Faster login screen display
-- Deferred font loading
-
-### Platform
-- New admin dashboard with changelog, branding, GitHub release management
-- Improved API routing and stability
+### Admin Dashboard
+- New "Bump & Build" button to trigger builds from admin panel
+- Shows current version, enter new version, one-click build
 
 ---
 by J3 | Traders Vault
