@@ -159,7 +159,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .topbar{-webkit-app-region:drag;}
 .topbar button,.topbar input,.topbar a,.topbar select{-webkit-app-region:no-drag;}
 /* ───── TOPBAR ROW 2 ───── */
-.topbar2{height:32px;background:rgba(20,20,25,0.70);backdrop-filter:blur(16px);will-change:transform;-webkit-backdrop-filter:blur(16px);will-change:transform;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+.topbar2{height:32px;background:rgba(20,20,25,0.70);backdrop-filter:blur(16px);will-change:transform;-webkit-backdrop-filter:blur(16px);will-change:transform;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;position:relative;z-index:199;}
 .topbar2-gap{flex:1;}
 .topbar2{-webkit-app-region:drag;}
 .topbar2 button,.topbar2 input{-webkit-app-region:no-drag;}
@@ -451,6 +451,34 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .prop-firm-del{border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;padding:1px 3px;border-radius:3px;opacity:0;transition:all .15s;}
 .prop-row:hover .prop-firm-del{opacity:1;}
 .prop-firm-del:hover{color:var(--red);}
+
+/* ───── ROI TRACKER ───── */
+.roi-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:7px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;}
+.roi-stat{background:var(--panel2);border-radius:7px;padding:7px 9px;text-align:center;}
+.roi-val{font-size:14px;font-weight:900;line-height:1;}
+.roi-val.up{color:var(--green);}
+.roi-val.dn{color:var(--red);}
+.roi-val.neu{color:var(--gold);}
+.roi-lbl{font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.6px;}
+.roi-table-head{display:grid;grid-template-columns:1fr 80px 80px 72px 28px;gap:0;padding:4px 10px;border-bottom:1px solid var(--border2);}
+.roi-th{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:3px 0;}
+.roi-row{display:grid;grid-template-columns:1fr 80px 80px 72px 28px;gap:0;align-items:center;padding:5px 10px;border-bottom:1px solid var(--border);transition:background .15s;}
+.roi-row:hover{background:var(--panel2);}
+.roi-cell{font-size:11px;font-weight:600;color:var(--text);padding:2px 4px 2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.roi-cell.invested{color:var(--red);}
+.roi-cell.returned{color:var(--green);}
+.roi-cell.roi-pct{color:var(--teal);font-weight:900;}
+.roi-cell.roi-neg{color:var(--red);font-weight:900;}
+.roi-cell-name{display:flex;flex-direction:column;gap:1px;}
+.roi-cell-name b{font-weight:800;}
+.roi-cell-cat{font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;}
+.roi-del{border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;padding:1px 3px;border-radius:3px;opacity:0;transition:all .15s;}
+.roi-row:hover .roi-del{opacity:1;}
+.roi-del:hover{color:var(--red);}
+.roi-tabs{display:flex;gap:3px;padding:6px 10px 0;}
+.roi-tab{padding:4px 10px;border-radius:5px 5px 0 0;border:1px solid var(--border2);border-bottom:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;font-size:9px;font-weight:700;cursor:pointer;color:var(--text3);transition:all .15s;}
+.roi-tab.active{background:var(--panel2);color:var(--text);border-color:var(--border3);}
+.roi-tab:hover{color:var(--gold);}
 
 /* ───── STRATEGY ───── */
 .strat-section{margin-bottom:10px;}
@@ -1111,6 +1139,39 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   </div>
 </div>
 
+<!-- ROI TRACKER MODAL -->
+<div class="overlay" id="roiModal">
+  <div class="modal" style="width:400px">
+    <div class="modal-hd"><div class="modal-title" id="roiModalTitle">Add Entry</div><button class="modal-x" onclick="closeRoiModal()">&#10005;</button></div>
+    <div class="f-row">
+      <div><label class="f-lbl">Type</label>
+        <select class="f-in" id="roiType" style="cursor:pointer">
+          <option value="invested">Invested (money out)</option>
+          <option value="returned">Returned (money in)</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-row">
+      <div><label class="f-lbl">Label</label><input class="f-in" id="roiLabel" placeholder="e.g. Apex 50k Eval"></div>
+      <div><label class="f-lbl">Category</label>
+        <select class="f-in" id="roiCategory" style="cursor:pointer">
+          <option value="eval">Eval Fee</option>
+          <option value="reset">Reset Fee</option>
+          <option value="monthly">Monthly Fee</option>
+          <option value="payout">Payout</option>
+          <option value="activation">Activation Fee</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-row">
+      <div><label class="f-lbl">Amount ($)</label><input class="f-in" id="roiAmount" type="number" placeholder="0.00" step="0.01" min="0"></div>
+      <div><label class="f-lbl">Date</label><input class="f-in" id="roiDate" type="date"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeRoiModal()">Cancel</button><button class="btn-save" onclick="saveRoiEntry()">Add</button></div>
+  </div>
+</div>
+
 <!-- SETTINGS MODAL -->
 <div class="overlay" id="settingsModal">
   <div class="modal settings-modal">
@@ -1419,6 +1480,7 @@ var state={
   notes:[],todos:[],habits:[],planner:{},
   firms:[],accounts:[],
   propTracker:[],  // [{id,name,cost,payouts:[{id,amount,date}]}]
+  roiTracker:[],   // [{id,label,category,type:'invested'|'returned',amount,date}]
   strategy:{       // {premarket:[],setup:[],risk:[],postmarket:[]}
     premarket:[],setup:[],risk:[],postmarket:[]
   },
@@ -1439,6 +1501,7 @@ var WINS=[
   {id:'quote',     title:'Mindset',          icon:'&#128161;'},
   {id:'calcs',     title:'Calculators',      icon:'&#128208;'},
   {id:'bot',       title:'Bot',              icon:'&#129302;'},
+  {id:'roi',       title:'ROI Tracker',      icon:'&#128184;'},
 ];
 
 var DEFAULT_LAYOUT={
@@ -1452,6 +1515,7 @@ var DEFAULT_LAYOUT={
   quote:    {x:1060, y:90,  w:280, h:160},
   calcs:    {x:1060, y:260, w:380, h:480},
   bot:      {x:540,  y:460, w:560, h:440},
+  roi:      {x:930,  y:440, w:420, h:380},
 };
 
 // Save: file-based (Electron) + localStorage fallback
@@ -1460,6 +1524,7 @@ function save(){
   var data = {
     notes:state.notes,todos:state.todos,habits:state.habits,planner:state.planner,
     firms:state.firms,accounts:state.accounts,propTracker:state.propTracker,
+    roiTracker:state.roiTracker,
     strategy:state.strategy,windows:state.windows,botState:state.botState
   };
   try { localStorage.setItem('vn5',JSON.stringify(data)); } catch(e){}
@@ -1474,6 +1539,7 @@ function saveNow(){
   var data = {
     notes:state.notes,todos:state.todos,habits:state.habits,planner:state.planner,
     firms:state.firms,accounts:state.accounts,propTracker:state.propTracker,
+    roiTracker:state.roiTracker,
     strategy:state.strategy,windows:state.windows,botState:state.botState
   };
   try { localStorage.setItem('vn5',JSON.stringify(data)); } catch(e){}
@@ -1497,6 +1563,7 @@ async function load(){
   state.notes=r.notes||[];state.todos=r.todos||[];state.habits=r.habits||[];
   state.planner=r.planner||{};state.firms=r.firms||[];state.accounts=r.accounts||[];
   state.propTracker=r.propTracker||[];
+  state.roiTracker=r.roiTracker||[];
   state.strategy=r.strategy||{premarket:[],setup:[],risk:[],postmarket:[]};
   state.botState=r.botState||null;
   state.windows=r.windows||{};
@@ -2669,6 +2736,134 @@ function renderPropTracker(){
 }
 
 // ═══════════════════════════════════════════
+// ROI TRACKER WINDOW
+// ═══════════════════════════════════════════
+var _roiView='all'; // 'all', 'invested', 'returned'
+
+var ROI_CATEGORIES={
+  eval:'Eval Fee',reset:'Reset Fee',monthly:'Monthly Fee',
+  payout:'Payout',activation:'Activation Fee',other:'Other'
+};
+
+function buildRoiWin(){
+  createWindow({id:'roi',title:'ROI Tracker',icon:'&#128184;',
+    extraBtns:'<button class="padd" onclick="openRoiModal(\'invested\')" style="margin-right:2px;">+ Invested</button>'
+      +'<button class="padd" onclick="openRoiModal(\'returned\')" style="margin-right:4px;background:var(--green-dim);border-color:var(--green);color:var(--green);">+ Returned</button>'
+  });
+  renderRoi();
+}
+
+function openRoiModal(type){
+  document.getElementById('roiType').value=type||'invested';
+  document.getElementById('roiLabel').value='';
+  document.getElementById('roiAmount').value='';
+  document.getElementById('roiCategory').value=type==='returned'?'payout':'eval';
+  document.getElementById('roiDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('roiModalTitle').textContent=type==='returned'?'Add Return':'Add Investment';
+  document.getElementById('roiModal').classList.add('open');
+  setTimeout(function(){document.getElementById('roiLabel').focus();},80);
+}
+function closeRoiModal(){document.getElementById('roiModal').classList.remove('open');}
+
+function saveRoiEntry(){
+  var type=document.getElementById('roiType').value;
+  var label=document.getElementById('roiLabel').value.trim();
+  var category=document.getElementById('roiCategory').value;
+  var amount=parseFloat(document.getElementById('roiAmount').value);
+  var dateVal=document.getElementById('roiDate').value;
+  if(!label||isNaN(amount)||amount<=0)return;
+  state.roiTracker.push({
+    id:uid(),label:label,category:category,type:type,
+    amount:amount,date:dateVal?new Date(dateVal).getTime():Date.now()
+  });
+  save();closeRoiModal();renderRoi();
+}
+
+function delRoiEntry(id){
+  state.roiTracker=state.roiTracker.filter(function(x){return x.id!==id;});
+  save();renderRoi();
+}
+
+function setRoiView(view){
+  _roiView=view;
+  renderRoi();
+}
+
+function renderRoi(){
+  var b=document.getElementById('wbody-roi');if(!b)return;
+
+  // Calculate totals
+  var totalInvested=0,totalReturned=0;
+  state.roiTracker.forEach(function(e){
+    if(e.type==='invested') totalInvested+=e.amount;
+    else totalReturned+=e.amount;
+  });
+  var netRoi=totalReturned-totalInvested;
+  var roiPct=totalInvested>0?((netRoi/totalInvested)*100):0;
+
+  // Summary strip
+  var sumId='roi-summary-strip';
+  var existing=document.getElementById(sumId);
+  if(!existing){
+    var strip=document.createElement('div');strip.id=sumId;strip.className='roi-summary';
+    strip.style.borderTop='none';strip.style.borderBottom='1px solid var(--border2)';
+    b.parentElement.insertBefore(strip,b);
+    existing=strip;
+  }
+  existing.innerHTML=
+    '<div class="roi-stat"><div class="roi-val dn">'+fmtM(totalInvested)+'</div><div class="roi-lbl">Invested</div></div>'
+    +'<div class="roi-stat"><div class="roi-val up">'+fmtM(totalReturned)+'</div><div class="roi-lbl">Returned</div></div>'
+    +'<div class="roi-stat"><div class="roi-val '+(netRoi>=0?'up':'dn')+'">'+(netRoi>=0?'+':'')+fmtM(netRoi)+'</div><div class="roi-lbl">Net ROI</div></div>'
+    +'<div class="roi-stat"><div class="roi-val '+(roiPct>=0?'up':'dn')+'">'+(roiPct>=0?'+':'')+roiPct.toFixed(1)+'%</div><div class="roi-lbl">ROI %</div></div>';
+
+  // Filter entries by view
+  var entries=state.roiTracker.filter(function(e){
+    if(_roiView==='all') return true;
+    return e.type===_roiView;
+  });
+  // Sort by date descending
+  entries.sort(function(a,b){return (b.date||0)-(a.date||0);});
+
+  // View tabs
+  var tabsHtml='<div class="roi-tabs">'
+    +'<button class="roi-tab'+(_roiView==='all'?' active':'')+'" onclick="setRoiView(\'all\')">All</button>'
+    +'<button class="roi-tab'+(_roiView==='invested'?' active':'')+'" onclick="setRoiView(\'invested\')">Invested</button>'
+    +'<button class="roi-tab'+(_roiView==='returned'?' active':'')+'" onclick="setRoiView(\'returned\')">Returned</button>'
+    +'</div>';
+
+  if(!state.roiTracker.length){
+    b.innerHTML=tabsHtml+'<div style="text-align:center;padding:28px 0;color:var(--text3);font-size:11px;">No entries yet. Track your prop firm investments and returns.</div>';
+    return;
+  }
+
+  var headerHtml='<div class="roi-table-head">'
+    +'<div class="roi-th">Entry</div>'
+    +'<div class="roi-th" style="text-align:right;">Invested</div>'
+    +'<div class="roi-th" style="text-align:right;">Returned</div>'
+    +'<div class="roi-th" style="text-align:right;">Date</div>'
+    +'<div class="roi-th"></div>'
+    +'</div>';
+
+  var rowsHtml='';
+  entries.forEach(function(e){
+    var catLabel=ROI_CATEGORIES[e.category]||e.category;
+    var invAmt=e.type==='invested'?'-'+fmtMF(e.amount):'';
+    var retAmt=e.type==='returned'?'+'+fmtMF(e.amount):'';
+    var dateStr=e.date?new Date(e.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}):'';
+    rowsHtml+='<div class="roi-row">'
+      +'<div class="roi-cell roi-cell-name"><b>'+esc(e.label)+'</b><span class="roi-cell-cat">'+catLabel+'</span></div>'
+      +'<div class="roi-cell invested" style="text-align:right;">'+invAmt+'</div>'
+      +'<div class="roi-cell returned" style="text-align:right;">'+retAmt+'</div>'
+      +'<div class="roi-cell" style="text-align:right;font-family:Geist Mono,monospace;font-size:9px;color:var(--text3);">'+dateStr+'</div>'
+      +'<div class="roi-cell" style="text-align:center;"><button class="roi-del" data-id="'+e.id+'" onclick="delRoiEntry(this.dataset.id)">&#10005;</button></div>'
+      +'</div>';
+  });
+
+  b.style.padding='0';
+  b.innerHTML=tabsHtml+headerHtml+rowsHtml;
+}
+
+// ═══════════════════════════════════════════
 // STRATEGY WINDOW
 // ═══════════════════════════════════════════
 var STRAT_SECTIONS={premarket:'Pre-Market',setup:'Trade Setup',risk:'Risk Rules',postmarket:'Post-Market'};
@@ -2971,7 +3166,29 @@ function applyDockMode() {
     var autoBtn = document.getElementById('dockAutoHideBtn');
     if (autoBtn) autoBtn.classList.remove('on');
     cleanupDockAutoHide();
+    // Reposition windows below restored topbar + topbar2
+    repositionAfterUndock();
   }
+}
+
+function repositionAfterUndock() {
+  // After undocking, topbar (52px) + topbar2 (32px) = 84px restored
+  // Windows were docked at top:44px — push them below the toolbars
+  var topbarH = (document.querySelector('.topbar')||{offsetHeight:52}).offsetHeight;
+  var topbar2H = (document.querySelector('.topbar2')||{offsetHeight:32}).offsetHeight;
+  var minTop = topbarH + topbar2H;
+  var wins = Array.from(document.querySelectorAll('.win:not(.hidden)'));
+  wins.forEach(function(w) {
+    var curTop = parseInt(w.style.top) || 0;
+    if (curTop < minTop) {
+      w.style.top = minTop + 'px';
+      // Update saved state too
+      var wid = w.id.replace('win-','');
+      var ws = getWinState(wid);
+      ws.y = minTop;
+    }
+  });
+  save();
 }
 
 function snapWindowsToDock() {
@@ -3989,6 +4206,7 @@ buildPlannerWin();
 buildQuoteWin();
 buildCalcsWin();
 buildBotWin();
+buildRoiWin();
 
 buildToggles();
 initElectron();
