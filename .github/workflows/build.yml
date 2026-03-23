@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build exe
+      - name: Build Windows exe
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,14 +36,14 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Upload installer artifact
+      - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TradersVault-Setup
+          name: TradersVault-Windows
           path: dist/*.exe
           retention-days: 30
 
-      - name: Create or update release
+      - name: Upload Windows release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.pkg.outputs.version }}
@@ -52,6 +52,55 @@ jobs:
           files: |
             dist/Traders Vault Setup ${{ steps.pkg.outputs.version }}.exe
             dist/TradersVault-portable.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build macOS dmg (x64 + arm64)
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version from package.json
+        id: pkg
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TradersVault-macOS
+          path: |
+            dist/*.dmg
+            dist/*.zip
+          retention-days: 30
+
+      - name: Upload macOS release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.pkg.outputs.version }}
+          name: Traders Vault v${{ steps.pkg.outputs.version }}
+          files: |
+            dist/Traders-Vault-${{ steps.pkg.outputs.version }}-arm64.dmg
+            dist/Traders-Vault-${{ steps.pkg.outputs.version }}-x64.dmg
           draft: false
           prerelease: false
         env:

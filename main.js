@@ -13,10 +13,16 @@ let isIgnoringMouse = false;
 let hitRects = [];
 let mousePoller = null;
 
+const isMac = process.platform === 'darwin';
+const isWin = process.platform === 'win32';
+
 function setupAutoLaunch() {
-  if (process.platform !== 'win32') return;
   try {
-    app.setLoginItemSettings({ openAtLogin: true, name: 'Traders Vault', path: process.execPath });
+    if (isWin) {
+      app.setLoginItemSettings({ openAtLogin: true, name: 'Traders Vault', path: process.execPath });
+    } else if (isMac) {
+      app.setLoginItemSettings({ openAtLogin: true });
+    }
   } catch (e) {}
 }
 
@@ -76,7 +82,10 @@ function createWindow() {
       splashWindow = null;
     }
     mainWindow.show();
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
+    if (isMac) {
+      mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    }
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
     isIgnoringMouse = true;
   });
@@ -109,7 +118,7 @@ function createTray() {
       click: (item) => {
         isOverlayMode = item.checked;
         if (isOverlayMode) {
-          mainWindow.setAlwaysOnTop(true, 'screen-saver');
+          mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
         } else {
           mainWindow.setAlwaysOnTop(false);
         }
@@ -168,7 +177,7 @@ ipcMain.handle('set-opacity', (_, value) => {
 ipcMain.handle('set-overlay', (_, enable) => {
   isOverlayMode = enable;
   if (enable) {
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
   } else {
     mainWindow.setAlwaysOnTop(false);
   }
@@ -253,4 +262,14 @@ app.whenReady().then(() => {
 app.on('before-quit', () => {
   app.isQuitting = true;
   if (mousePoller) clearInterval(mousePoller);
+});
+
+// macOS: hide dock icon since this is an overlay app
+if (isMac) {
+  app.dock?.hide();
+}
+
+// macOS: don't quit when all windows closed
+app.on('window-all-closed', () => {
+  if (!isMac) app.quit();
 });

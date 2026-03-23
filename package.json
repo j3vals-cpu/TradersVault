@@ -10,7 +10,9 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "build": "electron-builder --win --x64",
-    "build:portable": "electron-builder --win portable --x64"
+    "build:portable": "electron-builder --win portable --x64",
+    "build:mac": "electron-builder --mac",
+    "build:all": "electron-builder --win --x64 --mac"
   },
   "dependencies": {},
   "devDependencies": {
@@ -63,6 +65,40 @@
     },
     "portable": {
       "artifactName": "TradersVault-portable.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.finance",
+      "darkModeSupport": true,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "Traders Vault",
+      "artifactName": "Traders-Vault-${version}-${arch}.dmg"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "assets/icon.png",
+      "category": "Finance"
     }
   }
 }
