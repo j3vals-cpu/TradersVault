@@ -26,9 +26,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload installer
+      - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: TradersVault-Setup
           path: dist/*.exe
           retention-days: 30
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.5.3
+          name: Traders Vault v1.5.3
+          body: |
+            Traders Vault v1.5.3 — Windows 10/11
+            
+            Trading panel, prop tracker, position sizing calculator, bot engine, strategy & news, dock mode, Discord integration, gains card, studio tools, OS-level click-through overlay, multi-monitor support.
+            
+            by J3 | Traders Vault
+          files: |
+            dist/Traders Vault Setup 1.5.3.exe
+            dist/TradersVault-portable.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
