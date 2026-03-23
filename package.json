@@ -1,7 +1,7 @@
 {
   "name": "traders-vault",
   "productName": "Traders Vault",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "description": "Traders Vault \u2014 Vaulted Desk. The overlay trading command centre for prop traders.",
   "main": "main.js",
   "author": "J3 | Traders Vault \u2014 Vaulted Desk",
