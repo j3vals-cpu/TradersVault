@@ -1,0 +1,65 @@
+{
+  "name": "traders-vault",
+  "productName": "Traders Vault",
+  "version": "1.5.3",
+  "description": "Traders Vault \u2014 Vaulted Desk. The overlay trading command centre for prop traders.",
+  "main": "main.js",
+  "author": "J3 | Traders Vault \u2014 Vaulted Desk",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.j3traders.vault",
+    "productName": "Traders Vault",
+    "copyright": "Copyright \u00a9 2026 J3 | Traders Vault \u2014 Vaulted Desk",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "executableName": "TradersVault"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Traders Vault",
+      "runAfterFinish": true
+    },
+    "portable": {
+      "artifactName": "TradersVault-portable.exe"
+    }
+  }
+}
