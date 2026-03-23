@@ -1,0 +1,64 @@
+name: Build Traders Vault
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build exe
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TradersVault-Setup
+          path: dist/*.exe
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Traders Vault build-${{ github.run_number }}
+          body_path: CHANGELOG.md
+          files: dist/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changelog to Supabase
+        if: ${{ secrets.SUPABASE_URL != '' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          CHANGELOG=$(python3 -c "import json,sys; print(json.dumps(open('CHANGELOG.md').read()))")
+          curl -s -X POST "$SUPABASE_URL/rest/v1/app_config" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d "{\"key\":\"changelog_md\",\"value\":$CHANGELOG,\"updated_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+          echo "Changelog v$VERSION pushed to Supabase"
