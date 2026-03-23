@@ -5806,7 +5806,7 @@ function applyLicenceBadge(v) {
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
   // compare with current app version
-  var current = '1.7.5';
+  var current = '1.7.6';
   if (v.latest_version === current) return;
   // Attach fields update banner expects
   v.update_available = true;
@@ -5837,13 +5837,28 @@ function doUpdate() {
     toast('No update URL found', 'error');
     return;
   }
+  // Update banner to show download progress
+  var btn = document.querySelector('#tvUpdateBanner button');
+  if (btn) { btn.textContent = '⏳ Downloading...'; btn.style.opacity = '.6'; btn.style.pointerEvents = 'none'; }
+  var titleEl = document.getElementById('updateBannerTitle');
+  if (titleEl) titleEl.textContent = 'Downloading update...';
+  var notesEl = document.getElementById('updateBannerNotes');
+  if (notesEl) notesEl.textContent = 'Your browser will download the installer. Run it when done to update.';
+
   // Open download URL — Electron will handle shell.openExternal
   if (window.electronAPI && window.electronAPI.openExternal) {
     window.electronAPI.openExternal(tvUpdateInfo.update_url);
   } else {
     window.open(tvUpdateInfo.update_url, '_blank');
   }
-  toast('Download started — install when ready', 'info');
+  toast('Downloading in your browser — run the installer when it finishes', 'info');
+
+  // After a few seconds, update banner to remind them to install
+  setTimeout(function() {
+    if (titleEl) titleEl.textContent = '✓ Download should be complete';
+    if (notesEl) notesEl.textContent = 'Check your Downloads folder and run the installer. The app will restart.';
+    if (btn) { btn.textContent = '📂 Open Download Again'; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }
+  }, 8000);
 }
 
 function dismissUpdate() {
