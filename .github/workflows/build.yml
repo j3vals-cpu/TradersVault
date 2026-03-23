@@ -72,7 +72,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build macOS dmg (x64 + arm64)
+      - name: Build macOS pkg (x64 + arm64)
         run: npm run build:mac
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,13 +84,14 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: List dist contents
+        run: ls -la dist/
+
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: TradersVault-macOS
-          path: |
-            dist/*.dmg
-            dist/*.zip
+          path: dist/*.pkg
           retention-days: 30
 
       - name: Upload macOS release assets
@@ -99,8 +100,8 @@ jobs:
           tag_name: v${{ steps.pkg.outputs.version }}
           name: Traders Vault v${{ steps.pkg.outputs.version }}
           files: |
-            dist/Traders-Vault-${{ steps.pkg.outputs.version }}-arm64.dmg
-            dist/Traders-Vault-${{ steps.pkg.outputs.version }}-x64.dmg
+            dist/Traders-Vault-${{ steps.pkg.outputs.version }}-arm64.pkg
+            dist/Traders-Vault-${{ steps.pkg.outputs.version }}-x64.pkg
           draft: false
           prerelease: false
         env:

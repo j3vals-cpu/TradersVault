@@ -69,14 +69,7 @@
     "mac": {
       "target": [
         {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        },
-        {
-          "target": "zip",
+          "target": "pkg",
           "arch": [
             "x64",
             "arm64"
@@ -89,9 +82,12 @@
       "hardenedRuntime": false,
       "gatekeeperAssess": false
     },
-    "dmg": {
-      "title": "Traders Vault",
-      "artifactName": "Traders-Vault-${version}-${arch}.dmg"
+    "pkg": {
+      "installLocation": "/Applications",
+      "allowAnywhere": true,
+      "allowCurrentUserHome": true,
+      "allowRootDirectory": true,
+      "artifactName": "Traders-Vault-${version}-${arch}.pkg"
     },
     "linux": {
       "target": [
