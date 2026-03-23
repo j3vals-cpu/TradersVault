@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximize: () => ipcRenderer.invoke('window-maximize'),
   close: () => ipcRenderer.invoke('window-close'),
   quit: () => ipcRenderer.invoke('app-quit'),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
   // Persistent file storage
   saveData: (key, value) => ipcRenderer.invoke('save-data', key, value),
   loadData: (key) => ipcRenderer.invoke('load-data', key),

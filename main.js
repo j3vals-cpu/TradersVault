@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -186,6 +186,7 @@ ipcMain.handle('window-close', () => {
   app.quit();
 });
 ipcMain.handle('app-quit', () => {
+ipcMain.handle('open-external', (_, url) => { if (url) shell.openExternal(url); });
   app.isQuitting = true;
   if (mousePoller) clearInterval(mousePoller);
   app.quit();

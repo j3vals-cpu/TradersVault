@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Traders Vault â Vaulted Desk</title>
+<title>Traders Vault — Vaulted Desk</title>
 <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -21,11 +21,11 @@
 html,body{height:100%;overflow:hidden;background:transparent;}
 body{font-family:'Cabinet Grotesk',sans-serif;background:transparent;color:var(--text);}
 
-/* âââââ NOISE GRAIN âââââ */
+/* ───── NOISE GRAIN ───── */
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.3;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");}
 
-/* âââââ TOPBAR âââââ */
+/* ───── TOPBAR ───── */
 .topbar{height:52px;background:rgba(14,14,19,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;position:relative;z-index:200;-webkit-app-region:drag;}
 .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);pointer-events:none;}
 .logo{display:flex;align-items:center;gap:9px;flex-shrink:0;}
@@ -115,7 +115,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .theme-card{background:var(--panel2);border:2px solid var(--border2);border-radius:9px;padding:10px;cursor:pointer;transition:all .2s;position:relative;}
 .theme-card:hover{border-color:var(--border3);}
 .theme-card.sel{border-color:var(--gold);}
-.theme-card.sel::after{content:'â';position:absolute;top:5px;right:7px;font-size:10px;color:var(--gold);font-weight:900;}
+.theme-card.sel::after{content:'✓';position:absolute;top:5px;right:7px;font-size:10px;color:var(--gold);font-weight:900;}
 .theme-preview{height:28px;border-radius:5px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:4px;}
 .theme-dot{width:8px;height:8px;border-radius:50%;}
 .theme-name{font-size:10px;font-weight:800;color:var(--text);text-align:center;}
@@ -125,7 +125,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .accent-swatch{width:30px;height:30px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:all .18s;position:relative;}
 .accent-swatch:hover{transform:scale(1.12);}
 .accent-swatch.sel{border-color:#fff;transform:scale(1.15);}
-.accent-swatch.sel::after{content:'â';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#000;font-weight:900;display:flex;align-items:center;justify-content:center;}
+.accent-swatch.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#000;font-weight:900;display:flex;align-items:center;justify-content:center;}
 
 /* Panel editor table */
 .panel-edit-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
@@ -158,13 +158,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 /* Make topbar draggable for frameless Electron window */
 .topbar{-webkit-app-region:drag;}
 .topbar button,.topbar input,.topbar a,.topbar select{-webkit-app-region:no-drag;}
-/* âââââ TOPBAR ROW 2 âââââ */
+/* ───── TOPBAR ROW 2 ───── */
 .topbar2{height:32px;background:rgba(20,20,25,0.70);backdrop-filter:blur(16px);will-change:transform;-webkit-backdrop-filter:blur(16px);will-change:transform;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
 .topbar2-gap{flex:1;}
 .topbar2{-webkit-app-region:drag;}
 .topbar2 button,.topbar2 input{-webkit-app-region:no-drag;}
 
-/* âââââ DESKTOP CANVAS âââââ */
+/* ───── DESKTOP CANVAS ───── */
 .canvas{position:relative;flex:1;overflow:visible;pointer-events:none;}
 .chrome{display:flex;flex-direction:column;height:100vh;pointer-events:none;}
 /* Panels and topbars need clicks */
@@ -196,7 +196,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .dock-autohide-btn.on{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
 .dock-autohide-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-/* âââââ FLOATING WINDOWS âââââ */
+/* ───── FLOATING WINDOWS ───── */
 .win{
   position:fixed;
   background:var(--panel);
@@ -243,7 +243,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .win-body::-webkit-scrollbar{width:3px;}
 .win-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 
-/* âââââ SHARED COMPONENTS âââââ */
+/* ───── SHARED COMPONENTS ───── */
 .padd{height:24px;padding:0 9px;background:var(--gold);border:none;border-radius:6px;color:#07070a;font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:800;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;letter-spacing:.1px;}
 .padd:hover{background:#f0c45a;transform:translateY(-1px);box-shadow:0 4px 14px var(--gold-glow);}
 .padd.sec{background:var(--panel3);color:var(--text2);border:1px solid var(--border2);}
@@ -269,7 +269,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .cdot{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;}
 .cdot.sel{border-color:#fff;transform:scale(1.2);}
 
-/* âââââ NOTES âââââ */
+/* ───── NOTES ───── */
 .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;}
 .note-card{background:var(--panel2);border:1px solid var(--border2);border-radius:9px;padding:11px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
 .note-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--nc,var(--gold));border-radius:9px 9px 0 0;}
@@ -283,7 +283,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .note-card:hover .note-del{opacity:1;}
 .note-del:hover{background:var(--red-dim);color:var(--red);}
 
-/* âââââ TODOS âââââ */
+/* ───── TODOS ───── */
 .todo-item{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--panel2);border:1px solid var(--border2);border-radius:var(--r-sm);margin-bottom:4px;transition:all .15s;}
 .todo-item:hover{background:var(--panel3);}
 .todo-cb{width:16px;height:16px;flex-shrink:0;border-radius:4px;border:1.5px solid var(--border3);display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;transition:all .18s;color:transparent;}
@@ -298,7 +298,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .todo-item:hover .todo-x{opacity:1;}
 .todo-x:hover{background:var(--red-dim);color:var(--red);}
 
-/* âââââ PLANNER âââââ */
+/* ───── PLANNER ───── */
 .pnav{display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;}
 .pnav-btn{width:22px;height:22px;border:1px solid var(--border2);background:var(--panel2);border-radius:5px;color:var(--text2);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .pnav-btn:hover{border-color:var(--gold);color:var(--gold);}
@@ -315,7 +315,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .tr-add{font-size:9px;color:var(--text3);background:transparent;border:1px dashed var(--border2);border-radius:4px;padding:2px 6px;cursor:pointer;text-align:left;font-family:'Cabinet Grotesk',sans-serif;width:100%;transition:all .15s;}
 .tr-add:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
 
-/* âââââ TRADING SELECT MODE âââââ */
+/* ───── TRADING SELECT MODE ───── */
 .instr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:8px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;}
 .instr-btn{padding:6px 4px;background:var(--panel2);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-family:'Geist Mono',monospace;font-size:9px;font-weight:700;cursor:pointer;transition:all .18s;text-align:center;letter-spacing:.3px;}
 .instr-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
@@ -380,7 +380,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .ac-target-row{display:flex;gap:4px;align-items:center;margin-top:4px;padding-top:5px;border-top:1px solid var(--border);overflow:hidden;}.ac-target-row .ac-bal-in{min-width:0;width:0;flex:1;}
 .ac-target-lbl{font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);white-space:nowrap;}
 
-/* âââââ ACCOUNTABILITY âââââ */
+/* ───── ACCOUNTABILITY ───── */
 .acc-stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:7px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;}
 .acc-stat-card{background:var(--panel2);border-radius:7px;padding:7px;text-align:center;}
 .acc-stat-val{font-size:18px;font-weight:900;color:var(--gold);line-height:1;}
@@ -401,7 +401,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .habit-row:hover .habit-x{opacity:1;}
 .habit-x:hover{background:var(--red-dim);color:var(--red);}
 
-/* âââââ PROP TRACKER âââââ */
+/* ───── PROP TRACKER ───── */
 .prop-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:7px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;}
 .prop-stat{background:var(--panel2);border-radius:7px;padding:7px 9px;text-align:center;}
 .prop-val{font-size:14px;font-weight:900;line-height:1;}
@@ -452,7 +452,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .prop-row:hover .prop-firm-del{opacity:1;}
 .prop-firm-del:hover{color:var(--red);}
 
-/* âââââ STRATEGY âââââ */
+/* ───── STRATEGY ───── */
 .strat-section{margin-bottom:10px;}
 .strat-section-title{font-size:10px;font-weight:800;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
 .strat-item{display:flex;align-items:flex-start;gap:7px;padding:6px 8px;background:var(--panel2);border:1px solid var(--border2);border-radius:var(--r-sm);margin-bottom:3px;cursor:pointer;transition:all .15s;}
@@ -467,7 +467,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .strat-reset{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);cursor:pointer;padding:2px 6px;border:1px solid var(--border2);border-radius:4px;background:transparent;transition:all .15s;}
 .strat-reset:hover{border-color:var(--gold);color:var(--gold);}
 
-/* âââââ NEWS CALENDAR âââââ */
+/* ───── NEWS CALENDAR ───── */
 .news-filter-bar{display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid var(--border2);flex-shrink:0;flex-wrap:wrap;}
 .news-filter-btn{height:20px;padding:0 8px;border-radius:4px;border:1px solid var(--border2);background:transparent;font-family:'Cabinet Grotesk',sans-serif;font-size:9px;font-weight:700;cursor:pointer;color:var(--text3);transition:all .15s;white-space:nowrap;}
 .news-filter-btn:hover{border-color:var(--gold);color:var(--gold);}
@@ -502,7 +502,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .news-empty{padding:30px;text-align:center;font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);line-height:2;}
 .news-status-bar{padding:3px 10px;border-top:1px solid var(--border2);font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 
-/* âââââ MODAL âââââ */
+/* ───── MODAL ───── */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:3000;display:none;align-items:center;justify-content:center;}
 .overlay.open{display:flex;animation:fadeIn .18s ease;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
@@ -521,9 +521,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 <script src="html2canvas.min.js" defer></script>
 </head>
 <body>
-<!-- âââ VAULT DOOR LOADING SCREEN âââ -->
+<!-- ═══ VAULT DOOR LOADING SCREEN ═══ -->
 
-<!-- âââ LOGIN SCREEN âââ -->
+<!-- ═══ LOGIN SCREEN ═══ -->
 <div id="tvLoginScreen" style="
   position:fixed;inset:0;z-index:99998;
   background:#07070a;
@@ -549,7 +549,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
       </div>
       <div style="margin-bottom:16px;">
         <label style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:1px;display:block;margin-bottom:5px;">PASSWORD</label>
-        <input id="loginPass" type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" style="width:100%;height:38px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eee8;font-size:13px;padding:0 12px;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')doLogin()">
+        <input id="loginPass" type="password" placeholder="••••••••" style="width:100%;height:38px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eee8;font-size:13px;padding:0 12px;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <button onclick="doLogin()" style="width:100%;height:42px;background:#e8b84b;border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;transition:filter .15s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">Sign In</button>
       <div style="text-align:center;margin-top:10px;">
@@ -587,12 +587,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div id="authStatus" style="margin-top:12px;font-family:'Geist Mono',monospace;font-size:9px;text-align:center;min-height:16px;"></div>
     <!-- Free tier note -->
     <div style="margin-top:16px;padding:10px;background:rgba(232,184,75,.06);border:1px solid rgba(232,184,75,.15);border-radius:8px;font-size:10px;color:rgba(232,184,75,.7);text-align:center;line-height:1.5;">
-      Free during early access â no credit card needed.
+      Free during early access — no credit card needed.
     </div>
   </div>
 </div>
 
-<!-- âââ UPDATE BANNER âââ -->
+<!-- ═══ UPDATE BANNER ═══ -->
 <div id="tvUpdateBanner" style="
   display:none;
   position:fixed;bottom:0;left:0;right:0;z-index:99997;
@@ -607,11 +607,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div style="font-size:12px;font-weight:800;color:#f0eee8;" id="updateBannerTitle">Update available</div>
     <div style="font-size:10px;color:#9a9ab2;" id="updateBannerNotes">New version ready</div>
   </div>
-  <button onclick="doUpdate()" style="height:30px;padding:0 14px;background:#e8b84b;border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;">â¬ Update Now</button>
+  <button onclick="doUpdate()" style="height:30px;padding:0 14px;background:#e8b84b;border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;">⬇ Update Now</button>
   <button onclick="dismissUpdate()" style="height:30px;padding:0 10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#5f5f78;font-size:11px;cursor:pointer;font-family:inherit;">Later</button>
 </div>
 
-<!-- âââ LICENCE BADGE in topbar (injected via JS) âââ -->
+<!-- ═══ LICENCE BADGE in topbar (injected via JS) ═══ -->
 <div id="vaultLoader" style="
   position:fixed;inset:0;z-index:99999;
   background:#07070a;
@@ -807,7 +807,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   <button class="focus-btn" id="focusBtn" onclick="toggleFocusMode()" title="Focus mode">&#127919;</button>
   <button class="settings-btn" id="settingsBtn" onclick="openSettings()" title="Settings">&#9881;</button>
   <button class="overlay-btn" id="overlayBtn" onclick="toggleOverlay()">&#9974; Overlay</button>
-  <button class="snap-btn" id="dockBtn" onclick="toggleDockMode()" title="Dock mode â panels line up at top, gaps click-through" style="display:flex;">&#9783; Dock</button>
+  <button class="snap-btn" id="dockBtn" onclick="toggleDockMode()" title="Dock mode — panels line up at top, gaps click-through" style="display:flex;">&#9783; Dock</button>
   <div class="win-controls" id="winControls">
     <button class="wc-btn wc-min" onclick="winMin()">&#8722;</button>
     <button class="wc-btn wc-max" onclick="winMax()">&#9633;</button>
@@ -860,7 +860,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   <div class="dock-divider"></div>
 
   <!-- Focus / Pomodoro timer -->
-  <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;" title="Focus timer â click to start/stop">
+  <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;" title="Focus timer — click to start/stop">
     <span style="font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:1px;">FOCUS</span>
     <span id="dockPomo" onclick="dockPomoClick()" style="font-family:'Geist Mono',monospace;font-size:10px;font-weight:900;color:var(--text2);cursor:pointer;padding:1px 5px;border:1px solid var(--border2);border-radius:4px;min-width:40px;text-align:center;">25:00</span>
   </div>
@@ -945,7 +945,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 </div>
 
 <!-- ACCOUNT MODAL -->
-<!-- âââ PROJECT X / TOPSTEP X MODAL âââ -->
+<!-- ═══ PROJECT X / TOPSTEP X MODAL ═══ -->
 <div class="overlay" id="projectxModal">
   <div class="modal" style="width:480px;padding:0;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#1a0a2e,#2d1a52);padding:20px 22px 16px;border-bottom:1px solid rgba(124,58,237,.3);">
@@ -969,7 +969,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <!-- API TAB -->
     <div id="pxPanelApi" style="padding:18px 20px;">
       <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(167,139,250,.9);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
-        &#9432; Requires a Project X / TopstepX API key. Go to <b>Account â Settings â API Keys</b> to generate your credentials.
+        &#9432; Requires a Project X / TopstepX API key. Go to <b>Account → Settings → API Keys</b> to generate your credentials.
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <div>
@@ -1167,7 +1167,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
           <select class="s-input" id="settingsCurrency" style="cursor:pointer;">
             <option value="$">$ USD</option>
             <option value="Â£">Â£ GBP</option>
-            <option value="â¬">â¬ EUR</option>
+            <option value="€">€ EUR</option>
             <option value="A$">A$ AUD</option>
             <option value="C$">C$ CAD</option>
             <option value="Â¥">Â¥ JPY</option>
@@ -1206,7 +1206,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div class="settings-panel" id="stab-discord">
       <div class="s-lbl" style="margin-top:0;">Discord Webhook</div>
       <div style="background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:10px;color:rgba(148,155,252,.9);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
-        &#9432; In Discord: <b>Channel Settings â Integrations â Webhooks â New Webhook</b> â copy the URL and paste below.
+        &#9432; In Discord: <b>Channel Settings → Integrations → Webhooks → New Webhook</b> — copy the URL and paste below.
       </div>
       <div class="srow">
         <span class="srow-lbl">Webhook URL</span>
@@ -1235,7 +1235,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <!-- DATA TAB -->
     <div class="settings-panel" id="stab-data">
       <div class="s-lbl" style="margin-top:0;">Export Data</div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Export your entire Traders Vault config â firms, accounts, notes, habits, trades, layout â as a JSON file you can back up or move to another machine.</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Export your entire Traders Vault config — firms, accounts, notes, habits, trades, layout — as a JSON file you can back up or move to another machine.</div>
       <button onclick="exportAllData()" style="width:100%;padding:10px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-bottom:14px;">&#8675; Export TradersVault.json</button>
       <div class="s-lbl">Import Data</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Import a previously exported JSON file. <span style="color:var(--red);font-weight:700;">This will overwrite your current data.</span></div>
@@ -1254,8 +1254,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
       </div>
       <input type="range" class="trans-slider" id="settingsOpacity" min="10" max="100" value="100" style="width:100%;height:5px;margin-bottom:8px;" oninput="previewOpacity(this.value)">
       <div style="display:flex;justify-content:space-between;">
-        <span style="font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);">10% â Ghost</span>
-        <span style="font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);">100% â Solid</span>
+        <span style="font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);">10% — Ghost</span>
+        <span style="font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);">100% — Solid</span>
       </div>
     </div>
 
@@ -1293,7 +1293,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <!-- LOGIN TAB -->
     <div id="tvPanelLogin" style="padding:18px 20px;">
       <div style="background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(0,212,255,.9);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
-        &#9432; Requires a Tradovate API key. Go to <b>Tradovate â Settings â Add-Ons â API Access</b> to generate your CID and Secret.
+        &#9432; Requires a Tradovate API key. Go to <b>Tradovate → Settings → Add-Ons → API Access</b> to generate your CID and Secret.
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
@@ -1411,9 +1411,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // STATE & STORAGE
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 var COLORS=['#e8b84b','#8b6fff','#00d4aa','#ff4d6d','#3b82f6','#f97316','#ec4899','#06b6d4'];
 var state={
   notes:[],todos:[],habits:[],planner:{},
@@ -1523,7 +1523,7 @@ var TRADING_QUOTES=[
   'Small losses keep you in the game.',
   'One good trade at a time.',
   'The best traders lose well.',
-  'Sit on your hands â that is a trade too.',
+  'Sit on your hands — that is a trade too.',
   'Master the routine. The results come.',
   'Slow down to speed up your growth.',
   'Manage the downside. The upside takes care of itself.',
@@ -1532,7 +1532,7 @@ var TRADING_QUOTES=[
 ];
 function greet(){
   var q=TRADING_QUOTES[Math.floor(Math.random()*TRADING_QUOTES.length)];
-  return 'â'+q+'â';
+  return '"'+q+'"';
 }
 function fmtDate(d){return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase();}
 function fmtM(n){var a=Math.abs(n);var s=a>=1000?(a/1000).toFixed(1)+'k':a.toFixed(0);return(n<0?'-':'')+'$'+s;}
@@ -1617,9 +1617,9 @@ function initHeader(){
   document.getElementById('hGreet').innerHTML=greet();
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // COLOUR PICKERS
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 function buildCP(id,selected){
   document.getElementById(id).innerHTML=COLORS.map(function(c){
     return '<div class="cdot'+(c===selected?' sel':'')+'" style="background:'+c+'" data-cid="'+id+'" data-col="'+c+'" onclick="pickColor(this)"></div>';
@@ -1633,9 +1633,9 @@ function pickColor(el){
   buildCP(id,c);
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // WINDOWING SYSTEM
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 var zTop=10;
 
 function getWinState(id){
@@ -1716,7 +1716,7 @@ function makeDraggable(win,handle,id){
     if(!dragging)return;
     var nx=sx+(e.clientX-ox);
     var ny=sy+(e.clientY-oy);
-    // No clamping â allow dragging to any monitor
+    // No clamping — allow dragging to any monitor
     win.style.left=nx+'px';
     win.style.top=ny+'px';
   });
@@ -1846,9 +1846,9 @@ function updateToggles(){
   });
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // NOTES WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 function buildNotesWin(){
   var el=createWindow({id:'notes',title:'Notes',icon:'&#128221;',
     extraBtns:'<button class="padd" onclick="openNoteModal()" style="margin-right:4px;">+ Note</button>'
@@ -1900,9 +1900,9 @@ function renderNotes(){
   b.innerHTML=html+'</div>';
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // TODO WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 function buildTodoWin(){
   var el=createWindow({id:'todo',title:'To-Do',icon:'&#9989;'});
   var body=document.getElementById('wbody-todo');
@@ -1943,9 +1943,9 @@ function renderTodos(){
   b.innerHTML=html;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // PLANNER WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 function buildPlannerWin(){
   var el=createWindow({id:'planner',title:'Planner',icon:'&#128197;',
     extraBtns:'<button class="padd" onclick="openSlotQuick()" style="margin-right:4px;">+ Event</button>'
@@ -1996,9 +1996,9 @@ function renderPlanner(){
   b.innerHTML=html;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // TRADING WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 
 // Instrument templates
 var INSTR_TEMPLATES = [
@@ -2057,7 +2057,7 @@ function selectInstr(id){
   var bar=document.getElementById('instrInfoBar');
   if(bar&&_selectedInstr){
     var t=_selectedInstr;
-    var ticksPerPoint=t.pip?'â':Math.round(1/t.tickSize);
+    var ticksPerPoint=t.pip?'—':Math.round(1/t.tickSize);
     bar.innerHTML='<span style="color:var(--gold);font-weight:900;">'+t.label+'</span>'
       +' &nbsp;Â·&nbsp; 1 tick = <span style="color:var(--teal);">$'+t.tickVal+'</span>'
       +' &nbsp;Â·&nbsp; tick size = <span style="color:var(--text2);">'+t.tickSize+'</span>'
@@ -2121,9 +2121,9 @@ function saveAccount(){
 }
 function delAccount(id){state.accounts=state.accounts.filter(function(a){return a.id!==id;});save();renderTrading();}
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // TRADOVATE CONNECT
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 var _tvToken=null, _tvEnv='live', _tvRefreshTimer=null;
 
 var TV_URLS={
@@ -2172,7 +2172,7 @@ function tradovateConnect(){
   var acType=document.getElementById('tvAccType').value;
 
   if(!user||!pass){tvSetStatus('&#9888; Username and password required.','error');return;}
-  if(!cid||!sec){tvSetStatus('&#9888; API CID and Secret required.<br>Generate them in Tradovate â Settings â Add-Ons â API Access.','error');return;}
+  if(!cid||!sec){tvSetStatus('&#9888; API CID and Secret required.<br>Generate them in Tradovate → Settings → Add-Ons → API Access.','error');return;}
 
   _tvEnv=env;
   var btn=document.getElementById('tvConnectBtn');
@@ -2215,7 +2215,7 @@ function tradovateConnect(){
     var msg=err.message||String(err);
     // Friendly error messages
     if(msg.indexOf('Failed to fetch')>-1||msg.indexOf('NetworkError')>-1)
-      msg='Cannot reach Tradovate API. Check your internet connection.<br>Note: This must run inside the Electron app â browser CORS blocks direct API calls.';
+      msg='Cannot reach Tradovate API. Check your internet connection.<br>Note: This must run inside the Electron app — browser CORS blocks direct API calls.';
     else if(msg.indexOf('p_credentials_incorrect')>-1||msg.indexOf('Unauthorized')>-1||msg.indexOf('401')>-1)
       msg='Incorrect username or password.';
     else if(msg.indexOf('p_apikey_invalid')>-1||msg.indexOf('403')>-1)
@@ -2249,7 +2249,7 @@ function tvFetchAccounts(baseUrl,token,acType){
       var ac=r.ac,cb=r.cb;
       var name=ac.name||ac.nickname||('Account '+ac.id);
       var balance=cb&&cb.cashBalance!=null?cb.cashBalance:(ac.initialMarginReq||50000);
-      // Find or create firm by account name prefix (e.g. "APEX-12345" â "Apex")
+      // Find or create firm by account name prefix (e.g. "APEX-12345" → "Apex")
       var firmName=tvGuessFirmName(name);
       var firm=state.firms.find(function(f){return f.name.toLowerCase()===firmName.toLowerCase();});
       if(!firm){
@@ -2302,7 +2302,7 @@ function tvRefreshToken(baseUrl,cid,sec,user){
 function tvSyncAccount(accountId){
   var a=state.accounts.find(function(x){return x.id===accountId;});
   if(!a||!a.tvId){toast('Not a Tradovate account','error');return;}
-  if(!_tvToken){toast('Not connected to Tradovate â click + Account to reconnect','error');return;}
+  if(!_tvToken){toast('Not connected to Tradovate — click + Account to reconnect','error');return;}
   var baseUrl=TV_URLS[a.tvEnv||'live'];
   toast('Syncing balance...','info');
   fetch(baseUrl+'/cashBalance/getCashBalanceSnapshot',{
@@ -2321,7 +2321,7 @@ function tvSyncAccount(accountId){
       toast('Balance updated: '+fmtMF(cb.cashBalance),'success');
     }
   })
-  .catch(function(){toast('Sync failed â token may have expired','error');});
+  .catch(function(){toast('Sync failed — token may have expired','error');});
 }
 
 // Manual account save (from combined modal)
@@ -2446,9 +2446,9 @@ function renderTrading(){
   al.innerHTML=html;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // PROP TRACKER WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 function buildPropWin(){
   createWindow({id:'prop',title:'Prop Tracker',icon:'&#128176;',
     extraBtns:'<button class="padd" onclick="openPropFirmModal()" style="margin-right:4px;">+ Entry</button>'
@@ -2565,7 +2565,7 @@ function renderPropTracker(){
     return;
   }
 
-  // Column header â grouped by firm name, price tiers stacked inside
+  // Column header — grouped by firm name, price tiers stacked inside
   var headerHtml='<div class="prop-table-head">'
     +'<div class="prop-th">Firm</div>'
     +'<div class="prop-th" style="text-align:center;">Accts</div>'
@@ -2668,11 +2668,11 @@ function renderPropTracker(){
   b.innerHTML=headerHtml+rowsHtml;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // STRATEGY WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 var STRAT_SECTIONS={premarket:'Pre-Market',setup:'Trade Setup',risk:'Risk Rules',postmarket:'Post-Market'};
-// âââ NEWS CALENDAR LOGIC âââââââââââââââââ
+// ─── NEWS CALENDAR LOGIC ─────────────────
 var _newsData=[], _newsFilters={H:true,M:true,L:false}, _ccyFilters={USD:true,GBP:true,EUR:true,CAD:false,JPY:false,AUD:false}, _newsLastFetch=0;
 
 function fetchNews(force){
@@ -2689,7 +2689,7 @@ function fetchNews(force){
     .catch(function(){
       if(btn)btn.style.animation='';
       var list=document.getElementById('newsList');
-      if(list&&!_newsData.length)list.innerHTML='<div class="news-empty">â  Could not load.<br><span style="color:var(--text3);">Click &#8635; to retry.</span></div>';
+      if(list&&!_newsData.length)list.innerHTML='<div class="news-empty">⚠ Could not load.<br><span style="color:var(--text3);">Click &#8635; to retry.</span></div>';
     });
 }
 
@@ -2786,7 +2786,7 @@ function buildStrategyWin(){
     +'<button class="news-refresh" id="newsRefreshBtn" onclick="fetchNews(true)" title="Refresh">&#8635;</button>'
     +'</div>'
     +'<div class="news-list" id="newsList" style="flex:1;overflow-y:auto;"></div>'
-    +'<div class="news-status-bar"><span id="newsStatusLeft">â</span><span id="newsStatusRight">ForexFactory</span></div>'
+    +'<div class="news-status-bar"><span id="newsStatusLeft">—</span><span id="newsStatusRight">ForexFactory</span></div>'
     +'</div>';
 
   // Patch renderStrategy to use inner div
@@ -2849,9 +2849,9 @@ function renderStrategy(){
   b.innerHTML=html;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // ACCOUNTABILITY WINDOW
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 function buildAccWin(){
   createWindow({id:'acc',title:'Accountability',icon:'&#128293;',
     extraBtns:'<button class="padd" onclick="focusHabit()" style="margin-right:4px;">+ Habit</button>'
@@ -2910,9 +2910,9 @@ function renderAccountability(){
   b.innerHTML=html;
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // MODAL CLOSE
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 ['noteModal','plannerModal','firmModal','accountModal','propFirmModal','stratModal','settingsModal','tradovateModal'].forEach(function(id){
   document.getElementById(id).addEventListener('click',function(e){if(e.target===e.currentTarget)e.target.classList.remove('open');});
 });
@@ -2930,15 +2930,15 @@ document.addEventListener('keydown',function(e){
   }
 });
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // ELECTRON INTEGRATION
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 var _overlayActive=false;
 
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // DOCK MODE
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 var _dockMode = false;
 var _dockAutoHide = false;
 var _dockHideTimer = null;
@@ -3031,7 +3031,7 @@ function toggleDockAutoHide() {
   _dockAutoHide = !_dockAutoHide;
   _dockPinned = false; // un-pin when toggling auto-hide
   var btn = document.getElementById('dockAutoHideBtn');
-  if (btn) { btn.classList.toggle('on', _dockAutoHide); btn.textContent = _dockAutoHide ? 'â¸ Auto-hide' : 'â¶ Auto-hide'; }
+  if (btn) { btn.classList.toggle('on', _dockAutoHide); btn.textContent = _dockAutoHide ? '⏸ Auto-hide' : '▶ Auto-hide'; }
   setupDockAutoHide();
 }
 
@@ -3040,7 +3040,7 @@ function pinDock() {
   _dockPinned = !_dockPinned;
   _dockAutoHide = false;
   var btn = document.getElementById('dockAutoHideBtn');
-  if (btn) { btn.classList.remove('on'); btn.textContent = _dockPinned ? 'ð Pinned' : 'â¶ Auto-hide'; }
+  if (btn) { btn.classList.remove('on'); btn.textContent = _dockPinned ? 'ð Pinned' : '▶ Auto-hide'; }
   cleanupDockAutoHide();
   // Make sure dock is visible
   var chrome = document.querySelector('.chrome');
@@ -3147,9 +3147,9 @@ function initElectron(){
   });
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 // SETTINGS / CUSTOMISATION
-// âââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════
 
 var THEMES = [
   {id:'vault',    name:'Vault Dark',   bg:'#07070a', panel:'#0e0e13', border:'#1e1e28', text:'#f0eee8'},
@@ -3240,7 +3240,7 @@ function applyAppTitle(title){
   var t = title || 'Traders Vault';
   var el = document.querySelector('.logo-txt');
   if(el) el.textContent = t;
-  document.title = t + ' â Vaulted Desk';
+  document.title = t + ' — Vaulted Desk';
 }
 
 function applyCurrency(sym){
@@ -3263,7 +3263,7 @@ function applyAllCfg(){
   if(cfg.userName) {
     var h=new Date().getHours();
     var g=TRADING_QUOTES[Math.floor(Math.random()*TRADING_QUOTES.length)];
-    document.getElementById('hGreet').innerHTML = 'â'+g+'â';
+    document.getElementById('hGreet').innerHTML = '"'+g+'"';
   }
   // Apply panel renames
   if(cfg.panels){
@@ -3293,7 +3293,7 @@ function applyAllCfg(){
   }
 }
 
-// âââ Settings Modal ââââââââââââââââââââââââ
+// ─── Settings Modal ────────────────────────
 var _settingsActiveTab = 'theme';
 
 function openSettings(){
@@ -3557,7 +3557,7 @@ function resetSettings(){
 
 
 
-// âââ FEATURE 1: Live Clock âââââââââââââââââ
+// ─── FEATURE 1: Live Clock ─────────────────
 function startClock(){
   function tick(){
     var now=new Date();
@@ -3572,7 +3572,7 @@ function startClock(){
   tick(); setInterval(tick,1000);
 }
 
-// âââ FEATURE 2: Market Session ââââââââââââ
+// ─── FEATURE 2: Market Session ────────────
 function updateMarketSession(now){
   var h=now.getUTCHours(),m=now.getUTCMinutes(),mins=h*60+m;
   var dot=document.getElementById('sessionDot'),lbl=document.getElementById('sessionLbl');
@@ -3586,7 +3586,7 @@ function updateMarketSession(now){
   else{dot.classList.add('closed');lbl.textContent='CLOSED';}
 }
 
-// âââ FEATURE 3: Pomodoro âââââââââââââââââ
+// ─── FEATURE 3: Pomodoro ─────────────────
 var _pomo={running:false,interval:null,secs:25*60,isBreak:false};
 function togglePomo(){
   if(_pomo.running){
@@ -3603,7 +3603,7 @@ function togglePomo(){
         _pomo.secs=_pomo.isBreak?5*60:25*60;
         document.getElementById('pomoLbl').textContent=_pomo.isBreak?'BREAK':'FOCUS';
         document.getElementById('pomoWrap').classList.remove('running','break');
-        toast(_pomo.isBreak?'Break time! 5 mins â':'Back to work! 25 mins ð¯','success');
+        toast(_pomo.isBreak?'Break time! 5 mins ☕':'Back to work! 25 mins ð¯','success');
       }
       updatePomoDisplay();
     },1000);
@@ -3613,7 +3613,7 @@ function resetPomo(){clearInterval(_pomo.interval);_pomo.running=false;_pomo.sec
 function updatePomoDisplay(){var m=Math.floor(_pomo.secs/60).toString().padStart(2,'0'),s=(_pomo.secs%60).toString().padStart(2,'0');var el=document.getElementById('pomoTime');if(el)el.textContent=m+':'+s;}
 var _pomoWrap=document.getElementById('pomoWrap');if(_pomoWrap)_pomoWrap.addEventListener('contextmenu',function(e){e.preventDefault();resetPomo();toast('Timer reset','info');});
 
-// âââ FEATURE 4: Focus Mode ââââââââââââââââ
+// ─── FEATURE 4: Focus Mode ────────────────
 var _focusMode=false,_preFocusWins={};
 function toggleFocusMode(){
   _focusMode=!_focusMode;
@@ -3627,7 +3627,7 @@ function toggleFocusMode(){
         var el=document.getElementById('win-'+w.id);if(el)el.classList.add('hidden');
       }
     });
-    toast('Focus mode ON â Ctrl+F to exit','info');
+    toast('Focus mode ON — Ctrl+F to exit','info');
   } else {
     WINS.forEach(function(w){
       var ws=getWinState(w.id);ws.hidden=_preFocusWins[w.id]||false;
@@ -3638,7 +3638,7 @@ function toggleFocusMode(){
   updateToggles();save();
 }
 
-// âââ FEATURE 5: Quick Colour Dots ââââââââ
+// ─── FEATURE 5: Quick Colour Dots ────────
 function buildQuickColors(){
   var cur=cfg.accentId||'gold';
   var wrap=document.getElementById('quickColors');if(!wrap)return;
@@ -3655,7 +3655,7 @@ function quickAccent(el){
   toast('Accent: '+el.dataset.aid,'info');
 }
 
-// âââ FEATURE 6: Win Border Tints âââââââââ
+// ─── FEATURE 6: Win Border Tints ─────────
 function applyWinTints(){
   var tints={trading:'var(--gold)',prop:'var(--teal)',strategy:'var(--purple)',acc:'var(--green)',notes:'var(--blue)',todo:'var(--red)',planner:'var(--gold-soft)',quote:'var(--teal)',calcs:'var(--purple)'};
   Object.keys(tints).forEach(function(id){
@@ -3664,7 +3664,7 @@ function applyWinTints(){
   });
 }
 
-// âââ FEATURE 7: Toast Notifications ââââââ
+// ─── FEATURE 7: Toast Notifications ──────
 function toast(msg,type){
   var col=type==='success'?'var(--green)':type==='error'?'var(--red)':'var(--gold)';
   var t=document.createElement('div');
@@ -3673,26 +3673,26 @@ function toast(msg,type){
   setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){t.remove();},300);},2500);
 }
 
-// âââ FEATURE 8: Keyboard Shortcuts âââââââ
+// ─── FEATURE 8: Keyboard Shortcuts ───────
 document.addEventListener('keydown',function(e){
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
   if(e.ctrlKey||e.metaKey){
-    if(e.key==='l'){e.preventDefault();snapToDefault();toast('Layout reset â','success');}
+    if(e.key==='l'){e.preventDefault();snapToDefault();toast('Layout reset ✓','success');}
     if(e.key==='f'){e.preventDefault();toggleFocusMode();}
     if(e.key==='p'){e.preventDefault();togglePomo();}
     if(e.key===','){e.preventDefault();openSettings();}
   }
 });
 
-// âââ FEATURE 9: Quote Window ââââââââââââââ
-var QUOTES=['Discipline is the bridge between goals and accomplishment.','The market rewards patience, not activity.','Risk management is the foundation of every great trade.','Cut losses short. Let winners run.','Your edge means nothing without emotional control.','Plan the trade. Trade the plan.','Every loss is tuition â make sure you learn.','Consistency beats genius every single time.','The best traders lose less, not win more.','Process over outcome. Always.'];
+// ─── FEATURE 9: Quote Window ──────────────
+var QUOTES=['Discipline is the bridge between goals and accomplishment.','The market rewards patience, not activity.','Risk management is the foundation of every great trade.','Cut losses short. Let winners run.','Your edge means nothing without emotional control.','Plan the trade. Trade the plan.','Every loss is tuition — make sure you learn.','Consistency beats genius every single time.','The best traders lose less, not win more.','Process over outcome. Always.'];
 function buildQuoteWin(){
   var el=createWindow({id:'quote',title:'Daily Mindset',icon:'&#128161;'});
   var q=QUOTES[new Date().getDate()%QUOTES.length];
   document.getElementById('wbody-quote').innerHTML='<div style="padding:16px;font-size:13px;font-weight:700;color:var(--text);line-height:1.7;text-align:center;border:1px solid var(--border2);border-radius:9px;background:var(--panel2);">'+'<div style="font-size:28px;margin-bottom:10px;">&#128161;</div>'+'&#8220;'+q+'&#8221;'+'</div>'+'<div style="text-align:center;font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--text3);letter-spacing:1.5px;margin-top:10px;">DAILY TRADING MINDSET Â· J3TRADERS</div>';
 }
 
-// âââ CALCULATORS WINDOW (Futures + Forex tabbed) âââââââââââââ
+// ─── CALCULATORS WINDOW (Futures + Forex tabbed) ─────────────
 var FUTURES_CONTRACTS = [
   {sym:'NQ',  name:'NQ  E-mini Nasdaq',      tickVal:5.00,   tickSize:0.25, group:'Index'},
   {sym:'ES',  name:'ES  E-mini S&P 500',      tickVal:12.50,  tickSize:0.25, group:'Index'},
@@ -3725,7 +3725,7 @@ var FOREX_INSTRUMENTS = [
   {sym:'EURJPY',name:'EUR/JPY',  group:'Forex Crosses',pip:0.01,  pipValStd:6.5,  note:'Varies with both rates'},
   {sym:'EURGBP',name:'EUR/GBP',  group:'Forex Crosses',pip:0.0001,pipValStd:12.5, note:'Varies with rate'},
   {sym:'GBPAUD',name:'GBP/AUD',  group:'Forex Crosses',pip:0.0001,pipValStd:6.5,  note:'Varies with rate'},
-  {sym:'NAS100',name:'NAS100',   group:'Indices CFD',  pip:0.1,   pipValStd:1,    note:'Most brokers $1/point per lot â use custom override if different'},
+  {sym:'NAS100',name:'NAS100',   group:'Indices CFD',  pip:0.1,   pipValStd:1,    note:'Most brokers $1/point per lot — use custom override if different'},
   {sym:'US30',  name:'US30',     group:'Indices CFD',  pip:1,     pipValStd:1,    note:'Most brokers $1/point per lot'},
   {sym:'SPX500',name:'SPX500',   group:'Indices CFD',  pip:0.1,   pipValStd:1,    note:'Most brokers $1/point per lot'},
   {sym:'UK100', name:'UK100',    group:'Indices CFD',  pip:1,     pipValStd:1,    note:'Quoted in GBP'},
@@ -3747,7 +3747,7 @@ function buildCalcsWin(){
   FUTURES_CONTRACTS.forEach(function(c){if(!ftGroups[c.group])ftGroups[c.group]=[];ftGroups[c.group].push(c);});
   var ftOpts='';
   Object.keys(ftGroups).forEach(function(g){
-    ftOpts+='<optgroup label="ââ '+g+' ââ">';
+    ftOpts+='<optgroup label="── '+g+' ──">';
     ftGroups[g].forEach(function(c){ftOpts+='<option value="'+c.sym+'">'+c.name+'</option>';});
     ftOpts+='</optgroup>';
   });
@@ -3756,7 +3756,7 @@ function buildCalcsWin(){
   FOREX_INSTRUMENTS.forEach(function(i){if(!fxGroups[i.group])fxGroups[i.group]=[];fxGroups[i.group].push(i);});
   var fxOpts='';
   Object.keys(fxGroups).forEach(function(g){
-    fxOpts+='<optgroup label="â '+g+' â">';
+    fxOpts+='<optgroup label="─ '+g+' ─">';
     fxGroups[g].forEach(function(i){fxOpts+='<option value="'+i.sym+'">'+i.name+'</option>';});
     fxOpts+='</optgroup>';
   });
@@ -3768,7 +3768,7 @@ function buildCalcsWin(){
     +'<button class="stab" id="ctab-forex" onclick="switchCalcTab(\'forex\',this)" style="flex:1;padding:9px 6px;font-size:10px;">&#128178; Forex</button>'
     +'</div>'
 
-    // ââ FUTURES PANEL ââ
+    // ── FUTURES PANEL ──
     +'<div id="calcPanelFutures" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">'
     +'<div style="padding:6px 8px;border-bottom:1px solid var(--border2);flex-shrink:0;">'
     +'<select class="qa-in" id="ftContract" onchange="ftCalc()" style="font-family:\'Geist Mono\',monospace;font-size:11px;font-weight:700;cursor:pointer;">'+ftOpts+'</select>'
@@ -3793,7 +3793,7 @@ function buildCalcsWin(){
     +'</div>'
     +'</div>'
 
-    // ââ FOREX PANEL ââ
+    // ── FOREX PANEL ──
     +'<div id="calcPanelForex" style="flex:1;display:none;flex-direction:column;overflow:hidden;">'
     +'<div style="padding:6px 8px;border-bottom:1px solid var(--border2);flex-shrink:0;">'
     +'<select class="qa-in" id="fxInstr" onchange="fxCalc()" style="font-family:\'Geist Mono\',monospace;font-size:11px;font-weight:700;cursor:pointer;">'+fxOpts+'</select>'
@@ -3885,7 +3885,7 @@ function ftCalc(){
     +'<div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--text2);margin-top:4px;">'
     +'Risk: <span style="color:var(--red);">$'+actualRiskFloor.toFixed(2)+'</span> &nbsp;|&nbsp; SL: <span style="color:var(--text);">'+ticks+'</span> ticks &nbsp;Â·&nbsp; <span style="color:var(--text);">'+points+'</span> pts &nbsp;Â·&nbsp; <span style="color:var(--red);">$'+slDollarPer1.toFixed(2)+'</span>/contract</div>'
     +'</div>'
-    +(contractsFloor===0?'<div style="background:var(--red-dim);border:1px solid var(--red);border-radius:7px;padding:8px 10px;margin-bottom:7px;font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--red);">â  SL costs $'+slDollarPer1.toFixed(2)+'/contract â too large for 1 full '+contract.sym+'<br>Try a micro contract or reduce your stop.</div>':'')
+    +(contractsFloor===0?'<div style="background:var(--red-dim);border:1px solid var(--red);border-radius:7px;padding:8px 10px;margin-bottom:7px;font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--red);">⚠ SL costs $'+slDollarPer1.toFixed(2)+'/contract — too large for 1 full '+contract.sym+'<br>Try a micro contract or reduce your stop.</div>':'')
     +(contractsCeil>0&&contractsCeil!==contractsFloor?'<div style="background:var(--panel2);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--text3);">AGGRESSIVE</div><div style="font-size:14px;font-weight:900;color:var(--text);">'+contractsCeil+' contracts</div></div><div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--red);">$'+actualRiskCeil.toFixed(2)+'</div></div>':'')
     +(microContract&&microContracts>0?'<div style="background:var(--teal-dim);border:1px solid rgba(0,212,170,.2);border-radius:7px;padding:7px 10px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--teal);">MICRO ALT</div><div style="font-size:14px;font-weight:900;color:var(--text);">'+microContracts+' '+microSym+'</div></div><div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--teal);">$'+(microContracts*ticks*microContract.tickVal).toFixed(2)+'</div></div>':'')
     +(contractsFloor>0?'<div style="background:var(--panel2);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;margin-bottom:7px;"><div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--text3);margin-bottom:5px;">TARGETS @ '+contractsFloor+' contracts</div><div style="display:flex;gap:6px;"><div style="flex:1;background:rgba(34,212,106,.06);border:1px solid rgba(34,212,106,.2);border-radius:5px;padding:6px;text-align:center;"><div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--green);">1:2</div><div style="font-size:13px;font-weight:900;color:var(--green);">$'+profit2floor+'</div></div><div style="flex:1;background:rgba(34,212,106,.1);border:1px solid rgba(34,212,106,.3);border-radius:5px;padding:6px;text-align:center;"><div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--green);">1:3</div><div style="font-size:13px;font-weight:900;color:var(--green);">$'+profit3floor+'</div></div></div></div>':'')
@@ -3972,8 +3972,8 @@ function fxCalc(){
 }
 
 
-// INIT â all definitions above, calls below
-// âââââââââââââââââââââââââââââââââââââââââââ
+// INIT — all definitions above, calls below
+// ═══════════════════════════════════════════
 load().then(function(){
 initHeader();
 buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);
@@ -4000,7 +4000,7 @@ fetchNews(false);
 </script>
 
 <script>
-// âââ ELECTRON CLICK-THROUGH HIT RECTS ââââââââââââââââââââââââ
+// ─── ELECTRON CLICK-THROUGH HIT RECTS ────────────────────────
 function updateHitRects() {
   if (!window.electronAPI || !window.electronAPI.setHitRects) return;
   var rects = [];
@@ -4032,7 +4032,7 @@ function updateHitRects() {
     });
   }
 
-  // Floating panels â always add if visible
+  // Floating panels — always add if visible
   document.querySelectorAll('.win').forEach(addRect);
 
   if (!isDockMode) {
@@ -4046,7 +4046,7 @@ function updateHitRects() {
     if (zone) {
       rects.push({ x: 0, y: 0, w: window.innerWidth, h: 20 });
     }
-    // dock bar is off-screen â do NOT add it
+    // dock bar is off-screen — do NOT add it
   } else {
     // Dock visible: add dock bar
     var dock = document.getElementById('dockBar');
@@ -4072,11 +4072,11 @@ function scheduleHitRects() {
 setInterval(updateHitRects, 500);
 window.addEventListener('resize', updateHitRects);
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// DOCK EXTRAS â session indicator, P&L, focus timer, opacity, quote
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════
+// DOCK EXTRAS — session indicator, P&L, focus timer, opacity, quote
+// ═══════════════════════════════════════════════════════════════
 
-// ââ Market session indicator ââââââââââââââââââââââââââââââââââ
+// ── Market session indicator ──────────────────────────────────
 function updateDockSession(){
   var el = document.getElementById('dockSession');
   if(!el) return;
@@ -4084,13 +4084,13 @@ function updateDockSession(){
   var utcH = now.getUTCHours(), utcM = now.getUTCMinutes();
   var mins = utcH * 60 + utcM;
   var session, color, bg;
-  if(mins >= 480 && mins < 660){        // 08:00â11:00 UTC  London open
+  if(mins >= 480 && mins < 660){        // 08:00–11:00 UTC  London open
     session='LONDON'; color='#4fc3f7'; bg='rgba(79,195,247,.12)';
-  } else if(mins >= 660 && mins < 870){ // 11:00â14:30 UTC  London+NY overlap
+  } else if(mins >= 660 && mins < 870){ // 11:00–14:30 UTC  London+NY overlap
     session='OVERLAP'; color='#e8b84b'; bg='rgba(232,184,75,.15)';
-  } else if(mins >= 870 && mins < 1200){// 14:30â20:00 UTC  NY
+  } else if(mins >= 870 && mins < 1200){// 14:30–20:00 UTC  NY
     session='NEW YORK'; color='#aed581'; bg='rgba(174,213,129,.12)';
-  } else if(mins >= 1200 || mins < 60){ // 20:00â01:00 UTC  Asia build
+  } else if(mins >= 1200 || mins < 60){ // 20:00–01:00 UTC  Asia build
     session='ASIA'; color='#ce93d8'; bg='rgba(206,147,216,.12)';
   } else {
     session='CLOSED'; color='var(--text3)'; bg='transparent';
@@ -4101,7 +4101,7 @@ function updateDockSession(){
   el.style.background = bg;
 }
 
-// ââ Dock P&L â pulls from trading state ââââââââââââââââââââââ
+// ── Dock P&L — pulls from trading state ──────────────────────
 function updateDockPnl(){
   var el = document.getElementById('dockPnl');
   if(!el) return;
@@ -4114,7 +4114,7 @@ function updateDockPnl(){
   el.style.color = total >= 0 ? 'var(--green)' : 'var(--red)';
 }
 
-// ââ Dock focus / Pomodoro âââââââââââââââââââââââââââââââââââââ
+// ── Dock focus / Pomodoro ─────────────────────────────────────
 var _dockPomoMins = 25, _dockPomoSecs = 0, _dockPomoRunning = false, _dockPomoTimer = null;
 function dockPomoClick(){
   if(_dockPomoRunning){
@@ -4144,7 +4144,7 @@ function renderDockPomo(){
   if(el) el.textContent = ((_dockPomoMins<10?'0':'')+_dockPomoMins)+':'+((_dockPomoSecs<10?'0':'')+_dockPomoSecs);
 }
 
-// ââ Dock opacity ââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Dock opacity ──────────────────────────────────────────────
 function dockSetOpacity(val){
   var v = parseInt(val) / 100;
   if(window.electronAPI && window.electronAPI.setOpacity){
@@ -4157,7 +4157,7 @@ function dockSetOpacity(val){
   if(lbl) lbl.textContent = val + '%';
 }
 
-// ââ Dock quote rotation âââââââââââââââââââââââââââââââââââââââ
+// ── Dock quote rotation ───────────────────────────────────────
 var _dockQuoteIdx = 0;
 function updateDockQuote(){
   var el = document.getElementById('dockQuote');
@@ -4170,7 +4170,7 @@ function nextDockQuote(){
   updateDockQuote();
 }
 
-// ââ Dock overlay button sync ââââââââââââââââââââââââââââââââââ
+// ── Dock overlay button sync ──────────────────────────────────
 function updateDockOverlayBtn(){
   var btn = document.getElementById('dockOverlayBtn');
   if(!btn) return;
@@ -4180,7 +4180,7 @@ function updateDockOverlayBtn(){
   btn.textContent = active ? '\u26F4 OVL ON' : '\u26F4 OVL';
 }
 
-// ââ Master dock refresh (runs every second in dock mode) ââââââ
+// ── Master dock refresh (runs every second in dock mode) ──────
 var _dockRefreshTimer = null;
 function startDockRefresh(){
   if(_dockRefreshTimer) clearInterval(_dockRefreshTimer);
@@ -4224,9 +4224,9 @@ var _origApplyDockMode = typeof applyDockMode === 'function' ? applyDockMode : n
 })();
 
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════
 // PROJECT X / TOPSTEPX INTEGRATION
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════
 function openProjectXModal(){
   // Populate firm selector
   var sel = document.getElementById('pxFirm');
@@ -4320,7 +4320,7 @@ function saveProjectXAccount(){
   renderFirmSelector && renderFirmSelector();
   renderTrading && renderTrading();
   closeProjectXModal();
-  toast('Project X account added â','success');
+  toast('Project X account added ✓','success');
 }
 
 </script>
@@ -4328,13 +4328,13 @@ function saveProjectXAccount(){
 </html>
 
 <script>
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  TRADERS VAULT â BOT ENGINE
+// ═══════════════════════════════════════════════════════════════════
+//  TRADERS VAULT — BOT ENGINE
 //  Modes: Signal Alerts Â· Auto-Trader Â· Backtest Â· Paper Trade
 //  Brokers: Tradovate Â· Project X / TopstepX Â· MetaTrader 5 Â· Rithmic
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════════
 
-// ââ Default bot config ââââââââââââââââââââââââââââââââââââââââââ
+// ── Default bot config ──────────────────────────────────────────
 var BOT_DEFAULTS = {
   mode: 'signals',          // signals | autotrader | backtest | paper
   broker: 'tradovate',      // tradovate | projectx | mt5 | rithmic
@@ -4375,12 +4375,12 @@ var botTimer  = null;
 var botBarIdx = 0;
 var botSimBars = [];        // synthetic OHLCV for backtest/paper
 
-// ââ Broker connection map ââââââââââââââââââââââââââââââââââââââââ
+// ── Broker connection map ────────────────────────────────────────
 var BROKERS = {
   tradovate: { label:'Tradovate',       color:'#00b4cc', icon:'ð', hasApi: true  },
-  projectx:  { label:'Project X',       color:'#7c3aed', icon:'âï¸', hasApi: true  },
+  projectx:  { label:'Project X',       color:'#7c3aed', icon:'⚙ï¸', hasApi: true  },
   mt5:       { label:'MetaTrader 5',    color:'#3b82f6', icon:'ð', hasApi: false },
-  rithmic:   { label:'Rithmic',         color:'#e8b84b', icon:'â¡', hasApi: false },
+  rithmic:   { label:'Rithmic',         color:'#e8b84b', icon:'⚡', hasApi: false },
 };
 var STRATEGIES = {
   ema_cross: { label:'EMA Crossover',  desc:'Fast EMA crosses Slow EMA' },
@@ -4389,7 +4389,7 @@ var STRATEGIES = {
   custom:    { label:'Custom Script',  desc:'Write your own signal logic' },
 };
 
-// ââ Build the Bot window âââââââââââââââââââââââââââââââââââââââââ
+// ── Build the Bot window ─────────────────────────────────────────
 function fmtDollar(v){return '$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
 function fmtTime(ts){var d=new Date(ts);return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);}
 function buildBotWin() {
@@ -4406,7 +4406,7 @@ function renderBotPanel() {
   var st = STRATEGIES[botCfg.strategy];
 
   b.innerHTML =
-    // ââ Tab bar ââ
+    // ── Tab bar ──
     '<div style="display:flex;border-bottom:1px solid var(--border2);background:var(--panel2);flex-shrink:0;overflow-x:auto;">'
     + tabBtn('bot-tab-signals',    'ð¡ Signals',   botCfg.mode==='signals')
     + tabBtn('bot-tab-autotrader', 'ð¤ Auto',      botCfg.mode==='autotrader')
@@ -4414,7 +4414,7 @@ function renderBotPanel() {
     + tabBtn('bot-tab-paper',      'ð Paper',     botCfg.mode==='paper')
     + '</div>'
 
-    // ââ Broker / status bar ââ
+    // ── Broker / status bar ──
     + '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--panel2);border-bottom:1px solid var(--border2);flex-shrink:0;">'
     + '<div style="width:8px;height:8px;border-radius:50%;background:' + (botCfg.connected ? '#22d46a' : '#ff4d6d') + ';box-shadow:0 0 6px ' + (botCfg.connected ? '#22d46a' : '#ff4d6d') + ';flex-shrink:0;"></div>'
     + '<span style="font-family:\'Geist Mono\',monospace;font-size:9px;color:' + br.color + ';letter-spacing:1px;">' + br.icon + ' ' + br.label.toUpperCase() + '</span>'
@@ -4422,10 +4422,10 @@ function renderBotPanel() {
     + Object.keys(BROKERS).map(function(k){ return '<option value="'+k+'"'+(botCfg.broker===k?' selected':'')+'>'+BROKERS[k].label+'</option>'; }).join('')
     + '</select>'
     + '<button onclick="botConnect()" style="height:22px;padding:0 10px;border:1px solid '+(botCfg.connected?'var(--red)':'var(--green)')+';border-radius:5px;background:transparent;color:'+(botCfg.connected?'var(--red)':'var(--green)')+';font-size:9px;font-weight:800;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;white-space:nowrap;">'
-    + (botCfg.connected ? 'â¹ Disconnect' : 'â¡ Connect') + '</button>'
+    + (botCfg.connected ? '⏹ Disconnect' : '⚡ Connect') + '</button>'
     + '</div>'
 
-    // ââ Mode body ââ
+    // ── Mode body ──
     + '<div id="bot-body" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;"></div>';
 
   renderBotMode();
@@ -4445,7 +4445,7 @@ function botSwitchTab(tabId) {
 
 function botSetBroker(b) { botCfg.broker = b; botCfg.connected = false; saveBotCfg(); renderBotPanel(); }
 
-// ââ RENDER CURRENT MODE ââââââââââââââââââââââââââââââââââââââââââ
+// ── RENDER CURRENT MODE ──────────────────────────────────────────
 function renderBotMode() {
   var body = document.getElementById('bot-body');
   if (!body) return;
@@ -4456,9 +4456,9 @@ function renderBotMode() {
   renderBotLog();
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 //  TAB 1: SIGNAL ALERTS
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 function buildSignalsTab() {
   return row2('Symbol', symSelect(), 'Timeframe', tfSelect())
     + row2('Strategy', stratSelect(), 'Params', stratParamSummary())
@@ -4470,12 +4470,12 @@ function buildSignalsTab() {
     + logBox();
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 //  TAB 2: AUTO-TRADER
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 function buildAutoTab() {
   return '<div style="padding:10px;background:rgba(255,77,109,.06);border-bottom:1px solid rgba(255,77,109,.2);flex-shrink:0;">'
-    + '<div style="font-size:9px;color:var(--red);font-weight:800;margin-bottom:2px;">â  LIVE TRADING â Real money at risk</div>'
+    + '<div style="font-size:9px;color:var(--red);font-weight:800;margin-bottom:2px;">⚠ LIVE TRADING — Real money at risk</div>'
     + '<div style="font-size:9px;color:var(--text3);">Bot will place real orders via your broker API. Test on sim/demo first.</div>'
     + '</div>'
     + row2('Symbol', symSelect(), 'Timeframe', tfSelect())
@@ -4500,9 +4500,9 @@ function buildAutoTab() {
     + logBox();
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 //  TAB 3: BACKTEST
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 function buildBacktestTab() {
   return row2('Symbol', symSelect(), 'Strategy', stratSelect())
     + stratParamFields()
@@ -4512,23 +4512,23 @@ function buildBacktestTab() {
     + labelNum('Target (ticks)', 'botCfg.takeProfit', botCfg.takeProfit)
     + '</div>'
     + '<div style="padding:0 10px 8px;display:flex;gap:6px;margin-top:8px;">'
-    + '<button onclick="runBacktest()" style="flex:1;padding:9px;background:var(--purple);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;">â¶ Run Backtest (500 bars)</button>'
+    + '<button onclick="runBacktest()" style="flex:1;padding:9px;background:var(--purple);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;">▶ Run Backtest (500 bars)</button>'
     + '</div>'
     + backtestResults()
     + tradeTable()
     + logBox();
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 //  TAB 4: PAPER TRADE
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────────
 function buildPaperTab() {
   return '<div style="padding:8px 10px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;flex-shrink:0;">'
     + stat('P&L', (botStats.pnl>=0?'+':'')+fmtDollar(botStats.pnl), botStats.pnl>=0?'var(--green)':'var(--red)')
     + stat('Trades', botStats.trades, 'var(--text)')
-    + stat('Win Rate', botStats.trades>0?Math.round(botStats.wins/botStats.trades*100)+'%':'â', 'var(--teal)')
-    + stat('Avg W', botStats.wins>0?fmtDollar(botStats.avgWin||0):'â', 'var(--green)')
-    + stat('Avg L', botStats.losses>0?'-'+fmtDollar(Math.abs(botStats.avgLoss||0)):'â', 'var(--red)')
+    + stat('Win Rate', botStats.trades>0?Math.round(botStats.wins/botStats.trades*100)+'%':'—', 'var(--teal)')
+    + stat('Avg W', botStats.wins>0?fmtDollar(botStats.avgWin||0):'—', 'var(--green)')
+    + stat('Avg L', botStats.losses>0?'-'+fmtDollar(Math.abs(botStats.avgLoss||0)):'—', 'var(--red)')
     + '</div>'
     + row2('Symbol', symSelect(), 'Timeframe', tfSelect())
     + row2('Strategy', stratSelect(), 'Contract Size', numInput('botCfg.contractSize', botCfg.contractSize, 1, 20))
@@ -4541,7 +4541,7 @@ function buildPaperTab() {
     + logBox();
 }
 
-// ââ UI helpers âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── UI helpers ───────────────────────────────────────────────────
 function row2(l1,c1,l2,c2){
   return '<div style="padding:6px 10px;border-bottom:1px solid var(--border2);display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;">'
     +'<div><label style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--text3);letter-spacing:1px;display:block;margin-bottom:3px;">'+l1+'</label>'+c1+'</div>'
@@ -4601,14 +4601,14 @@ function stratParamFields(){
 }
 function runBtn(fn, running){
   return '<button onclick="'+fn+'()" style="flex:1;padding:9px;background:'+(running?'var(--red)':'var(--green)')+';border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;">'
-    + (running ? 'â¹ Stop Bot' : 'â¶ Start Bot') + '</button>';
+    + (running ? '⏹ Stop Bot' : '▶ Start Bot') + '</button>';
 }
 function stat(l,v,c){
   return '<div style="flex:1;text-align:center;"><div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--text3);letter-spacing:1px;margin-bottom:2px;">'+l+'</div><div style="font-family:\'Geist Mono\',monospace;font-size:11px;font-weight:900;color:'+c+';">'+v+'</div></div>';
 }
 function signalFeed(){
   var sigs = botLog.filter(function(l){return l.type==='signal';}).slice(-6).reverse();
-  if(!sigs.length) return '<div style="padding:20px;text-align:center;font-family:\'Geist Mono\',monospace;font-size:9px;color:var(--text3);">No signals yet â start the bot above</div>';
+  if(!sigs.length) return '<div style="padding:20px;text-align:center;font-family:\'Geist Mono\',monospace;font-size:9px;color:var(--text3);">No signals yet — start the bot above</div>';
   return '<div style="flex:1;overflow-y:auto;padding:6px 8px;display:flex;flex-direction:column;gap:4px;">'
     + sigs.map(function(s){
         var isLong = s.msg.indexOf('LONG')>=0;
@@ -4632,7 +4632,7 @@ function tradeTable(){
         return '<div style="display:grid;grid-template-columns:60px 50px 45px 45px 55px 60px;gap:2px;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);">'
           +'<div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--text3);">'+fmtTime(t.ts)+'</div>'
           +'<div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--text);">'+t.symbol+'</div>'
-          +'<div style="font-size:9px;font-weight:800;color:'+(t.dir==='long'?'var(--green)':'var(--red)')+';">'+(t.dir==='long'?'â² L':'â¼ S')+'</div>'
+          +'<div style="font-size:9px;font-weight:800;color:'+(t.dir==='long'?'var(--green)':'var(--red)')+';">'+(t.dir==='long'?'▲ L':'▼ S')+'</div>'
           +'<div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:var(--text);">'+t.qty+'</div>'
           +'<div style="font-family:\'Geist Mono\',monospace;font-size:8px;font-weight:800;color:'+col+';">'+(t.pnl>=0?'+':'')+fmtDollar(t.pnl)+'</div>'
           +'<div style="font-size:8px;color:'+col+';">'+t.status+'</div>'
@@ -4644,7 +4644,7 @@ function backtestResults(){
   if(!botStats.ran) return '';
   var wr = botStats.trades > 0 ? Math.round(botStats.wins/botStats.trades*100) : 0;
   return '<div style="padding:10px;background:var(--panel2);border-bottom:1px solid var(--border2);flex-shrink:0;">'
-    +'<div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">BACKTEST RESULTS â 500 bars</div>'
+    +'<div style="font-family:\'Geist Mono\',monospace;font-size:7px;color:var(--text3);letter-spacing:2px;margin-bottom:8px;">BACKTEST RESULTS — 500 bars</div>'
     +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">'
     + stat('NET P&L', (botStats.pnl>=0?'+':'')+fmtDollar(botStats.pnl), botStats.pnl>=0?'var(--green)':'var(--red)')
     + stat('WIN RATE', wr+'%', wr>55?'var(--green)':wr>45?'var(--gold)':'var(--red)')
@@ -4662,21 +4662,21 @@ function logBox(){
     +'</div>';
 }
 
-// ââ CONNECT / DISCONNECT âââââââââââââââââââââââââââââââââââââââââ
+// ── CONNECT / DISCONNECT ─────────────────────────────────────────
 function botConnect() {
   if(botCfg.connected){ botCfg.connected=false; addLog('Disconnected from '+BROKERS[botCfg.broker].label,'info'); }
   else {
     addLog('Connecting to '+BROKERS[botCfg.broker].label+'...','info');
     setTimeout(function(){
       botCfg.connected = true;
-      addLog('â Connected to '+BROKERS[botCfg.broker].label+' (simulated in demo)','info');
+      addLog('✓ Connected to '+BROKERS[botCfg.broker].label+' (simulated in demo)','info');
       saveBotCfg(); renderBotPanel();
     }, 800);
   }
   saveBotCfg(); renderBotPanel();
 }
 
-// ââ START / STOP âââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── START / STOP ─────────────────────────────────────────────────
 function botStartSignals(){ botToggle('signals'); }
 function botStartAuto()   { botToggle('autotrader'); }
 function botStartPaper()  { botToggle('paper'); }
@@ -4690,13 +4690,13 @@ function botToggle(mode) {
     if(!botCfg.connected){ addLog('Connect to a broker first','error'); renderBotMode(); return; }
     botCfg.running=true;
     botSimBars=genSimBars(100);
-    addLog('Bot started â '+STRATEGIES[botCfg.strategy].label+' on '+botCfg.symbol+' '+botCfg.timeframe+'m','info');
+    addLog('Bot started — '+STRATEGIES[botCfg.strategy].label+' on '+botCfg.symbol+' '+botCfg.timeframe+'m','info');
     botTimer = setInterval(botTick, 1800);
   }
   saveBotCfg(); renderBotMode();
 }
 
-// ââ BOT TICK âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── BOT TICK ─────────────────────────────────────────────────────
 function botTick() {
   // Generate next bar
   var lastBar = botSimBars[botSimBars.length-1];
@@ -4723,7 +4723,7 @@ function botTick() {
     dir: sig, qty: botCfg.contractSize,
     entry: newBar.close.toFixed(2),
     pnl: pnl,
-    status: won ? 'â TP' : 'â SL'
+    status: won ? '✓ TP' : '✗ SL'
   };
 
   if(botCfg.mode !== 'signals'){
@@ -4732,7 +4732,7 @@ function botTick() {
     botStats.pnl = +(botStats.pnl + pnl).toFixed(2);
     if(pnl>0){ botStats.wins++; botStats.avgWin = +(botStats.pnl / botStats.wins).toFixed(2); }
     else      { botStats.losses++; botStats.avgLoss = +(Math.abs(botStats.pnl) / botStats.losses).toFixed(2); }
-    addLog((sig==='long'?'â² LONG':'â¼ SHORT')+' '+botCfg.symbol+' @ '+newBar.close.toFixed(2)+' â '+(pnl>=0?'+':'')+fmtDollar(pnl),'trade');
+    addLog((sig==='long'?'▲ LONG':'▼ SHORT')+' '+botCfg.symbol+' @ '+newBar.close.toFixed(2)+' → '+(pnl>=0?'+':'')+fmtDollar(pnl),'trade');
 
     // Push P&L to trading accounts if in auto mode
     if(botCfg.mode==='autotrader' && botCfg.autoExecute && state.accounts.length){
@@ -4742,22 +4742,22 @@ function botTick() {
 
     // Check daily limits
     if(botStats.pnl <= -botCfg.maxDailyLoss){
-      addLog('â  Max daily loss hit â stopping bot','error');
+      addLog('⚠ Max daily loss hit — stopping bot','error');
       clearInterval(botTimer); botTimer=null; botCfg.running=false;
     }
     if(botStats.pnl >= botCfg.maxDailyProfit){
-      addLog('ð¯ Daily profit target hit â stopping bot','info');
+      addLog('ð¯ Daily profit target hit — stopping bot','info');
       clearInterval(botTimer); botTimer=null; botCfg.running=false;
     }
   } else {
-    addLog((sig==='long'?'ð¢ LONG SIGNAL':'ð´ SHORT SIGNAL')+' â '+botCfg.symbol+' @ '+newBar.close.toFixed(2),'signal');
+    addLog((sig==='long'?'ð¢ LONG SIGNAL':'ð´ SHORT SIGNAL')+' — '+botCfg.symbol+' @ '+newBar.close.toFixed(2),'signal');
   }
 
   saveBotCfg();
   renderBotMode();
 }
 
-// ââ BACKTEST ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── BACKTEST ──────────────────────────────────────────────────────
 function runBacktest(){
   addLog('Running backtest (500 bars)...','info');
   var bars = genSimBars(500);
@@ -4778,16 +4778,16 @@ function runBacktest(){
     runningPnl += pnl;
     if(runningPnl > peak) peak = runningPnl;
     if(peak - runningPnl > (botStats.maxDD||0)) botStats.maxDD = peak - runningPnl;
-    botTrades.push({ ts: bars[i].ts, symbol:botCfg.symbol, dir:sig, qty:botCfg.contractSize, entry:bars[i].close.toFixed(2), pnl:pnl, status: won?'â TP':'â SL' });
+    botTrades.push({ ts: bars[i].ts, symbol:botCfg.symbol, dir:sig, qty:botCfg.contractSize, entry:bars[i].close.toFixed(2), pnl:pnl, status: won?'✓ TP':'✗ SL' });
     botStats.trades++;
     botStats.pnl = +runningPnl.toFixed(2);
     if(pnl>0) botStats.wins++; else botStats.losses++;
   }
-  addLog('Backtest complete â '+botStats.trades+' trades, P&L: '+(botStats.pnl>=0?'+':'')+fmtDollar(botStats.pnl),'trade');
+  addLog('Backtest complete — '+botStats.trades+' trades, P&L: '+(botStats.pnl>=0?'+':'')+fmtDollar(botStats.pnl),'trade');
   renderBotMode();
 }
 
-// ââ STRATEGY ENGINE âââââââââââââââââââââââââââââââââââââââââââââââ
+// ── STRATEGY ENGINE ───────────────────────────────────────────────
 function evalStrategy(bars){
   if(bars.length < 30) return null;
   var closes = bars.map(function(b){return b.close;});
@@ -4819,7 +4819,7 @@ function evalStrategy(bars){
   return null;
 }
 
-// ââ INDICATORS ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── INDICATORS ────────────────────────────────────────────────────
 function ema(data, period){
   if(data.length < period) return data[data.length-1];
   var k = 2/(period+1), e = data.slice(0,period).reduce(function(a,b){return a+b;},0)/period;
@@ -4837,7 +4837,7 @@ function rsi(data, period){
   return 100 - 100/(1+rs);
 }
 
-// ââ SIM BAR GENERATOR ââââââââââââââââââââââââââââââââââââââââââââ
+// ── SIM BAR GENERATOR ────────────────────────────────────────────
 function genSimBars(n){
   var bars=[], price=18000+(Math.random()*6000);
   for(var i=0;i<n;i++){
@@ -4854,7 +4854,7 @@ function nextBar(last){
   return {ts:Date.now(),open:+o.toFixed(2),high:+h.toFixed(2),low:+l.toFixed(2),close:+c.toFixed(2),vol:Math.round(200+Math.random()*800)};
 }
 
-// ââ UTILS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── UTILS ─────────────────────────────────────────────────────────
 function addLog(msg,type){botLog.push({ts:Date.now(),type:type||'info',msg:msg});if(botLog.length>100)botLog.shift();}
 function scheduleBotLog(){/* log renders with renderBotMode */}
 function renderBotLog(){ var el=document.getElementById('bot-log'); if(el){ var html=botLog.slice(-20).reverse().map(function(l){var c=l.type==='error'?'var(--red)':l.type==='signal'?'var(--gold)':l.type==='trade'?'var(--green)':'var(--text3)';return '<div style="font-family:\'Geist Mono\',monospace;font-size:8px;color:'+c+';padding:1px 0;"><span style="color:var(--text3);margin-right:6px;">'+fmtTime(l.ts)+'</span>'+l.msg+'</div>';}).join('');el.innerHTML=html;} }
@@ -4863,7 +4863,7 @@ function resetPaper(){ botTrades=[]; botStats={pnl:0,wins:0,losses:0,trades:0}; 
 </script>
 
 <script>
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════════
 //  NEW FEATURES v1.4.0
 //  1. Discord webhook integration
 //  2. Import / Export data
@@ -4871,15 +4871,15 @@ function resetPaper(){ botTrades=[]; botStats={pnl:0,wins:0,losses:0,trades:0}; 
 //  4. Economic calendar sync in dock
 //  5. Global show/hide hotkey (Ctrl+Shift+H)
 //  6. Daily checklist auto-reset
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════════
 
-// âââ 1. DISCORD WEBHOOK ââââââââââââââââââââââââââââââââââââââââââ
+// ─── 1. DISCORD WEBHOOK ──────────────────────────────────────────
 
 function discordSend(embeds) {
   var url = cfg.discordWebhook;
   if (!url || !url.startsWith('https://discord.com/api/webhooks/')) return Promise.resolve();
   var payload = {
-    username: cfg.discordBotName || 'Traders Vault â Vaulted Desk',
+    username: cfg.discordBotName || 'Traders Vault — Vaulted Desk',
     avatar_url: 'https://i.imgur.com/4M34hi2.png',
     embeds: embeds
   };
@@ -4894,15 +4894,15 @@ function testDiscordWebhook() {
   var st = document.getElementById('discordStatus');
   if (st) { st.style.color = 'var(--text3)'; st.textContent = 'Sending test...'; }
   discordSend([{
-    title: 'â Traders Vault â Vaulted Desk Connected',
+    title: '✅ Traders Vault — Vaulted Desk Connected',
     description: 'Your Discord integration is working correctly.',
     color: 0x22d46a,
-    footer: { text: 'Traders Vault â Vaulted Desk v1.7.3' },
+    footer: { text: 'Traders Vault — Vaulted Desk v1.7.3' },
     timestamp: new Date().toISOString()
   }]).then(function() {
-    if (st) { st.style.color = 'var(--green)'; st.textContent = 'â Test message sent successfully'; }
+    if (st) { st.style.color = 'var(--green)'; st.textContent = '✓ Test message sent successfully'; }
   }).catch(function() {
-    if (st) { st.style.color = 'var(--red)'; st.textContent = 'â Failed â check webhook URL'; }
+    if (st) { st.style.color = 'var(--red)'; st.textContent = '✗ Failed — check webhook URL'; }
   });
 }
 
@@ -4916,7 +4916,7 @@ function saveDiscordSettings() {
   cfg.dcDailySummary = !!(document.getElementById('dcDailySummary')||{}).checked;
   saveCfg();
   var st = document.getElementById('discordStatus');
-  if (st) { st.style.color = 'var(--green)'; st.textContent = 'â Saved'; setTimeout(function(){ if(st) st.textContent=''; }, 2000); }
+  if (st) { st.style.color = 'var(--green)'; st.textContent = '✓ Saved'; setTimeout(function(){ if(st) st.textContent=''; }, 2000); }
   toast('Discord settings saved','success');
 }
 
@@ -4926,13 +4926,13 @@ function discordPropUpdate(account, label) {
   var pnl = account.pnl || 0;
   var sign = pnl >= 0 ? '+' : '';
   discordSend([{
-    title: (pnl >= 0 ? 'ð' : 'ð') + ' Prop Account Update â ' + (account.firmName || 'Unknown Firm'),
+    title: (pnl >= 0 ? 'ð' : 'ð') + ' Prop Account Update — ' + (account.firmName || 'Unknown Firm'),
     description: '**' + (account.label || account.acType || 'Account') + '**',
     color: pnl >= 0 ? 0x22d46a : 0xff4d6d,
     fields: [
       { name: 'Balance',    value: '$' + (account.balance||0).toLocaleString(), inline: true },
       { name: 'P&L',        value: sign + '$' + Math.abs(pnl).toLocaleString(), inline: true },
-      { name: 'Type',       value: account.acType || 'â', inline: true }
+      { name: 'Type',       value: account.acType || '—', inline: true }
     ],
     footer: { text: 'Traders Vault' },
     timestamp: new Date().toISOString()
@@ -4943,11 +4943,11 @@ function discordPropUpdate(account, label) {
 function discordNewsAlert(event) {
   if (!cfg.dcNewsAlerts || !cfg.discordWebhook) return;
   discordSend([{
-    title: 'â ï¸ High-Impact News: ' + event.title,
+    title: '⚠ï¸ High-Impact News: ' + event.title,
     description: event.forecast ? 'Forecast: **' + event.forecast + '**' + (event.previous ? ' | Previous: ' + event.previous : '') : 'No forecast available',
     color: 0xff4d6d,
     fields: [
-      { name: 'Currency', value: event.country || 'â', inline: true },
+      { name: 'Currency', value: event.country || '—', inline: true },
       { name: 'Time',     value: new Date(event.date).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',timeZoneName:'short'}), inline: true },
       { name: 'Impact',   value: 'ð´ High', inline: true }
     ],
@@ -4968,7 +4968,7 @@ function discordDailySummary() {
     return { name: f.name, value: (fp>=0?'+':'') + '$' + Math.abs(fp).toLocaleString(), inline: true };
   });
   discordSend([{
-    title: 'ð Daily Trading Summary â ' + new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),
+    title: 'ð Daily Trading Summary — ' + new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}),
     color: totalPnl >= 0 ? 0x22d46a : 0xff4d6d,
     fields: [
       { name: 'Total P&L', value: '**' + sign + '$' + Math.abs(totalPnl).toLocaleString() + '**', inline: false }
@@ -5021,7 +5021,7 @@ if (_origAddLog) {
   };
 }
 
-// âââ 2. IMPORT / EXPORT DATA âââââââââââââââââââââââââââââââââââââ
+// ─── 2. IMPORT / EXPORT DATA ─────────────────────────────────────
 
 function exportAllData() {
   var data = {
@@ -5050,7 +5050,7 @@ function exportAllData() {
   document.body.appendChild(a);
   a.click();
   setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-  toast('Data exported â','success');
+  toast('Data exported ✓','success');
 }
 
 function importAllData(input) {
@@ -5080,7 +5080,7 @@ function importAllData(input) {
         applyAllCfg();
       }
       save();
-      if (st) { st.style.color='var(--green)'; st.textContent='â Import successful â reloading panels...'; }
+      if (st) { st.style.color='var(--green)'; st.textContent='✓ Import successful — reloading panels...'; }
       setTimeout(function() {
         // Re-render all panels
         if(typeof renderTrading==='function')      renderTrading();
@@ -5089,17 +5089,17 @@ function importAllData(input) {
         if(typeof renderTodos==='function')        renderTodos();
         if(typeof renderAccountability==='function') renderAccountability();
         closeSettings();
-        toast('Import complete â','success');
+        toast('Import complete ✓','success');
       }, 800);
     } catch(err) {
-      if (st) { st.style.color='var(--red)'; st.textContent='â Error: ' + err.message; }
+      if (st) { st.style.color='var(--red)'; st.textContent='✗ Error: ' + err.message; }
       toast('Import failed: ' + err.message, 'error');
     }
   };
   reader.readAsText(file);
 }
 
-// âââ 3. SESSION TIMER IN DOCK ââââââââââââââââââââââââââââââââââââ
+// ─── 3. SESSION TIMER IN DOCK ────────────────────────────────────
 
 var _sessionStart = null;
 var _lastSession  = null;
@@ -5139,7 +5139,7 @@ function updateDockSessionTimer() {
   timerEl.style.color = 'var(--text)';
 }
 
-// âââ 4. ECONOMIC CALENDAR SYNC IN DOCK ââââââââââââââââââââââââââ
+// ─── 4. ECONOMIC CALENDAR SYNC IN DOCK ──────────────────────────
 
 var _nextNewsAlertSent = {};
 
@@ -5177,7 +5177,7 @@ function updateDockNextNews() {
   labelEl.style.color = diff <= 15 ? 'var(--red)' : diff <= 30 ? 'var(--gold)' : 'var(--text2)';
 
   var wrap = document.getElementById('dockNextNews');
-  if (wrap) wrap.title = next.title + '\n' + t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + ' UTC\nForecast: ' + (next.forecast||'â') + ' | Previous: ' + (next.previous||'â');
+  if (wrap) wrap.title = next.title + '\n' + t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + ' UTC\nForecast: ' + (next.forecast||'—') + ' | Previous: ' + (next.previous||'—');
 
   // Discord alert: 15 min before high-impact event
   if (diff > 0 && diff <= 15) {
@@ -5219,7 +5219,7 @@ setTimeout(function() {
   updateDockNextNews(); // initial
 }, 500);
 
-// âââ 5. GLOBAL SHOW/HIDE HOTKEY (Ctrl+Shift+H) ââââââââââââââââââ
+// ─── 5. GLOBAL SHOW/HIDE HOTKEY (Ctrl+Shift+H) ──────────────────
 
 var _appHidden = false;
 function toggleAppVisibility() {
@@ -5235,10 +5235,10 @@ function toggleAppVisibility() {
     window.electronAPI.setHitRects(_appHidden ? [] : null);
     if (!_appHidden) scheduleHitRects();
   }
-  if (!_appHidden) toast('App visible â Ctrl+Shift+H to hide', 'info');
+  if (!_appHidden) toast('App visible — Ctrl+Shift+H to hide', 'info');
 }
 
-// âââ 6. DAILY CHECKLIST AUTO-RESET ââââââââââââââââââââââââââââââ
+// ─── 6. DAILY CHECKLIST AUTO-RESET ──────────────────────────────
 
 var _lastResetDay = localStorage.getItem('tv_lastReset') || '';
 
@@ -5267,10 +5267,10 @@ setInterval(checkDailyReset, 60000);
 
 </script>
 <script>
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  TRADERS VAULT â AUTH + LICENCE + AUTO-UPDATE
+// ═══════════════════════════════════════════════════════════════════
+//  TRADERS VAULT — AUTH + LICENCE + AUTO-UPDATE
 //  Connects to platform API for login, licence validation, updates
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════════
 
 var TV_API = 'https://tradersvault.app/api';
 var SUPABASE_URL = 'https://rbytvjhrrsjcasfnokag.supabase.co';
@@ -5279,9 +5279,9 @@ var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 var tvSession = null; // { token, user, licence }
 var tvUpdateInfo = null;
 
-// ââ Startup: check saved session or show login ââââââââââââââââââ
+// ── Startup: check saved session or show login ──────────────────
 
-// ââ P&L Snapshot for heartbeat ââââââââââââââââââââââââââââââââââ
+// ── P&L Snapshot for heartbeat ──────────────────────────────────
 function getPnlSnapshot() {
   try {
     var firms = state.firms || [];
@@ -5315,7 +5315,7 @@ function getPnlSnapshot() {
   } catch(e) { return null; }
 }
 
-// ââ Periodic heartbeat (every 5 minutes) ââââââââââââââââââââââââ
+// ── Periodic heartbeat (every 5 minutes) ────────────────────────
 function startHeartbeat() {
   setInterval(async function() {
     if (!tvSession || !tvSession.token) return;
@@ -5376,7 +5376,7 @@ function hideLoginScreen() {
   if (el) { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(function(){ el.style.display='none'; }, 400); }
 }
 
-// ââ Auth tab switching ââââââââââââââââââââââââââââââââââââââââââ
+// ── Auth tab switching ──────────────────────────────────────────
 function switchAuthTab(tab) {
   var forms = { login:'loginForm', signup:'signupForm', forgot:'forgotForm' };
   Object.keys(forms).forEach(function(k) {
@@ -5395,7 +5395,7 @@ function setAuthStatus(msg, color) {
   if (el) { el.textContent = msg; el.style.color = color || '#5f5f78'; }
 }
 
-// ââ Sign In âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Sign In ─────────────────────────────────────────────────────
 async function doLogin() {
   var email = (document.getElementById('loginEmail')||{}).value||'';
   var pass  = (document.getElementById('loginPass')||{}).value||'';
@@ -5416,17 +5416,17 @@ async function doLogin() {
     if (!validate) { setAuthStatus('Could not verify licence', '#ff4d6d'); return; }
 
     saveSession(d.access_token, d.expires_in || 3600, validate);
-    setAuthStatus('â Welcome back!', '#22d46a');
+    setAuthStatus('✓ Welcome back!', '#22d46a');
     setTimeout(hideLoginScreen, 600);
     applyLicenceBadge(validate);
     checkForUpdate(validate);
     startHeartbeat();
   } catch(e) {
-    setAuthStatus('Connection error â check internet', '#ff4d6d');
+    setAuthStatus('Connection error — check internet', '#ff4d6d');
   }
 }
 
-// ââ Sign Up âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Sign Up ─────────────────────────────────────────────────────
 async function doSignup() {
   var name  = (document.getElementById('signupName')||{}).value||'';
   var email = (document.getElementById('signupEmail')||{}).value||'';
@@ -5447,17 +5447,17 @@ async function doSignup() {
     if (d.access_token) {
       var validate = await validateToken(d.access_token);
       saveSession(d.access_token, d.expires_in || 3600, validate);
-      setAuthStatus('â Account created!', '#22d46a');
+      setAuthStatus('✓ Account created!', '#22d46a');
       setTimeout(hideLoginScreen, 600);
     } else {
-      setAuthStatus('â Check your email to confirm your account', '#22d46a');
+      setAuthStatus('✓ Check your email to confirm your account', '#22d46a');
     }
   } catch(e) {
     setAuthStatus('Connection error', '#ff4d6d');
   }
 }
 
-// ââ Forgot Password âââââââââââââââââââââââââââââââââââââââââââââ
+// ── Forgot Password ─────────────────────────────────────────────
 async function doForgot() {
   var email = (document.getElementById('forgotEmail')||{}).value||'';
   if (!email) { setAuthStatus('Enter your email', '#ff4d6d'); return; }
@@ -5468,13 +5468,13 @@ async function doForgot() {
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
       body: JSON.stringify({ email })
     });
-    setAuthStatus('â Reset link sent â check your email', '#22d46a');
+    setAuthStatus('✓ Reset link sent — check your email', '#22d46a');
   } catch(e) { setAuthStatus('Error sending reset link', '#ff4d6d'); }
 }
 
-// Skip login disabled â sign-up required
+// Skip login disabled — sign-up required
 
-// ââ Validate token with our API âââââââââââââââââââââââââââââââââ
+// ── Validate token with our API ─────────────────────────────────
 async function validateToken(token) {
   try {
     var r = await fetch(TV_API + '/validate', {
@@ -5528,17 +5528,17 @@ function applyServerBranding(b) {
       var banner = document.createElement('div');
       banner.id = 'adminBanner';
       banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:var(--gold,#e8b84b);color:#07070a;text-align:center;padding:7px 16px;font-size:12px;font-weight:700;';
-      banner.innerHTML = b.banner + ' <span style="opacity:.5;cursor:pointer;margin-left:12px;" onclick="this.parentElement.remove()">â</span>';
+      banner.innerHTML = b.banner + ' <span style="opacity:.5;cursor:pointer;margin-left:12px;" onclick="this.parentElement.remove()">✕</span>';
       document.body.prepend(banner);
     } else {
-      existing.innerHTML = b.banner + ' <span style="opacity:.5;cursor:pointer;margin-left:12px;" onclick="this.parentElement.remove()">â</span>';
+      existing.innerHTML = b.banner + ' <span style="opacity:.5;cursor:pointer;margin-left:12px;" onclick="this.parentElement.remove()">✕</span>';
     }
   }
   // Store for gains card
   window._serverBranding = b;
 }
 
-// ââ Save session ââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Save session ────────────────────────────────────────────────
 function saveSession(token, expiresIn, validate) {
   var thirtyDays = 30 * 24 * 60 * 60;
   var expiry = Math.max(expiresIn || 3600, thirtyDays);
@@ -5555,7 +5555,7 @@ function saveSession(token, expiresIn, validate) {
   }
 }
 
-// ââ Licence badge in topbar âââââââââââââââââââââââââââââââââââââ
+// ── Licence badge in topbar ─────────────────────────────────────
 function applyLicenceBadge(v) {
   if (!v) return;
   // Remove old badge
@@ -5583,15 +5583,15 @@ function applyLicenceBadge(v) {
   topbar.appendChild(badge);
 }
 
-// ââ Update system âââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Update system ───────────────────────────────────────────────
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
   // compare with current app version
-  var current = '1.5.4';
+  var current = '1.7.3';
   if (v.latest_version === current) return;
   // Attach fields update banner expects
   v.update_available = true;
-  v.update_url = v.latest_url;
+  v.update_url = v.update_url || v.latest_url || v.download_url;
   v.update_mandatory = v.force_update;
   tvUpdateInfo = v;
   showUpdateBanner(v);
@@ -5602,7 +5602,7 @@ function showUpdateBanner(v) {
   if (!banner) return;
   var title = document.getElementById('updateBannerTitle');
   var notes = document.getElementById('updateBannerNotes');
-  if (title) title.textContent = 'v' + v.latest_version + ' is available' + (v.update_mandatory ? ' â Required' : '');
+  if (title) title.textContent = 'v' + v.latest_version + ' is available' + (v.update_mandatory ? ' — Required' : '');
   if (notes) notes.textContent = v.update_notes ? v.update_notes.slice(0, 100) + '...' : 'New version ready to download';
   banner.style.display = 'flex';
 
@@ -5618,13 +5618,13 @@ function doUpdate() {
     toast('No update URL found', 'error');
     return;
   }
-  // Open download URL â Electron will handle shell.openExternal
+  // Open download URL — Electron will handle shell.openExternal
   if (window.electronAPI && window.electronAPI.openExternal) {
     window.electronAPI.openExternal(tvUpdateInfo.update_url);
   } else {
     window.open(tvUpdateInfo.update_url, '_blank');
   }
-  toast('Download started â install when ready', 'info');
+  toast('Download started — install when ready', 'info');
 }
 
 function dismissUpdate() {
@@ -5634,7 +5634,7 @@ function dismissUpdate() {
   localStorage.setItem('tv_update_dismissed', Date.now().toString());
 }
 
-// ââ Account modal (upgrade / sign out) âââââââââââââââââââââââââ
+// ── Account modal (upgrade / sign out) ─────────────────────────
 function showAccountModal() {
   if (!tvSession || !tvSession.user) return;
   var v = tvSession.user;
@@ -5652,7 +5652,7 @@ function showAccountModal() {
   modal.innerHTML = '<div class="modal" style="width:360px;">'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
     + '<div style="font-size:15px;font-weight:900;">My Account</div>'
-    + '<button onclick="document.getElementById(\'tvAccountModal\').remove()" class="modal-x">â</button>'
+    + '<button onclick="document.getElementById(\'tvAccountModal\').remove()" class="modal-x">✕</button>'
     + '</div>'
     + '<div style="padding:12px;background:var(--panel2);border-radius:8px;margin-bottom:14px;">'
     + '<div style="font-size:13px;font-weight:700;">' + (v.full_name || 'Trader') + '</div>'
@@ -5682,10 +5682,10 @@ function tvSignOut() {
 }
 
 function showUpgradePrompt(v) {
-  toast('Licence expired â sign in to upgrade â', 'warn');
+  toast('Licence expired — sign in to upgrade ↗', 'warn');
 }
 
-// ââ Heartbeat every 5 minutes âââââââââââââââââââââââââââââââââââ
+// ── Heartbeat every 5 minutes ───────────────────────────────────
 setInterval(function() {
   if (tvSession && tvSession.token && !tvSession.skipped) {
     validateToken(tvSession.token).then(function(v) {
@@ -5698,9 +5698,9 @@ setInterval(function() {
 </script>
 
 <script>
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  TEMPLATES SYSTEM â Save/Load/Delete custom panel layouts
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════════
+//  TEMPLATES SYSTEM — Save/Load/Delete custom panel layouts
+// ═══════════════════════════════════════════════════════════════════
 
 var _templates = (function() {
   try { return JSON.parse(localStorage.getItem('tv_templates') || '[]'); } catch(e) { return []; }
@@ -5830,8 +5830,8 @@ function renderTemplatesList() {
       + tpl.panelCount + ' PANELS OPEN Â· SAVED ' + tpl.created + '</div>'
       + '</div>'
       + '<button onclick="loadTemplate(\'' + tpl.id + '\')" style="height:28px;padding:0 12px;background:var(--gold);border:none;border-radius:6px;color:#07070a;font-size:10px;font-weight:800;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;white-space:nowrap;">Load</button>'
-      + '<button onclick="renameTemplate(\'' + tpl.id + '\')" style="height:28px;padding:0 9px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;" title="Rename">â</button>'
-      + '<button onclick="deleteTemplate(\'' + tpl.id + '\')" style="height:28px;padding:0 9px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text3);font-size:10px;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;" title="Delete">â</button>'
+      + '<button onclick="renameTemplate(\'' + tpl.id + '\')" style="height:28px;padding:0 9px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;" title="Rename">✎</button>'
+      + '<button onclick="deleteTemplate(\'' + tpl.id + '\')" style="height:28px;padding:0 9px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text3);font-size:10px;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;" title="Delete">✕</button>'
       + '</div>'
       + '<div style="font-size:10px;color:var(--text3);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + panelNames + '">' + panelNames + '</div>'
       + '</div>';
@@ -5869,12 +5869,12 @@ if (_origSwitchSettingsTab) {
 </script>
 
 <script>
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  GAINS CARD â Generate shareable P&L graphic from Trading panel
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ═══════════════════════════════════════════════════════════════════
+//  GAINS CARD — Generate shareable P&L graphic from Trading panel
+// ═══════════════════════════════════════════════════════════════════
 
 function openGainsCard() {
-  // ââ Compute stats from all accounts ââââââââââââââââââââââââââ
+  // ── Compute stats from all accounts ──────────────────────────
   var allAccounts = state.accounts || [];
   var totalPnl    = 0;
   var dayMap      = {};
@@ -5902,8 +5902,8 @@ function openGainsCard() {
   var winRate    = totalDays > 0 ? Math.round(winDays / totalDays * 100) : 0;
   var isPos      = totalPnl >= 0;
   var pnlStr     = (isPos ? '+' : '-') + '$' + Math.abs(totalPnl).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-  var bestDayStr = bestDay > 0 ? '$' + bestDay.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'â';
-  var winRateStr = totalDays > 0 ? winRate + '%' : 'â';
+  var bestDayStr = bestDay > 0 ? '$' + bestDay.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
+  var winRateStr = totalDays > 0 ? winRate + '%' : '—';
   var today      = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}).toUpperCase();
   // Use server branding if admin pushed it
   var sb = window._serverBranding || {};
@@ -5922,7 +5922,7 @@ function openGainsCard() {
     return { name: f.name, pnl: fp, color: f.color || '#e8b84b', count: accs.length };
   }).filter(function(f) { return f.count > 0; });
 
-  // Equity bars â normalise to max
+  // Equity bars — normalise to max
   var maxAbs = Math.max.apply(null, equityData.map(function(v){return Math.abs(v);})) || 1;
   // take last 20 days max for visual
   var barData = equityData.slice(-20);
@@ -5943,7 +5943,7 @@ function openGainsCard() {
       + '</div>';
   }).join('');
 
-  // ââ Build the card HTML âââââââââââââââââââââââââââââââââââââââ
+  // ── Build the card HTML ───────────────────────────────────────
   var pnlGrad = isPos
     ? 'linear-gradient(160deg,#26f77a 0%,#16c96a 40%,#0da856 100%)'
     : 'linear-gradient(160deg,#ff6b8a 0%,#e83050 40%,#c02040 100%)';
@@ -6037,7 +6037,7 @@ function openGainsCard() {
 
     + '</div>'; // end card
 
-  // ââ Modal wrapper âââââââââââââââââââââââââââââââââââââââââââââ
+  // ── Modal wrapper ─────────────────────────────────────────────
   var old = document.getElementById('gainsCardModal');
   if (old) old.remove();
 
@@ -6055,7 +6055,7 @@ function openGainsCard() {
     + '<div style="font-size:15px;font-weight:800;color:#f0eee8;align-self:flex-start;">ð¸ Your Performance Card</div>'
     + '<div style="transform-origin:top left;transform:scale(' + scale + ');width:960px;">' + cardHTML + '</div>'
     + '<div style="display:flex;gap:10px;width:' + scaledW + 'px;margin-top:' + (scale < 1 ? Math.round(-(1-scale)*400) + 'px' : '0') + ';">'
-      + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">â¬ Save as PNG</button>'
+      + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
       + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">ð Copy to Clipboard</button>'
       + '<button onclick="closeGainsCard()" style="height:42px;padding:0 20px;background:rgba(255,75,75,.1);border:1px solid rgba(255,75,75,.3);border-radius:9px;color:#ff4d6d;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;z-index:10;position:relative;">\u2715</button>'
     + '</div>'
@@ -6118,10 +6118,10 @@ function downloadGainsCard() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      if (st) { st.style.color = 'var(--green, #22d46a)'; st.textContent = 'â Saved to downloads'; }
+      if (st) { st.style.color = 'var(--green, #22d46a)'; st.textContent = '✓ Saved to downloads'; }
       setTimeout(function() { if (st) st.textContent = ''; }, 3000);
     } catch(e) {
-      if (st) { st.style.color = 'var(--red, #ff4d6d)'; st.textContent = 'â ' + e.message; }
+      if (st) { st.style.color = 'var(--red, #ff4d6d)'; st.textContent = '✗ ' + e.message; }
     }
   });
 }
@@ -6136,8 +6136,8 @@ function copyGainsCard() {
       try {
         var item = new ClipboardItem({ 'image/png': blob });
         navigator.clipboard.write([item]).then(function() {
-          if (btn) btn.textContent = 'â Copied!';
-          if (st) { st.style.color = 'var(--green, #22d46a)'; st.textContent = 'â Image copied to clipboard'; }
+          if (btn) btn.textContent = '✓ Copied!';
+          if (st) { st.style.color = 'var(--green, #22d46a)'; st.textContent = '✓ Image copied to clipboard'; }
           setTimeout(function() {
             if (btn) btn.textContent = 'ð Copy to Clipboard';
             if (st) st.textContent = '';
@@ -6145,11 +6145,11 @@ function copyGainsCard() {
         }).catch(function(err) {
           // Fallback: download instead
           downloadGainsCard();
-          if (st) { st.style.color = 'var(--gold, #e8b84b)'; st.textContent = 'Clipboard unavailable â downloading instead'; }
+          if (st) { st.style.color = 'var(--gold, #e8b84b)'; st.textContent = 'Clipboard unavailable — downloading instead'; }
         });
       } catch(e) {
         downloadGainsCard();
-        if (st) { st.style.color = 'var(--gold, #e8b84b)'; st.textContent = 'Clipboard unavailable â downloading instead'; }
+        if (st) { st.style.color = 'var(--gold, #e8b84b)'; st.textContent = 'Clipboard unavailable — downloading instead'; }
       }
     });
   });
