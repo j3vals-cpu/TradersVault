@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -38,26 +37,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          name: Traders Vault build-${{ github.run_number }}
-          body_path: CHANGELOG.md
+          name: Traders Vault v1.7.2-build${{ github.run_number }}
+          body: |
+            Automated build from main branch.
+            - Fixed: API URL pointing to tradersvault.app/api
+            - Fixed: Login screen now active (re-enabled)
+            - Fixed: PnL card linked to platform
           files: dist/*.exe
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push changelog to Supabase
-        shell: bash
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          CHANGELOG=$(python3 -c "import json,sys; print(json.dumps(open('CHANGELOG.md').read()))")
-          curl -s -X POST "$SUPABASE_URL/rest/v1/app_config" \
-            -H "apikey: $SUPABASE_KEY" \
-            -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: resolution=merge-duplicates" \
-            -d "{\"key\":\"changelog_md\",\"value\":$CHANGELOG,\"updated_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
-          echo "Changelog v$VERSION pushed to Supabase"
