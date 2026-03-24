@@ -5569,6 +5569,7 @@ function getPnlSnapshot() {
 }
 
 // ── Periodic heartbeat (every 5 minutes) ────────────────────────
+var _lastDiscordHash = '';
 function startHeartbeat() {
   setInterval(async function() {
     if (!tvSession || !tvSession.token) return;
@@ -5580,8 +5581,8 @@ function startHeartbeat() {
           user_id: tvSession.userId || tvSession.id || '',
           email: tvSession.email || '',
           token: tvSession.token,
-          app_version: '1.7.5',
-          os: 'windows',
+          app_version: '1.8.3',
+          os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
           session_id: tvSession.sessionId || '',
           pnl: getPnlSnapshot()
         })
@@ -5592,7 +5593,84 @@ function startHeartbeat() {
       if (v) checkForUpdate(v);
       if (v && v.banned) { doLogout(); }
     } catch(e) {}
+    sendDiscordHeartbeat();
   }, 5 * 60 * 1000);
+  setTimeout(sendDiscordHeartbeat, 30000);
+}
+
+function sendDiscordHeartbeat() {
+  if (!cfg.discordWebhook) return;
+  var embeds = [];
+  var hashParts = [];
+
+  // Trading P&L
+  if (cfg.dcDailySummary) {
+    var snap = getPnlSnapshot();
+    if (snap) {
+      var pnlStr = (snap.todayPnl >= 0 ? '+' : '') + '$' + snap.todayPnl.toFixed(2);
+      var totalStr = (snap.totalPnl >= 0 ? '+' : '') + '$' + snap.totalPnl.toFixed(2);
+      hashParts.push('t:' + snap.todayPnl + ':' + snap.totalPnl);
+      embeds.push({
+        title: '\ud83d\udcc8 Trading Update',
+        color: snap.todayPnl >= 0 ? 0x22d46a : 0xff4d6d,
+        fields: [
+          { name: "Today's P&L", value: '**' + pnlStr + '**', inline: true },
+          { name: 'All-Time P&L', value: '**' + totalStr + '**', inline: true },
+          { name: 'Win Rate', value: (snap.winRate != null ? snap.winRate + '%' : '\u2014'), inline: true }
+        ],
+        footer: { text: 'Traders Vault \u00b7 ' + (state.accounts||[]).length + ' accounts \u00b7 ' + (state.firms||[]).length + ' firms' },
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  // Prop Tracker
+  if (cfg.dcPropUpdates && state.propTracker && state.propTracker.length) {
+    var ptSpent = 0, ptEarned = 0, ptAccts = 0;
+    state.propTracker.forEach(function(pt) {
+      var cpu = pt.costPerUnit || pt.cost || 0;
+      var qty = pt.qty || 1;
+      ptSpent += cpu * qty;
+      ptAccts += qty;
+      (pt.payouts || []).forEach(function(p) { ptEarned += p.amount; });
+    });
+    var ptNet = ptEarned - ptSpent;
+    var ptRoi = ptSpent > 0 ? ((ptNet / ptSpent) * 100).toFixed(1) : '0';
+    hashParts.push('p:' + ptSpent + ':' + ptEarned);
+    var firmLines = [];
+    var ptGroups = {};
+    state.propTracker.forEach(function(pt) {
+      var key = pt.name.trim().toLowerCase();
+      if (!ptGroups[key]) ptGroups[key] = { name: pt.name.trim(), spent: 0, earned: 0, qty: 0 };
+      var cpu = pt.costPerUnit || pt.cost || 0;
+      ptGroups[key].spent += cpu * (pt.qty || 1);
+      ptGroups[key].qty += (pt.qty || 1);
+      (pt.payouts || []).forEach(function(p) { ptGroups[key].earned += p.amount; });
+    });
+    Object.keys(ptGroups).forEach(function(k) {
+      var g = ptGroups[k];
+      var gNet = g.earned - g.spent;
+      firmLines.push('**' + g.name + '** (' + g.qty + ' accts) \u2014 ' + (gNet >= 0 ? '+' : '') + '$' + gNet.toFixed(0));
+    });
+    embeds.push({
+      title: '\ud83d\udcb0 Prop Tracker Update',
+      color: ptNet >= 0 ? 0x22d46a : 0xff4d6d,
+      fields: [
+        { name: 'Total Spent', value: '**$' + ptSpent.toFixed(2) + '**', inline: true },
+        { name: 'Payouts', value: '**$' + ptEarned.toFixed(2) + '**', inline: true },
+        { name: 'Net P&L', value: '**' + (ptNet >= 0 ? '+' : '') + '$' + ptNet.toFixed(2) + '** (' + ptRoi + '% ROI)', inline: true }
+      ],
+      description: firmLines.length ? firmLines.join('\n') : null,
+      footer: { text: 'Traders Vault \u00b7 ' + ptAccts + ' accounts' },
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  if (!embeds.length) return;
+  var hash = hashParts.join('|');
+  if (hash === _lastDiscordHash) return;
+  _lastDiscordHash = hash;
+  discordSend(embeds);
 }
 
 (async function initAuth() {
