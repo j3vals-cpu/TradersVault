@@ -5835,28 +5835,50 @@ function doUpdate() {
     toast('No update URL found', 'error');
     return;
   }
-  // Update banner to show download progress
   var btn = document.querySelector('#tvUpdateBanner button');
-  if (btn) { btn.textContent = '⏳ Downloading...'; btn.style.opacity = '.6'; btn.style.pointerEvents = 'none'; }
   var titleEl = document.getElementById('updateBannerTitle');
-  if (titleEl) titleEl.textContent = 'Downloading update...';
   var notesEl = document.getElementById('updateBannerNotes');
-  if (notesEl) notesEl.textContent = 'Your browser will download the installer. Run it when done to update.';
 
-  // Open download URL — Electron will handle shell.openExternal
-  if (window.electronAPI && window.electronAPI.openExternal) {
-    window.electronAPI.openExternal(tvUpdateInfo.update_url);
+  // If Electron with downloadUpdate API — download inside the app
+  if (window.electronAPI && window.electronAPI.downloadUpdate) {
+    if (btn) { btn.textContent = '⏳ Downloading...'; btn.style.opacity = '.6'; btn.style.pointerEvents = 'none'; }
+    if (titleEl) titleEl.textContent = 'Downloading update — 0%';
+    if (notesEl) notesEl.textContent = 'Downloading to your Downloads folder...';
+
+    // Listen for progress
+    window.electronAPI.onDownloadProgress(function(data) {
+      var mb = (data.downloaded / 1024 / 1024).toFixed(1);
+      var totalMb = (data.total / 1024 / 1024).toFixed(0);
+      if (titleEl) titleEl.textContent = 'Downloading update — ' + data.pct + '%';
+      if (notesEl) notesEl.textContent = mb + ' / ' + totalMb + ' MB';
+    });
+
+    window.electronAPI.downloadUpdate(tvUpdateInfo.update_url).then(function(result) {
+      if (result.ok) {
+        if (titleEl) titleEl.textContent = '✓ Download complete';
+        if (notesEl) notesEl.textContent = 'Click to install and restart.';
+        if (btn) {
+          btn.textContent = '🚀 Install Now';
+          btn.style.opacity = '1';
+          btn.style.pointerEvents = 'auto';
+          btn.onclick = function() {
+            window.electronAPI.openFile(result.path);
+            setTimeout(function() { window.electronAPI.quit(); }, 1500);
+          };
+        }
+        toast('✓ Update downloaded — click Install Now', 'success');
+      } else {
+        if (titleEl) titleEl.textContent = 'Download failed';
+        if (notesEl) notesEl.textContent = result.error || 'Unknown error';
+        if (btn) { btn.textContent = '↻ Retry'; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.onclick = doUpdate; }
+        toast('Download failed: ' + (result.error || 'unknown'), 'error');
+      }
+    });
   } else {
+    // Fallback: open in browser
     window.open(tvUpdateInfo.update_url, '_blank');
+    toast('Download started in your browser', 'info');
   }
-  toast('Downloading in your browser — run the installer when it finishes', 'info');
-
-  // After a few seconds, update banner to remind them to install
-  setTimeout(function() {
-    if (titleEl) titleEl.textContent = '✓ Download should be complete';
-    if (notesEl) notesEl.textContent = 'Check your Downloads folder and run the installer. The app will restart.';
-    if (btn) { btn.textContent = '📂 Open Download Again'; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }
-  }, 8000);
 }
 
 function dismissUpdate() {

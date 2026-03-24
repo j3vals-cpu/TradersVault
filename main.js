@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 
 app.setName('Traders Vault');
 
@@ -262,6 +264,56 @@ app.whenReady().then(() => {
 app.on('before-quit', () => {
   app.isQuitting = true;
   if (mousePoller) clearInterval(mousePoller);
+});
+
+// ─── DOWNLOAD UPDATE ─────────────────────────────────────────
+ipcMain.handle('download-update', async (_, url) => {
+  if (!url) return { ok: false, error: 'No URL' };
+  const downloadsDir = app.getPath('downloads');
+  const fileName = url.split('/').pop() || 'TradersVault-update.exe';
+  const filePath = path.join(downloadsDir, fileName);
+
+  return new Promise((resolve) => {
+    function doGet(reqUrl, redirects) {
+      if (redirects > 10) return resolve({ ok: false, error: 'Too many redirects' });
+      const mod = reqUrl.startsWith('https') ? https : http;
+      const req = mod.get(reqUrl, (res) => {
+        // Follow redirects
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          return doGet(res.headers.location, redirects + 1);
+        }
+        if (res.statusCode !== 200) {
+          return resolve({ ok: false, error: 'HTTP ' + res.statusCode });
+        }
+        const totalBytes = parseInt(res.headers['content-length'] || '0', 10);
+        let downloaded = 0;
+        const file = fs.createWriteStream(filePath);
+        res.on('data', (chunk) => {
+          downloaded += chunk.length;
+          file.write(chunk);
+          // Send progress to renderer
+          if (mainWindow && !mainWindow.isDestroyed() && totalBytes > 0) {
+            const pct = Math.round((downloaded / totalBytes) * 100);
+            mainWindow.webContents.send('download-progress', { pct, downloaded, total: totalBytes });
+          }
+        });
+        res.on('end', () => {
+          file.end();
+          resolve({ ok: true, path: filePath });
+        });
+        res.on('error', (e) => {
+          file.end();
+          resolve({ ok: false, error: e.message });
+        });
+      });
+      req.on('error', (e) => resolve({ ok: false, error: e.message }));
+    }
+    doGet(url, 0);
+  });
+});
+
+ipcMain.handle('open-file', (_, filePath) => {
+  if (filePath) shell.openPath(filePath);
 });
 
 // macOS: hide dock icon since this is an overlay app

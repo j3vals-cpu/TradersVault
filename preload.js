@@ -16,6 +16,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDataPath: () => ipcRenderer.invoke('get-data-path'),
   // Click-through hit rects
   setHitRects: (rects) => ipcRenderer.send('set-hit-rects', rects),
+  // Update download
+  downloadUpdate: (url) => ipcRenderer.invoke('download-update', url),
+  onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_, data) => callback(data)),
+  openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
   platform: process.platform,
   isElectron: true,
 });
