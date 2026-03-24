@@ -710,6 +710,46 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   <button onclick="dismissUpdate()" style="height:30px;padding:0 10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#5f5f78;font-size:11px;cursor:pointer;font-family:inherit;">Later</button>
 </div>
 
+<!-- ═══ FORCE UPDATE OVERLAY (full-screen blocking) ═══ -->
+<div id="tvForceUpdateOverlay" style="
+  display:none;
+  position:fixed;inset:0;z-index:999999;
+  background:rgba(7,7,10,.96);
+  flex-direction:column;align-items:center;justify-content:center;
+  font-family:'Cabinet Grotesk',sans-serif;
+  -webkit-app-region:no-drag;
+">
+  <div style="
+    background:linear-gradient(135deg,rgba(18,18,26,.98),rgba(14,14,19,.98));
+    border:1px solid rgba(232,184,75,.15);
+    border-radius:16px;
+    padding:40px 48px;
+    text-align:center;
+    max-width:420px;width:90%;
+    box-shadow:0 24px 80px rgba(0,0,0,.6);
+  ">
+    <div style="font-size:22px;font-weight:900;color:#f0eee8;letter-spacing:-.3px;margin-bottom:6px;">Traders Vault</div>
+    <div id="forceUpdateTitle" style="font-size:14px;font-weight:700;color:#e8b84b;margin-bottom:24px;">Updating...</div>
+    <div style="
+      width:100%;height:8px;
+      background:rgba(255,255,255,.06);
+      border-radius:4px;
+      overflow:hidden;
+      margin-bottom:12px;
+    ">
+      <div id="forceUpdateBar" style="
+        width:0%;height:100%;
+        background:linear-gradient(90deg,#e8b84b,#f0c95c);
+        border-radius:4px;
+        transition:width .3s ease;
+      "></div>
+    </div>
+    <div id="forceUpdatePct" style="font-size:13px;font-weight:800;color:#f0eee8;margin-bottom:4px;">0%</div>
+    <div id="forceUpdateDetail" style="font-size:11px;color:#5f5f78;">Preparing download...</div>
+    <div style="font-size:10px;color:#3a3a4f;margin-top:20px;">Please wait — the app will restart automatically</div>
+  </div>
+</div>
+
 <!-- ═══ LICENCE BADGE in topbar (injected via JS) ═══ -->
 <div id="vaultLoader" style="
   position:fixed;inset:0;z-index:99999;
@@ -6248,7 +6288,7 @@ function startHeartbeat() {
           user_id: tvSession.userId || tvSession.id || '',
           email: tvSession.email || '',
           token: tvSession.token,
-          app_version: '1.9.3',
+          app_version: '1.9.4',
           os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
           session_id: tvSession.sessionId || '',
           pnl: getPnlSnapshot()
@@ -6352,6 +6392,15 @@ function sendDiscordHeartbeat() {
 
   if (saved && saved.token && saved.expires > Date.now()) {
     tvSession = saved;
+    // ── EARLY forced update check BEFORE showing app ──
+    try {
+      var earlyCheck = await validateToken(saved.token);
+      if (earlyCheck && !earlyCheck._error) {
+        checkForUpdate(earlyCheck); // blocks UI if update needed
+      }
+    } catch(e) {}
+    // If force-update overlay is showing, don't proceed further
+    if (_forceUpdateRunning) return;
     hideLoginScreen();
     validateSessionSilent(saved.token);
   } else {
@@ -6482,7 +6531,7 @@ async function validateToken(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token,
-        app_version: '1.9.3',
+        app_version: '1.9.4',
         os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
         pnl: typeof getPnlSnapshot === 'function' ? getPnlSnapshot() : null
@@ -6693,114 +6742,104 @@ function applyLicenceBadge(v) {
   topbar.appendChild(badge);
 }
 
-// ── Update system ───────────────────────────────────────────────
+// ── Update system (FORCED auto-update) ──────────────────────────
+var _forceUpdateRunning = false;
+
+function isNewerVersion(remote, local) {
+  var r = remote.split('.').map(Number);
+  var l = local.split('.').map(Number);
+  for (var i = 0; i < 3; i++) {
+    if ((r[i]||0) > (l[i]||0)) return true;
+    if ((r[i]||0) < (l[i]||0)) return false;
+  }
+  return false;
+}
+
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
-  // compare with current app version — read from the topbar display
-  var current = '1.9.3';
-  // semver compare: return true if remote > current
-  function isNewer(remote, local) {
-    var r = remote.split('.').map(Number);
-    var l = local.split('.').map(Number);
-    for (var i = 0; i < 3; i++) {
-      if ((r[i]||0) > (l[i]||0)) return true;
-      if ((r[i]||0) < (l[i]||0)) return false;
-    }
-    return false;
-  }
-  if (!isNewer(v.latest_version, current)) return;
-  // Attach fields update banner expects
-  v.update_available = true;
+  var current = '1.9.4';
+  if (!isNewerVersion(v.latest_version, current)) return;
   v.update_url = v.update_url || v.latest_url || v.download_url;
-  v.update_mandatory = v.force_update;
   tvUpdateInfo = v;
-  showUpdateBanner(v);
+  // Immediately trigger forced update — no banner, no user choice
+  forceUpdateAndDownload(v);
 }
 
-function showUpdateBanner(v) {
-  var banner = document.getElementById('tvUpdateBanner');
-  if (!banner) return;
-  var title = document.getElementById('updateBannerTitle');
-  var notes = document.getElementById('updateBannerNotes');
-  if (title) title.textContent = 'v' + v.latest_version + ' is available' + (v.update_mandatory ? ' — Required' : '');
-  if (notes) notes.textContent = v.update_notes ? v.update_notes.slice(0, 100) + '...' : 'New version ready to download';
-  banner.style.display = 'flex';
+function forceUpdateAndDownload(v) {
+  if (_forceUpdateRunning) return;
+  _forceUpdateRunning = true;
 
-  // Force mandatory updates
-  if (v.update_mandatory) {
-    var later = banner.querySelector('button:last-child');
-    if (later) later.style.display = 'none';
-  }
-}
+  // Show the full-screen blocking overlay
+  var overlay = document.getElementById('tvForceUpdateOverlay');
+  if (overlay) overlay.style.display = 'flex';
 
-function doUpdate() {
-  if (!tvUpdateInfo || !tvUpdateInfo.update_url) {
-    toast('No update URL found', 'error');
+  // Hide the old banner if visible
+  var oldBanner = document.getElementById('tvUpdateBanner');
+  if (oldBanner) oldBanner.style.display = 'none';
+
+  var titleEl = document.getElementById('forceUpdateTitle');
+  var barEl = document.getElementById('forceUpdateBar');
+  var pctEl = document.getElementById('forceUpdatePct');
+  var detailEl = document.getElementById('forceUpdateDetail');
+
+  if (titleEl) titleEl.textContent = 'Updating to v' + v.latest_version + '...';
+
+  // Resolve platform-specific download URL
+  var dlUrl = v.update_url;
+  if (!dlUrl) {
+    if (detailEl) detailEl.textContent = 'No download URL — please reinstall manually.';
     return;
   }
-  // On Mac, swap .exe URL for .pkg
-  var dlUrl = tvUpdateInfo.update_url;
   var platform = window.electronAPI ? window.electronAPI.platform : 'win32';
   if (platform === 'darwin' && dlUrl.indexOf('.exe') !== -1) {
-    // Determine arch: Apple Silicon (arm64) vs Intel (x64)
     var arch = (navigator.userAgent.indexOf('ARM') !== -1 || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 0) ? 'arm64' : 'x64';
-    // Convert: Traders.Vault.Setup.1.8.2.exe -> Traders-Vault-1.8.2-arm64.pkg
-    var ver = dlUrl.match(/(\d+\.\d+\.\d+)/); 
+    var ver = dlUrl.match(/(\d+\.\d+\.\d+)/);
     if (ver) dlUrl = dlUrl.replace(/[^/]+$/, 'Traders-Vault-' + ver[1] + '-' + arch + '.pkg');
   }
 
-  var btn = document.querySelector('#tvUpdateBanner button');
-  var titleEl = document.getElementById('updateBannerTitle');
-  var notesEl = document.getElementById('updateBannerNotes');
+  if (detailEl) detailEl.textContent = 'Starting download...';
 
-  // If Electron with downloadUpdate API — download inside the app
-  if (window.electronAPI && window.electronAPI.downloadUpdate) {
-    if (btn) { btn.textContent = '⏳ Downloading...'; btn.style.opacity = '.6'; btn.style.pointerEvents = 'none'; }
-    if (titleEl) titleEl.textContent = 'Downloading update — 0%';
-    if (notesEl) notesEl.textContent = 'Downloading to your Downloads folder...';
-
-    // Listen for progress
-    window.electronAPI.onDownloadProgress(function(data) {
-      var mb = (data.downloaded / 1024 / 1024).toFixed(1);
-      var totalMb = (data.total / 1024 / 1024).toFixed(0);
-      if (titleEl) titleEl.textContent = 'Downloading update — ' + data.pct + '%';
-      if (notesEl) notesEl.textContent = mb + ' / ' + totalMb + ' MB';
-    });
-
-    window.electronAPI.downloadUpdate(dlUrl).then(function(result) {
-      if (result.ok) {
-        if (titleEl) titleEl.textContent = '✓ Download complete';
-        if (notesEl) notesEl.textContent = 'Click to install and restart.';
-        if (btn) {
-          btn.textContent = '🚀 Install Now';
-          btn.style.opacity = '1';
-          btn.style.pointerEvents = 'auto';
-          btn.onclick = function() {
-            window.electronAPI.openFile(result.path);
-            setTimeout(function() { window.electronAPI.quit(); }, 1500);
-          };
-        }
-        toast('✓ Update downloaded — click Install Now', 'success');
-      } else {
-        if (titleEl) titleEl.textContent = 'Download failed';
-        if (notesEl) notesEl.textContent = result.error || 'Unknown error';
-        if (btn) { btn.textContent = '↻ Retry'; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.onclick = doUpdate; }
-        toast('Download failed: ' + (result.error || 'unknown'), 'error');
-      }
-    });
-  } else {
-    // Fallback: open in browser
-    window.open(dlUrl, '_blank');
-    toast('Download started in your browser', 'info');
+  // Must have Electron download API
+  if (!window.electronAPI || !window.electronAPI.downloadUpdate) {
+    if (detailEl) detailEl.textContent = 'Cannot auto-update in browser — download from tradersvault.app';
+    return;
   }
+
+  // Listen for progress updates
+  window.electronAPI.onDownloadProgress(function(data) {
+    var mb = (data.downloaded / 1024 / 1024).toFixed(1);
+    var totalMb = (data.total / 1024 / 1024).toFixed(0);
+    if (barEl) barEl.style.width = data.pct + '%';
+    if (pctEl) pctEl.textContent = data.pct + '%';
+    if (detailEl) detailEl.textContent = mb + ' / ' + totalMb + ' MB';
+  });
+
+  // Start download
+  window.electronAPI.downloadUpdate(dlUrl).then(function(result) {
+    if (result.ok) {
+      if (barEl) barEl.style.width = '100%';
+      if (pctEl) pctEl.textContent = '100%';
+      if (titleEl) titleEl.textContent = 'Installing v' + v.latest_version + '...';
+      if (detailEl) detailEl.textContent = 'Launching installer — the app will close.';
+      // Launch installer and quit
+      window.electronAPI.openFile(result.path);
+      setTimeout(function() { window.electronAPI.quit(); }, 2000);
+    } else {
+      // Download failed — retry after 5 seconds
+      if (titleEl) titleEl.textContent = 'Download failed — retrying...';
+      if (detailEl) detailEl.textContent = result.error || 'Unknown error';
+      if (barEl) barEl.style.width = '0%';
+      if (pctEl) pctEl.textContent = '';
+      _forceUpdateRunning = false;
+      setTimeout(function() { forceUpdateAndDownload(v); }, 5000);
+    }
+  });
 }
 
-function dismissUpdate() {
-  var banner = document.getElementById('tvUpdateBanner');
-  if (banner) banner.style.display = 'none';
-  // Remind again in 24h
-  localStorage.setItem('tv_update_dismissed', Date.now().toString());
-}
+// Legacy stubs — kept so existing callers don't error
+function showUpdateBanner(v) { checkForUpdate(v); }
+function doUpdate() { if (tvUpdateInfo) forceUpdateAndDownload(tvUpdateInfo); }
+function dismissUpdate() { /* no-op — updates are mandatory */ }
 
 // ── Account modal (upgrade / sign out) ─────────────────────────
 function showAccountModal() {
@@ -6855,11 +6894,10 @@ function showUpgradePrompt(v) {
 
 // ── Heartbeat every 5 minutes ───────────────────────────────────
 setInterval(function() {
+  if (_forceUpdateRunning) return; // already updating
   if (tvSession && tvSession.token && !tvSession.skipped) {
     validateToken(tvSession.token).then(function(v) {
-      if (v && v.update_available && !document.getElementById('tvUpdateBanner').style.display.includes('flex')) {
-        checkForUpdate(v);
-      }
+      if (v) checkForUpdate(v);
     });
   }
 }, 5 * 60 * 1000);
