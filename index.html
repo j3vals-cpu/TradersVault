@@ -6048,12 +6048,17 @@ async function validateToken(token) {
 async function validateSessionSilent(token) {
   var v = await validateToken(token);
   if (v && v._error) {
-    // Account suspended/pending — force back to login
+    // Session expired or account issue — force back to login
     tvSession = null;
     localStorage.removeItem('tv_session');
     if (window.electronAPI && window.electronAPI.saveData) window.electronAPI.saveData('vault-session', null);
     showLoginScreen();
-    setAuthStatus(v._error, '#ff4d6d');
+    // Only show error if it's not just an expired token
+    if (v._error.indexOf('pending') >= 0 || v._error.indexOf('suspended') >= 0) {
+      setAuthStatus(v._error, '#ff4d6d');
+    } else {
+      setAuthStatus('Session expired — sign in again', '#5f5f78');
+    }
   } else if (v) {
     applyLicenceBadge(v);
     checkForUpdate(v);
