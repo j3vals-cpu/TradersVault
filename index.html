@@ -4521,6 +4521,26 @@ function updateHitRects() {
     if (isInteractable(o)) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
   });
 
+  // Login screen — block everything when visible
+  var loginScreen = document.getElementById('tvLoginScreen');
+  if (loginScreen && loginScreen.style.display !== 'none' && parseFloat(loginScreen.style.opacity || '1') > 0.1) {
+    rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+  }
+
+  // Update banner
+  var updateBanner = document.getElementById('tvUpdateBanner');
+  if (updateBanner && updateBanner.style.display === 'flex') addRect(updateBanner);
+
+  // Gains/Prop card modals
+  var gainsModal = document.getElementById('gainsCardModal');
+  if (gainsModal) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+  var propModal = document.getElementById('propCardModal');
+  if (propModal) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+
+  // Promo banner
+  var promoBanner = document.getElementById('promoBarWrap');
+  if (promoBanner && promoBanner.style.display !== 'none') addRect(promoBanner);
+
   window.electronAPI.setHitRects(rects);
 }
 
