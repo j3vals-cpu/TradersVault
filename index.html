@@ -454,16 +454,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .prop-firm-del:hover{color:var(--red);}
 
 /* ───── PROMO BANNER ───── */
-.promo-banner{display:none;align-items:center;gap:10px;padding:6px 14px;background:rgba(232,184,75,.06);border:1px solid rgba(232,184,75,.15);border-radius:8px;margin:6px 12px;cursor:pointer;transition:all .2s;flex-shrink:0;}
-.promo-banner:hover{background:rgba(232,184,75,.12);border-color:rgba(232,184,75,.3);}
+.promo-banner{display:none;align-items:center;gap:14px;padding:12px 20px;background:linear-gradient(135deg,rgba(232,184,75,.08),rgba(232,184,75,.03));border:1.5px solid rgba(232,184,75,.2);border-radius:10px;margin:8px 12px;cursor:pointer;transition:all .25s;flex-shrink:0;position:relative;overflow:hidden;}
+.promo-banner::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:10px 0 0 10px;}
+.promo-banner:hover{background:linear-gradient(135deg,rgba(232,184,75,.14),rgba(232,184,75,.06));border-color:rgba(232,184,75,.4);transform:translateY(-1px);box-shadow:0 4px 20px rgba(232,184,75,.1);}
 .promo-banner.active{display:flex;}
-.promo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.promo-firm{font-size:11px;font-weight:800;color:var(--text);}
-.promo-text{font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.promo-code{font-family:'Geist Mono',monospace;font-size:9px;color:var(--teal);background:var(--teal-dim);padding:2px 7px;border-radius:4px;font-weight:700;letter-spacing:.5px;flex-shrink:0;}
-.promo-cta{font-size:9px;font-weight:800;color:var(--gold);flex-shrink:0;}
-/* User custom promo in settings */
-.promo-custom{padding:12px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;margin-top:10px;}
+.promo-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;box-shadow:0 0 10px currentColor;}
+.promo-firm{font-size:15px;font-weight:900;color:var(--text);letter-spacing:.3px;flex-shrink:0;}
+.promo-text{font-size:13px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+.promo-code{font-family:'Geist Mono',monospace;font-size:11px;color:var(--teal);background:var(--teal-dim);padding:4px 12px;border-radius:6px;font-weight:800;letter-spacing:1px;flex-shrink:0;border:1px solid rgba(0,212,170,.2);}
+.promo-cta{font-size:12px;font-weight:900;color:var(--gold);flex-shrink:0;padding:5px 14px;border:1px solid rgba(232,184,75,.3);border-radius:6px;background:rgba(232,184,75,.08);letter-spacing:.5px;transition:all .2s;}
+.promo-banner:hover .promo-cta{background:var(--gold);color:#07070a;}
 
 /* ───── STRATEGY ───── */
 .strat-section{margin-bottom:10px;}
@@ -911,7 +911,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   <span class="promo-firm" id="promoFirm"></span>
   <span class="promo-text" id="promoText"></span>
   <span class="promo-code" id="promoCode" style="display:none;"></span>
-  <span class="promo-cta">→</span>
+  <span class="promo-cta" id="promoCta">GET DEAL →</span>
 </div>
 
 <!-- CANVAS -->
@@ -5933,10 +5933,18 @@ function applyPromotions(promos) {
 function showPromo(p) {
   var banner = document.getElementById('promoBanner');
   if (!banner || !p) return;
+  var col = p.color || 'var(--gold)';
   document.getElementById('promoFirm').textContent = p.firm || '';
   document.getElementById('promoText').textContent = p.text || '';
   var dot = document.getElementById('promoDot');
-  if (dot) dot.style.background = p.color || 'var(--gold)';
+  if (dot) { dot.style.background = col; dot.style.boxShadow = '0 0 10px ' + col; }
+  // Accent bar on the left
+  banner.style.setProperty('--promo-accent', col);
+  var before = banner.querySelector(':before') || banner;
+  banner.style.borderLeftColor = col;
+  // Set the ::before color via inline border-left
+  banner.style.borderLeft = '4px solid ' + col;
+  banner.style.borderRadius = '2px 10px 10px 2px';
   var code = document.getElementById('promoCode');
   if (code) { if (p.code) { code.textContent = p.code; code.style.display = ''; } else { code.style.display = 'none'; } }
   banner.classList.add('active');
