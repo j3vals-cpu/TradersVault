@@ -616,6 +616,23 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .copier-footer-lbl{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);flex:1;text-align:right;}
 /* Scaling modal */
 .copier-scaling-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+
+/* ───── CLOUD SYNC ───── */
+.sync-wrap{display:flex;align-items:center;gap:10px;margin-top:18px;margin-bottom:8px;}
+.sync-btn{padding:10px 22px;background:linear-gradient(135deg,var(--gold),var(--gold-soft));border:none;border-radius:8px;color:#07070a;font-size:12px;font-weight:900;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 2px 12px var(--gold-glow);}
+.sync-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--gold-glow);}
+.sync-btn:active{transform:translateY(0);}
+.sync-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.sync-btn.syncing{animation:syncPulseBtn 1.2s ease-in-out infinite;}
+.sync-btn.error{background:linear-gradient(135deg,var(--red),#cc3355);box-shadow:0 2px 12px var(--red-dim);}
+.sync-btn.success{background:linear-gradient(135deg,var(--green),#1ab355);box-shadow:0 2px 12px var(--green-dim);}
+.sync-indicator{font-size:16px;transition:all .3s;}
+.sync-indicator.idle{color:var(--text3);opacity:.5;}
+.sync-indicator.syncing{color:var(--gold);animation:syncPulseCloud 1.2s ease-in-out infinite;}
+.sync-indicator.done{color:var(--green);}
+@keyframes syncPulseBtn{0%,100%{opacity:.7;}50%{opacity:1;}}
+@keyframes syncPulseCloud{0%,100%{opacity:.4;transform:scale(1);}50%{opacity:1;transform:scale(1.15);}}
+.sync-status{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);min-height:14px;margin-top:4px;}
 </style>
 <script src="html2canvas.min.js"></script>
 </head>
@@ -1401,6 +1418,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
     <!-- DATA TAB -->
     <div class="settings-panel" id="stab-data">
+      <div class="s-lbl" style="margin-top:0;">Cloud Sync</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Sync your Traders Vault data to the cloud so it persists across devices. Pull your latest data or push local changes.</div>
+      <div class="sync-wrap">
+        <span class="sync-indicator idle" id="syncCloudIcon">&#9729;</span>
+        <button class="sync-btn" id="syncBtn" onclick="CloudSync.sync()">&#9729; SYNC</button>
+      </div>
+      <div class="sync-status" id="syncStatus"></div>
+      <div style="height:1px;background:var(--border2);margin:16px 0;"></div>
       <div class="s-lbl" style="margin-top:0;">Export Data</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Export your entire Traders Vault config — firms, accounts, notes, habits, trades, layout — as a JSON file you can back up or move to another machine.</div>
       <button onclick="exportAllData()" style="width:100%;padding:10px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-bottom:14px;">&#8675; Export TradersVault.json</button>
@@ -3764,6 +3789,231 @@ function saveCfg(){
     }
   }, 500);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// ── CLOUD SYNC MODULE ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+var CloudSync = (function() {
+  var _syncing = false;
+  var _lastSync = null;
+
+  function restUrl() {
+    return SUPABASE_URL + '/rest/v1/user_data';
+  }
+
+  function getToken() {
+    return tvSession && tvSession.token ? tvSession.token : null;
+  }
+
+  function getUserId() {
+    if (!tvSession) return null;
+    return tvSession.userId || tvSession.id || (tvSession.user && tvSession.user.user_id) || null;
+  }
+
+  function headers(token) {
+    return {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON,
+      'Authorization': 'Bearer ' + token
+    };
+  }
+
+  function setUI(mode, msg) {
+    var btn = document.getElementById('syncBtn');
+    var icon = document.getElementById('syncCloudIcon');
+    var status = document.getElementById('syncStatus');
+    if (!btn) return;
+
+    btn.classList.remove('syncing', 'error', 'success');
+    if (icon) icon.classList.remove('idle', 'syncing', 'done');
+
+    if (mode === 'syncing') {
+      btn.disabled = true;
+      btn.classList.add('syncing');
+      btn.innerHTML = '&#9729; Syncing...';
+      if (icon) { icon.classList.add('syncing'); icon.innerHTML = '&#9729;'; }
+      if (status) { status.style.color = 'var(--text3)'; status.textContent = msg || 'Syncing with cloud...'; }
+    } else if (mode === 'success') {
+      btn.disabled = false;
+      btn.classList.add('success');
+      btn.innerHTML = '&#9729; Synced &#10003;';
+      if (icon) { icon.classList.add('done'); icon.innerHTML = '&#9729; &#10003;'; }
+      if (status) { status.style.color = 'var(--green)'; status.textContent = msg || 'Synced successfully'; }
+      setTimeout(function() { setUI('idle'); }, 3000);
+    } else if (mode === 'error') {
+      btn.disabled = false;
+      btn.classList.add('error');
+      btn.innerHTML = '&#9729; Sync Failed';
+      if (icon) { icon.classList.add('idle'); icon.innerHTML = '&#9729;'; }
+      if (status) { status.style.color = 'var(--red)'; status.textContent = msg || 'Sync failed'; }
+      setTimeout(function() { setUI('idle'); }, 3000);
+    } else {
+      // idle
+      btn.disabled = false;
+      btn.innerHTML = '&#9729; SYNC';
+      if (icon) { icon.classList.add('idle'); icon.innerHTML = '&#9729;'; }
+      if (status && !msg) { status.textContent = _lastSync ? 'Last synced: ' + new Date(_lastSync).toLocaleTimeString() : ''; status.style.color = 'var(--text3)'; }
+    }
+  }
+
+  function getLocalData() {
+    // Gather all syncable data: state + cfg combined as vault_cfg
+    var stateData = {
+      notes: state.notes,
+      todos: state.todos,
+      habits: state.habits,
+      planner: state.planner,
+      firms: state.firms,
+      accounts: state.accounts,
+      propTracker: state.propTracker,
+      strategy: state.strategy,
+      windows: state.windows,
+      botState: state.botState
+    };
+    return {
+      vault_cfg: {
+        state: stateData,
+        cfg: cfg,
+        _localUpdated: cfg._cloudSyncTs || 0
+      }
+    };
+  }
+
+  function applyCloudData(cloudValue) {
+    if (!cloudValue) return;
+    // Restore state fields
+    if (cloudValue.state) {
+      var s = cloudValue.state;
+      if (s.notes)       state.notes       = s.notes;
+      if (s.todos)       state.todos        = s.todos;
+      if (s.habits)      state.habits       = s.habits;
+      if (s.planner)     state.planner      = s.planner;
+      if (s.firms)       state.firms        = s.firms;
+      if (s.accounts)    state.accounts     = s.accounts;
+      if (s.propTracker) state.propTracker  = s.propTracker;
+      if (s.strategy)    state.strategy     = s.strategy;
+      if (s.windows)     state.windows      = s.windows;
+      if (s.botState)    state.botState     = s.botState;
+    }
+    // Restore cfg fields (except device-specific ones)
+    if (cloudValue.cfg) {
+      var skipKeys = { opacity: 1 };
+      Object.keys(cloudValue.cfg).forEach(function(k) {
+        if (!skipKeys[k]) cfg[k] = cloudValue.cfg[k];
+      });
+    }
+  }
+
+  async function pull() {
+    var token = getToken();
+    var userId = getUserId();
+    if (!token || !userId) throw new Error('Not logged in');
+
+    var url = restUrl() + '?user_id=eq.' + userId + '&select=*';
+    var r = await fetch(url, {
+      method: 'GET',
+      headers: headers(token)
+    });
+    if (!r.ok) {
+      var errText = await r.text();
+      throw new Error('Pull failed: ' + r.status + ' ' + errText);
+    }
+    var rows = await r.json();
+    return rows; // [{id, user_id, data_key, data_value, updated_at}]
+  }
+
+  async function push(dataKey, dataValue) {
+    var token = getToken();
+    var userId = getUserId();
+    if (!token || !userId) throw new Error('Not logged in');
+
+    var payload = {
+      user_id: userId,
+      data_key: dataKey,
+      data_value: dataValue,
+      updated_at: new Date().toISOString()
+    };
+
+    var r = await fetch(restUrl(), {
+      method: 'POST',
+      headers: Object.assign({}, headers(token), {
+        'Prefer': 'resolution=merge-duplicates'
+      }),
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) {
+      var errText = await r.text();
+      throw new Error('Push failed: ' + r.status + ' ' + errText);
+    }
+    return true;
+  }
+
+  async function sync() {
+    if (_syncing) return;
+    var token = getToken();
+    if (!token) {
+      toast('Sign in to use Cloud Sync', 'error');
+      return;
+    }
+    _syncing = true;
+    setUI('syncing');
+
+    try {
+      // 1. Pull cloud data
+      var cloudRows = await pull();
+      var cloudMap = {};
+      cloudRows.forEach(function(row) {
+        cloudMap[row.data_key] = row;
+      });
+
+      // 2. Get local data
+      var local = getLocalData();
+
+      // 3. Merge: cloud wins if cloud updated_at is newer
+      var cloudRow = cloudMap['vault_cfg'];
+      if (cloudRow && cloudRow.data_value) {
+        var cloudTs = new Date(cloudRow.updated_at).getTime();
+        var localTs = local.vault_cfg._localUpdated || 0;
+
+        if (cloudTs > localTs) {
+          // Cloud is newer — apply cloud data locally
+          applyCloudData(cloudRow.data_value);
+          save();
+          saveCfg();
+          // Re-render UI
+          try { applyAllCfg(); } catch(e) {}
+          try { renderTrading(); } catch(e) {}
+          try { renderNotes(); } catch(e) {}
+          try { renderTodos(); } catch(e) {}
+          try { renderPlanner(); } catch(e) {}
+          try { renderPropTracker(); } catch(e) {}
+          try { renderStrategy(); } catch(e) {}
+          try { renderAccountability(); } catch(e) {}
+        }
+      }
+
+      // 4. Push local data to cloud (always push after merge to ensure cloud is up-to-date)
+      var now = Date.now();
+      cfg._cloudSyncTs = now;
+      saveCfg();
+
+      var pushData = getLocalData();
+      delete pushData.vault_cfg._localUpdated;
+      await push('vault_cfg', pushData.vault_cfg);
+
+      _lastSync = now;
+      _syncing = false;
+      setUI('success');
+      toast('Cloud sync complete', 'success');
+    } catch(e) {
+      _syncing = false;
+      setUI('error', e.message || 'Sync failed');
+      toast('Cloud sync failed: ' + (e.message || 'Unknown error'), 'error');
+    }
+  }
+
+  return { pull: pull, push: push, sync: sync, setUI: setUI };
+})();
 
 function applyTheme(themeId, accentId, customAccent){
   var theme = THEMES.find(function(t){return t.id===themeId;}) || THEMES[0];
