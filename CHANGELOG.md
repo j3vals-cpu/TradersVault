@@ -1,15 +1,17 @@
-Traders Vault v1.8.0
+Traders Vault v1.8.2
 
 ## New
-- Prop Tracker PnL Card — shareable card (Total Spent, Payouts, Net P&L, ROI %, firm breakdown)
-- In-app update download with progress bar
-- macOS support — .pkg installer for Intel and Apple Silicon
+- Prop Firm Promotions — admin pushes promo banners (firm, referral link, discount code)
+- Streamers can set their own promo in Settings > Identity
+- Promo banner rotates in-app, clicking opens referral link
+- Invite-only login — admin must issue accounts or approve signups
+- Admin: Create User, Approve pending users
+- Display name shown on both PnL cards (Gains + Prop Tracker)
+- Mac resize handle bigger and more visible
 
-## Fixes
-- Fixed PnL card text rendering (no more green/red block behind numbers)
-- Fixed Gains Card text rendering (same fix)
-- Fixed dock/undock tab overlap
-- Fixed update banner loop
+## Removed
+- App Title setting (locked to admin branding only)
+- Sign Up tab removed from login screen
 
 ---
 by J3 | Traders Vault
