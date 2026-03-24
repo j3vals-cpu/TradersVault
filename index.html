@@ -234,9 +234,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .win-hide:hover{background:var(--panel3);color:var(--text);}
 
 /* Window resize handle */
-.win-resize{position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;z-index:10;opacity:.3;}
-.win-resize::after{content:'';position:absolute;bottom:3px;right:3px;width:6px;height:6px;border-right:2px solid var(--text3);border-bottom:2px solid var(--text3);}
-.win:hover .win-resize{opacity:.7;}
+.win-resize{position:absolute;bottom:0;right:0;width:20px;height:20px;cursor:se-resize;z-index:10;opacity:.4;}
+.win-resize::after{content:'';position:absolute;bottom:4px;right:4px;width:8px;height:8px;border-right:2.5px solid var(--text3);border-bottom:2.5px solid var(--text3);}
+.win-resize::before{content:'';position:absolute;bottom:4px;right:10px;width:0;height:5px;border-right:2px solid var(--text3);opacity:.4;}
+.win:hover .win-resize{opacity:.9;}
 
 /* Win body */
 .win-body{flex:1;overflow-y:auto;padding:10px 12px 12px;min-height:0;}
@@ -539,7 +540,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <!-- Tabs -->
     <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:20px;">
       <button id="loginTab" onclick="switchAuthTab('login')" style="flex:1;padding:8px;border:none;background:transparent;color:#f0eee8;font-size:12px;font-weight:800;cursor:pointer;border-bottom:2px solid #e8b84b;font-family:'Cabinet Grotesk',sans-serif;">Sign In</button>
-      <button id="signupTab" onclick="switchAuthTab('signup')" style="flex:1;padding:8px;border:none;background:transparent;color:#5f5f78;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;font-family:'Cabinet Grotesk',sans-serif;">Create Account</button>
+
     </div>
     <!-- Login form -->
     <div id="loginForm">
@@ -5617,7 +5618,8 @@ async function doLogin() {
 
     // Validate with our API
     var validate = await validateToken(d.access_token);
-    if (!validate) { setAuthStatus('Could not verify licence', '#ff4d6d'); return; }
+    if (!validate) { setAuthStatus('Could not verify licence — check internet', '#ff4d6d'); return; }
+    if (validate._error) { setAuthStatus(validate._error, '#ff4d6d'); return; }
 
     saveSession(d.access_token, d.expires_in || 3600, validate);
     setAuthStatus('✓ Welcome back!', '#22d46a');
@@ -5686,22 +5688,31 @@ async function validateToken(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token,
-        app_version: '1.7.5',
-        os: 'windows',
+        app_version: '1.8.1',
+        os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
         pnl: typeof getPnlSnapshot === 'function' ? getPnlSnapshot() : null
       })
     });
-    if (!r.ok) return null;
     var data = await r.json();
-    if (data.error) return null;
+    if (!r.ok || data.error) {
+      // Pass error message back so caller can show it
+      return { _error: data.error || 'Validation failed', _status: r.status };
+    }
     return data;
   } catch(e) { return null; }
 }
 
 async function validateSessionSilent(token) {
   var v = await validateToken(token);
-  if (v) {
+  if (v && v._error) {
+    // Account suspended/pending — force back to login
+    tvSession = null;
+    localStorage.removeItem('tv_session');
+    if (window.electronAPI && window.electronAPI.saveData) window.electronAPI.saveData('vault-session', null);
+    showLoginScreen();
+    setAuthStatus(v._error, '#ff4d6d');
+  } else if (v) {
     applyLicenceBadge(v);
     checkForUpdate(v);
     if (v.branding) applyServerBranding(v.branding);
