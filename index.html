@@ -548,7 +548,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-size:22px;font-weight:900;letter-spacing:.5px;margin-bottom:2px;">TRADERS <span style="color:#e8b84b;">VAULT</span></div>
       <div style="font-family:'Geist Mono',monospace;font-size:9px;color:rgba(201,168,76,.45);letter-spacing:3px;margin-bottom:2px;">VAULTED DESK</div>
-      <div style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:3px;">v1.8.8 · J3</div>
+      <div style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:3px;">v1.8.9 · J3</div>
     </div>
     <!-- Tabs -->
     <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:20px;">
@@ -734,7 +734,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   </div>
 
   <div id="vaultBrandName">TRADERS VAULT<div style="font-family:'Geist Mono',monospace;font-size:11px;color:rgba(201,168,76,.45);letter-spacing:4px;margin-top:6px;">VAULTED DESK</div></div>
-  <div id="vaultTagline">J3 | v1.8.8</div>
+  <div id="vaultTagline">J3 | v1.8.9</div>
   <div id="vaultStatus">INITIALISING...</div>
 </div>
 
@@ -787,7 +787,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div class="logo-gem" style="background:none;box-shadow:none;padding:0;overflow:hidden;"><img class="app-logo-img" style="width:32px;height:32px;object-fit:contain;border-radius:8px;" alt="Traders Vault"></div>
     <div class="logo-stack">
       <div class="logo-txt" id="logoTxt">Traders Vault</div>
-      <div class="logo-sub">Vaulted Desk &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.8.8</div>
+      <div class="logo-sub">Vaulted Desk &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.8.9</div>
     </div>
   </div>
   <div class="tb-div"></div>
@@ -2840,7 +2840,7 @@ function openPropCard() {
     +'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1;">'
       +'<div style="display:flex;align-items:center;gap:16px;">'
         +'<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">'+_cardUrl+'</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">'+_cardSub+'</div></div>'
-        +'<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.8.8</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.8.9</div>'
       +'</div>'
       +(_userName?'<div style="font-size:18px;font-weight:800;color:rgba(240,238,232,.75);letter-spacing:.5px;">'+_userName+'</div>':'')
       +'<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRACKER</div>'
@@ -5201,7 +5201,7 @@ function testDiscordWebhook() {
     title: '✅ Traders Vault — Vaulted Desk Connected',
     description: 'Your Discord integration is working correctly.',
     color: 0x22d46a,
-    footer: { text: 'Traders Vault — Vaulted Desk v1.8.8' },
+    footer: { text: 'Traders Vault — Vaulted Desk v1.8.9' },
     timestamp: new Date().toISOString()
   }]).then(function() {
     if (st) { st.style.color = 'var(--green)'; st.textContent = '✓ Test message sent successfully'; }
@@ -5632,7 +5632,7 @@ function startHeartbeat() {
           user_id: tvSession.userId || tvSession.id || '',
           email: tvSession.email || '',
           token: tvSession.token,
-          app_version: '1.8.8',
+          app_version: '1.8.9',
           os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
           session_id: tvSession.sessionId || '',
           pnl: getPnlSnapshot()
@@ -5866,7 +5866,7 @@ async function validateToken(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token,
-        app_version: '1.8.8',
+        app_version: '1.8.9',
         os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
         pnl: typeof getPnlSnapshot === 'function' ? getPnlSnapshot() : null
@@ -5911,7 +5911,7 @@ function applyServerBranding(b) {
   if (b.appname) applyAppTitle(b.appname);
   // Sub-brand in topbar
   var sub = document.querySelector('.logo-sub');
-  if (sub && b.sub) sub.innerHTML = b.sub + ' &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.8.8';
+  if (sub && b.sub) sub.innerHTML = b.sub + ' &nbsp;<span style="opacity:.3;">|</span>&nbsp; v1.8.9';
   // Login screen
   var loginSub = document.querySelector('#tvLoginScreen .logo-sub-brand');
   if (loginSub && b.sub) loginSub.textContent = b.sub;
@@ -6076,7 +6076,7 @@ function applyLicenceBadge(v) {
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
   // compare with current app version — read from the topbar display
-  var current = '1.8.8';
+  var current = '1.8.9';
   // semver compare: return true if remote > current
   function isNewer(remote, local) {
     var r = remote.split('.').map(Number);
@@ -6574,7 +6574,7 @@ function openGainsCard() {
     + '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1;">'
       + '<div style="display:flex;align-items:center;gap:16px;">'
         + '<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">' + _cardUrl + '</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">' + _cardSub + '</div></div>'
-        + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.8.8</div>'
+        + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.8.9</div>'
       + '</div>'
       + (_userName2 ? '<div style="font-size:18px;font-weight:800;color:rgba(240,238,232,.75);letter-spacing:.5px;">' + _userName2 + '</div>' : '')
       + '<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRADER</div>'
