@@ -2723,10 +2723,7 @@ function openPropCard() {
       +'</div>';
   }).join('');
 
-  var pnlGrad=isPos
-    ?'linear-gradient(160deg,#26f77a 0%,#16c96a 40%,#0da856 100%)'
-    :'linear-gradient(160deg,#ff6b8a 0%,#e83050 40%,#c02040 100%)';
-  var pnlGlow=isPos?'rgba(22,201,106,.3)':'rgba(232,48,80,.3)';
+  var pnlColor=isPos?'#16c96a':'#e83050';
 
   var cardStyle=[
     'width:960px','background:#07070e','border-radius:28px','padding:56px',
@@ -2753,7 +2750,7 @@ function openPropCard() {
     // Net P&L
     +'<div style="text-align:center;margin-bottom:44px;position:relative;z-index:1;">'
       +'<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.55);letter-spacing:5px;text-transform:uppercase;margin-bottom:12px;">Net P&L</div>'
-      +'<div style="font-size:96px;font-weight:900;line-height:.9;letter-spacing:-4px;background:'+pnlGrad+';-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 40px '+pnlGlow+');">'+netStr+'</div>'
+      +'<div style="font-size:88px;font-weight:900;line-height:.9;letter-spacing:-3px;color:'+pnlColor+';">'+netStr+'</div>'
       +'<div style="font-family:Geist Mono,monospace;font-size:11px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:10px;text-transform:uppercase;">'
         +totalEntries+' Account'+(totalEntries!==1?'s':'')+' &nbsp;\u00b7&nbsp; '
         +groupOrder.length+' Firm'+(groupOrder.length!==1?'s':'')
@@ -2764,16 +2761,16 @@ function openPropCard() {
     // Stats strip: Spent / Payouts / ROI %
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:36px;position:relative;z-index:1;">'
       +'<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px 20px;text-align:center;">'
-        +'<div style="font-family:Geist Mono,monospace;font-size:28px;font-weight:700;line-height:1;margin-bottom:6px;color:#e83050;">'+spentStr+'</div>'
-        +'<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.28);letter-spacing:2px;">TOTAL SPENT</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:26px;font-weight:700;line-height:1;margin-bottom:8px;color:#e83050;">'+spentStr+'</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2.5px;">TOTAL SPENT</div>'
       +'</div>'
       +'<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px 20px;text-align:center;">'
-        +'<div style="font-family:Geist Mono,monospace;font-size:28px;font-weight:700;line-height:1;margin-bottom:6px;color:#16c96a;">'+earnedStr+'</div>'
-        +'<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.28);letter-spacing:2px;">PAYOUTS</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:26px;font-weight:700;line-height:1;margin-bottom:8px;color:#16c96a;">'+earnedStr+'</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2.5px;">PAYOUTS</div>'
       +'</div>'
       +'<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px 20px;text-align:center;">'
-        +'<div style="font-family:Geist Mono,monospace;font-size:28px;font-weight:700;line-height:1;margin-bottom:6px;color:'+(roiPct>=0?'#00d4aa':'#e83050')+';">' +roiStr+'</div>'
-        +'<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.28);letter-spacing:2px;">ROI</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:26px;font-weight:700;line-height:1;margin-bottom:8px;color:'+(roiPct>=0?'#00d4aa':'#e83050')+';">' +roiStr+'</div>'
+        +'<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2.5px;">ROI</div>'
       +'</div>'
     +'</div>'
     // Firm breakdown
@@ -6198,10 +6195,7 @@ function openGainsCard() {
   }).join('');
 
   // ── Build the card HTML ───────────────────────────────────────
-  var pnlGrad = isPos
-    ? 'linear-gradient(160deg,#26f77a 0%,#16c96a 40%,#0da856 100%)'
-    : 'linear-gradient(160deg,#ff6b8a 0%,#e83050 40%,#c02040 100%)';
-  var pnlGlow = isPos ? 'rgba(22,201,106,.3)' : 'rgba(232,48,80,.3)';
+  var pnlColor2 = isPos ? '#16c96a' : '#e83050';
 
   var cardStyle = [
     'width:960px',
@@ -6236,7 +6230,7 @@ function openGainsCard() {
     // Main P&L
     + '<div style="text-align:center;margin-bottom:44px;position:relative;z-index:1;">'
       + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.55);letter-spacing:5px;text-transform:uppercase;margin-bottom:12px;">All-Time P&L</div>'
-      + '<div style="font-size:96px;font-weight:900;line-height:.9;letter-spacing:-4px;background:' + pnlGrad + ';-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 40px ' + pnlGlow + ');">' + pnlStr + '</div>'
+      + '<div style="font-size:88px;font-weight:900;line-height:.9;letter-spacing:-3px;color:' + pnlColor2 + ';">' + pnlStr + '</div>'
       + '<div style="font-family:Geist Mono,monospace;font-size:11px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:10px;text-transform:uppercase;">'
         + allAccounts.length + ' Account' + (allAccounts.length !== 1 ? 's' : '') + ' &nbsp;&middot;&nbsp; '
         + (state.firms || []).length + ' Firm' + ((state.firms || []).length !== 1 ? 's' : '') + ' &nbsp;&middot;&nbsp; '
