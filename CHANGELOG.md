@@ -1,15 +1,14 @@
-Traders Vault v1.7.6
+Traders Vault v1.7.7
 
 ## New
 - ROI Tracker panel — track invested vs returned across all prop firms
-  - Summary: Total Invested, Total Returned, Net ROI, ROI %
-  - Categories: Eval Fee, Reset Fee, Monthly Fee, Activation Fee, Payout, Other
-  - Filter tabs: All / Invested / Returned
 - macOS support — click-to-install .pkg for Intel and Apple Silicon
 
 ## Fixes
 - Fixed dock/undock bug where tabs get stuck under panels
-- Fixed Windows icon (was too small, breaking builds)
+- Fixed update banner showing incorrectly after updating
+- Improved update download UX — shows progress and completion
+- Proper semver comparison for update checks
 
 ---
 by J3 | Traders Vault
