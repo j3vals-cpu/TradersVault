@@ -694,9 +694,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 <!-- ═══ UPDATE BANNER ═══ -->
 <div id="tvUpdateBanner" style="
   display:none;
-  position:fixed;bottom:0;left:0;right:0;z-index:99997;
+  position:fixed;top:0;left:0;right:0;z-index:99997;
   background:linear-gradient(90deg,rgba(14,14,19,.98),rgba(18,18,26,.98));
-  border-top:1px solid rgba(232,184,75,.3);
+  border-bottom:1px solid rgba(232,184,75,.3);
   padding:10px 20px;
   display:none;align-items:center;gap:14px;
   font-family:'Cabinet Grotesk',sans-serif;
@@ -715,7 +715,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   display:none;
   position:fixed;inset:0;z-index:999999;
   background:rgba(7,7,10,.96);
-  flex-direction:column;align-items:center;justify-content:center;
+  flex-direction:column;align-items:center;justify-content:flex-start;padding-top:60px;
   font-family:'Cabinet Grotesk',sans-serif;
   -webkit-app-region:no-drag;
 ">
@@ -5002,6 +5002,12 @@ function updateHitRects() {
   // Update banner
   var updateBanner = document.getElementById('tvUpdateBanner');
   if (updateBanner && updateBanner.style.display === 'flex') addRect(updateBanner);
+
+  // Force update overlay — full-screen block when visible
+  var forceOverlay = document.getElementById('tvForceUpdateOverlay');
+  if (forceOverlay && forceOverlay.style.display === 'flex') {
+    rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+  }
 
   // Gains/Prop card modals
   var gainsModal = document.getElementById('gainsCardModal');
