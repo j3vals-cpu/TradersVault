@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDataPath: () => ipcRenderer.invoke('get-data-path'),
   // Click-through hit rects
   setHitRects: (rects) => ipcRenderer.send('set-hit-rects', rects),
+  // Screenshot (capture desktop behind overlay)
+  captureScreen: () => ipcRenderer.invoke('capture-screen'),
   // Update download
   downloadUpdate: (url) => ipcRenderer.invoke('download-update', url),
   onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_, data) => callback(data)),

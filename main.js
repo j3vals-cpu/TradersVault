@@ -316,6 +316,39 @@ ipcMain.handle('open-file', (_, filePath) => {
   if (filePath) shell.openPath(filePath);
 });
 
+// ─── SCREENSHOT (hide overlay, capture screen, restore) ───
+ipcMain.handle('capture-screen', async () => {
+  try {
+    // Hide overlay so we capture the desktop/chart underneath
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
+    // Wait a moment for the window to actually hide
+    await new Promise(r => setTimeout(r, 200));
+    // Capture the primary display
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { bounds } = primaryDisplay;
+    const { desktopCapturer } = require('electron');
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: bounds.width, height: bounds.height }
+    });
+    // Restore overlay
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.show();
+    if (sources.length > 0) {
+      const img = sources[0].thumbnail;
+      const pngBuffer = img.toPNG();
+      // Save to temp file and return base64
+      const tmpPath = path.join(app.getPath('temp'), 'tv-signal-' + Date.now() + '.png');
+      fs.writeFileSync(tmpPath, pngBuffer);
+      return { ok: true, path: tmpPath, base64: pngBuffer.toString('base64'), width: img.getSize().width, height: img.getSize().height };
+    }
+    return { ok: false, error: 'No screen source found' };
+  } catch (e) {
+    // Make sure overlay comes back even on error
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.show();
+    return { ok: false, error: e.message };
+  }
+});
+
 // macOS: hide dock icon since this is an overlay app
 if (isMac) {
   app.dock?.hide();

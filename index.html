@@ -466,6 +466,32 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .promo-close{position:absolute;top:6px;right:10px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px 5px;opacity:.5;transition:opacity .15s;z-index:1;}
 .promo-close:hover{opacity:1;color:var(--text);}
 
+
+/* ───── SIGNAL BOT ───── */
+.signal-body{padding:0 !important;}
+.signal-controls{padding:12px;display:flex;flex-direction:column;gap:8px;}
+.signal-bias{display:flex;gap:4px;}
+.signal-bias-btn{flex:1;height:32px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text3);font-family:'Cabinet Grotesk',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .15s;}
+.signal-bias-btn:hover{border-color:var(--gold);color:var(--gold);}
+.signal-bias-btn.long{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.signal-bias-btn.short{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+.signal-bias-btn.neutral{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+.signal-caption{width:100%;height:32px;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:0 10px;font-family:'Cabinet Grotesk',sans-serif;outline:none;}
+.signal-caption:focus{border-color:var(--gold);}
+.signal-caption::placeholder{color:var(--text3);}
+.signal-fire-btn{height:42px;border:none;border-radius:8px;background:linear-gradient(135deg,#e8b84b,#c9972f);color:#07070a;font-size:13px;font-weight:900;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.signal-fire-btn:hover{filter:brightness(1.12);box-shadow:0 4px 20px rgba(232,184,75,.3);}
+.signal-fire-btn:active{transform:scale(.98);}
+.signal-fire-btn.sending{opacity:.6;pointer-events:none;}
+.signal-preview{margin:8px 12px 12px;border-radius:8px;overflow:hidden;border:1px solid var(--border2);background:var(--panel2);min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;}
+.signal-preview img{width:100%;display:block;}
+.signal-log{flex:1;overflow-y:auto;padding:0 12px 12px;}
+.signal-log-item{padding:6px 8px;border-radius:5px;background:var(--panel2);border:1px solid var(--border);margin-bottom:4px;font-size:10px;display:flex;align-items:center;gap:6px;}
+.signal-log-item .sl-time{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);flex-shrink:0;}
+.signal-log-item .sl-bias{font-size:9px;font-weight:800;padding:1px 5px;border-radius:3px;flex-shrink:0;}
+.signal-log-item .sl-msg{color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.signal-role-input{width:100%;height:28px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:0 8px;font-family:'Geist Mono',monospace;outline:none;}
+.signal-role-input:focus{border-color:var(--gold);}
 /* ───── STRATEGY ───── */
 .strat-section{margin-bottom:10px;}
 .strat-section-title{font-size:10px;font-weight:800;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
@@ -1261,10 +1287,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         </div>
       </div>
       <div class="s-lbl">Notifications</div>
-      <div class="srow"><span class="srow-lbl">Prop firm account updates</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcPropUpdates" onchange="cfg.dcPropUpdates=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
-      <div class="srow"><span class="srow-lbl">Economic news alerts (High impact)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcNewsAlerts" onchange="cfg.dcNewsAlerts=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
-      <div class="srow"><span class="srow-lbl">Bot signals (Long/Short)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcBotSignals" onchange="cfg.dcBotSignals=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
-      <div class="srow"><span class="srow-lbl">Daily P&amp;L summary (5pm UTC)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcDailySummary" onchange="cfg.dcDailySummary=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
+      <div class="srow"><span class="srow-lbl">Balance updates (when you update an account)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcDailySummary" onchange="cfg.dcDailySummary=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
+      <div class="srow"><span class="srow-lbl">Prop Tracker updates (entries &amp; payouts)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcPropUpdates" onchange="cfg.dcPropUpdates=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
+      <div class="srow"><span class="srow-lbl">Trade signals (from Signal Bot)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcBotSignals" onchange="cfg.dcBotSignals=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
+      <div class="srow"><span class="srow-lbl">P&amp;L heartbeat summary (every 5 min)</span><div class="srow-ctrl"><label class="panel-vis-toggle"><input type="checkbox" id="dcNewsAlerts" onchange="cfg.dcNewsAlerts=this.checked;saveCfg()"><span class="pvt-track"></span></label></div></div>
+      <div class="s-lbl">Signal Bot Settings</div>
+      <div class="srow"><span class="srow-lbl">Discord Role ID to @mention</span><div class="srow-ctrl"><input class="s-input" id="dcSignalRole" placeholder="e.g. 1234567890" style="width:140px;font-family:Geist Mono,monospace;font-size:10px;" oninput="cfg.dcSignalRole=this.value.trim();saveCfg()"></div></div>
       <div style="display:flex;gap:8px;margin-top:16px;">
         <button onclick="testDiscordWebhook()" style="flex:1;padding:9px;background:rgba(88,101,242,.15);border:1px solid rgba(88,101,242,.4);border-radius:7px;color:rgba(148,155,252,1);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;">&#127358; Test Webhook</button>
         <button onclick="saveDiscordSettings()" style="flex:1;padding:9px;background:var(--gold);border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;">Save</button>
@@ -1479,6 +1507,7 @@ var WINS=[
   {id:'quote',     title:'Mindset',          icon:'&#128161;'},
   {id:'calcs',     title:'Calculators',      icon:'&#128208;'},
   {id:'bot',       title:'Bot',              icon:'&#129302;'},
+  {id:'signal',    title:'Signal Bot',       icon:'&#128225;'},
 ];
 
 var DEFAULT_LAYOUT={
@@ -1492,6 +1521,7 @@ var DEFAULT_LAYOUT={
   quote:    {x:1060, y:90,  w:280, h:160},
   calcs:    {x:1060, y:260, w:380, h:480},
   bot:      {x:540,  y:460, w:560, h:440},
+  signal:   {x:10,   y:520, w:340, h:300},
 };
 
 // Save: file-based (Electron) + localStorage fallback
@@ -1921,7 +1951,6 @@ function saveNote(){
     state.notes.unshift({id:uid(),title:title||'Untitled',content:content,tag:tag,color:noteColor,created:Date.now(),updated:Date.now()});
   }
   save();closeNoteModal();renderNotes();
-  dcNotify('\ud83d\udcdd Note Saved',[{name:'Title',value:'**'+(title||'Untitled')+'**',inline:true}],0x8b6fff);
 }
 function delNote(id){state.notes=state.notes.filter(function(n){return n.id!==id;});save();renderNotes();}
 function renderNotes(){
@@ -1962,7 +1991,6 @@ function addTodo(){
   var pri=document.getElementById('todoPri').value;
   state.todos.unshift({id:uid(),text:text,pri:pri,done:false,ts:Date.now()});
   inp.value='';save();renderTodos();
-  dcNotify('\u2705 To-Do Added',[{name:'Task',value:'**'+text+'**',inline:true}],0x00d4aa);
 }
 function toggleTodo(id){var t=state.todos.find(function(x){return x.id===id;});if(t)t.done=!t.done;save();renderTodos();}
 function delTodo(id){state.todos=state.todos.filter(function(x){return x.id!==id;});save();renderTodos();}
@@ -2127,7 +2155,6 @@ function saveFirm(){
   var name=document.getElementById('fmName').value.trim();if(!name)return;
   state.firms.push({id:uid(),name:name,color:firmColor});
   save();closeFirmModal();renderFirmSelector();renderTrading();renderPropFirmSelect();
-  dcNotify('\ud83c\udfe2 Firm Added',[{name:'Firm',value:'**'+name+'**',inline:true}]);
 }
 
 function onBalSelChange(){document.getElementById('acCustomWrap').style.display=document.getElementById('acBalanceSel').value==='custom'?'block':'none';}
@@ -2161,7 +2188,6 @@ function saveAccount(){
     profitTarget:target,totalProfitNeeded:totalProfit,consistency:consistency,
     dailyLogs:[],color:firm?firm.color:COLORS[0]});
   save();closeAccountModal();renderFirmSelector();renderTrading();
-  dcNotify('\ud83d\udcca Account Added',[{name:'Firm',value:'**'+(firm?firm.name:'')+'**',inline:true},{name:'Type',value:acType,inline:true},{name:'Balance',value:'$'+balance.toFixed(0),inline:true}],0x22d46a);
 }
 function delAccount(id){state.accounts=state.accounts.filter(function(a){return a.id!==id;});save();renderTrading();}
 
@@ -2910,6 +2936,146 @@ function copyPropCard(){
 }
 
 // ═══════════════════════════════════════════
+// SIGNAL BOT WINDOW
+// ═══════════════════════════════════════════
+var _signalBias = 'long';
+var _signalLog = [];
+var _signalPreview = null;
+
+function buildSignalWin() {
+  var el = createWindow({id:'signal', title:'Signal Bot', icon:'&#128225;'});
+  var body = document.getElementById('wbody-signal');
+  if (!body) return;
+  body.className = 'win-body signal-body';
+  body.innerHTML = 
+    '<div class="signal-controls">'
+    + '<div class="signal-bias">'
+    +   '<button class="signal-bias-btn long" id="sigLong" onclick="setSignalBias(\'long\')">\ud83d\udfe2 LONG</button>'
+    +   '<button class="signal-bias-btn" id="sigShort" onclick="setSignalBias(\'short\')">\ud83d\udd34 SHORT</button>'
+    +   '<button class="signal-bias-btn" id="sigNeutral" onclick="setSignalBias(\'neutral\')">\ud83d\udfe1 NEUTRAL</button>'
+    + '</div>'
+    + '<input class="signal-caption" id="sigCaption" placeholder="Add a note... (optional)" maxlength="200">'
+    + '<button class="signal-fire-btn" id="sigFireBtn" onclick="fireSignal()">\ud83d\udce1 Send Trade Idea</button>'
+    + '<div id="sigStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:var(--text3);min-height:14px;text-align:center;"></div>'
+    + '</div>'
+    + '<div class="signal-preview" id="sigPreview">Screenshot will appear here</div>'
+    + '<div style="padding:0 12px 4px;"><div style="font-family:Geist Mono,monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">RECENT SIGNALS</div></div>'
+    + '<div class="signal-log" id="sigLog"></div>';
+  renderSignalLog();
+}
+
+function setSignalBias(bias) {
+  _signalBias = bias;
+  ['long','short','neutral'].forEach(function(b) {
+    var btn = document.getElementById('sig' + b.charAt(0).toUpperCase() + b.slice(1));
+    if (btn) btn.className = 'signal-bias-btn' + (b === bias ? ' ' + bias : '');
+  });
+}
+
+async function fireSignal() {
+  var btn = document.getElementById('sigFireBtn');
+  var st = document.getElementById('sigStatus');
+  if (!cfg.discordWebhook) { if (st) st.textContent = 'Set Discord webhook in Settings first'; return; }
+  if (btn) { btn.classList.add('sending'); btn.textContent = '\u23f3 Capturing screen...'; }
+  if (st) st.textContent = '';
+
+  // Capture screenshot
+  var screenshot = null;
+  if (window.electronAPI && window.electronAPI.captureScreen) {
+    screenshot = await window.electronAPI.captureScreen();
+  }
+  if (btn) btn.textContent = '\u23f3 Sending to Discord...';
+
+  var caption = (document.getElementById('sigCaption') || {}).value || '';
+  var biasLabel = _signalBias === 'long' ? '\ud83d\udfe2 LONG' : _signalBias === 'short' ? '\ud83d\udd34 SHORT' : '\ud83d\udfe1 NEUTRAL';
+  var biasColor = _signalBias === 'long' ? 0x22d46a : _signalBias === 'short' ? 0xff4d6d : 0xe8b84b;
+  var userName = cfg.userName || 'Trader';
+  var roleId = cfg.dcSignalRole || '';
+  var roleMention = roleId ? '<@&' + roleId + '> ' : '';
+
+  try {
+    // Build form data with image attachment
+    var payload = {
+      content: roleMention + '**' + biasLabel + ' Signal from ' + userName + '**' + (caption ? '\n> ' + caption : ''),
+      embeds: [{
+        color: biasColor,
+        image: screenshot && screenshot.ok ? { url: 'attachment://signal.png' } : undefined,
+        footer: { text: 'Traders Vault \u00b7 Signal Bot \u00b7 ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) },
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    if (screenshot && screenshot.ok && screenshot.base64) {
+      // Use multipart form to attach image
+      var boundary = '----TVSignal' + Date.now();
+      var body = '';
+      body += '--' + boundary + '\r\n';
+      body += 'Content-Disposition: form-data; name="payload_json"\r\n';
+      body += 'Content-Type: application/json\r\n\r\n';
+      body += JSON.stringify(payload) + '\r\n';
+      body += '--' + boundary + '\r\n';
+      body += 'Content-Disposition: form-data; name="files[0]"; filename="signal.png"\r\n';
+      body += 'Content-Type: image/png\r\n';
+      body += 'Content-Transfer-Encoding: base64\r\n\r\n';
+      body += screenshot.base64 + '\r\n';
+      body += '--' + boundary + '--\r\n';
+
+      // Convert to binary for fetch
+      var binaryBody = new Blob([]);
+      var payloadPart = new Blob([JSON.stringify(payload)], {type:'application/json'});
+      var imgBytes = Uint8Array.from(atob(screenshot.base64), function(c){return c.charCodeAt(0);});
+      var imgBlob = new Blob([imgBytes], {type:'image/png'});
+      var fd = new FormData();
+      fd.append('payload_json', JSON.stringify(payload));
+      fd.append('files[0]', imgBlob, 'signal.png');
+
+      await fetch(cfg.discordWebhook, { method:'POST', body: fd });
+    } else {
+      // No screenshot, just send embed
+      payload.embeds[0].image = undefined;
+      await fetch(cfg.discordWebhook, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+    }
+
+    // Update preview
+    if (screenshot && screenshot.ok) {
+      var preview = document.getElementById('sigPreview');
+      if (preview) preview.innerHTML = '<img src="data:image/png;base64,' + screenshot.base64 + '">';
+    }
+
+    // Log it
+    _signalLog.unshift({ time: Date.now(), bias: _signalBias, caption: caption });
+    if (_signalLog.length > 20) _signalLog = _signalLog.slice(0, 20);
+    renderSignalLog();
+
+    if (st) st.textContent = '\u2713 Signal sent to Discord!';
+    if (st) st.style.color = 'var(--green)';
+    document.getElementById('sigCaption').value = '';
+    toast('Signal sent to Discord', 'success');
+  } catch(e) {
+    if (st) { st.textContent = 'Failed: ' + e.message; st.style.color = 'var(--red)'; }
+    toast('Signal failed: ' + e.message, 'error');
+  }
+  if (btn) { btn.classList.remove('sending'); btn.textContent = '\ud83d\udce1 Send Trade Idea'; }
+}
+
+function renderSignalLog() {
+  var el = document.getElementById('sigLog');
+  if (!el) return;
+  if (!_signalLog.length) { el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text3);font-size:10px;">No signals sent yet</div>'; return; }
+  el.innerHTML = _signalLog.map(function(s) {
+    var t = new Date(s.time).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    var bCol = s.bias === 'long' ? 'var(--green)' : s.bias === 'short' ? 'var(--red)' : 'var(--gold)';
+    var bBg = s.bias === 'long' ? 'var(--green-dim)' : s.bias === 'short' ? 'var(--red-dim)' : 'var(--gold-dim)';
+    var bLabel = s.bias.toUpperCase();
+    return '<div class="signal-log-item"><span class="sl-time">' + t + '</span><span class="sl-bias" style="color:' + bCol + ';background:' + bBg + ';">' + bLabel + '</span><span class="sl-msg">' + (s.caption || 'Trade idea') + '</span></div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
 // STRATEGY WINDOW
 // ═══════════════════════════════════════════
 var STRAT_SECTIONS={premarket:'Pre-Market',setup:'Trade Setup',risk:'Risk Rules',postmarket:'Post-Market'};
@@ -3050,8 +3216,6 @@ function saveStratItem(){
   save();closeStratModal();renderStrategy();
 }
 function toggleStrat(section,id){
-  var _sItem=state.strategy[section]?state.strategy[section].find(function(x){return x.id===id;}):null;
-  if(_sItem&&!_sItem.done)dcNotify('\u2611\ufe0f Checklist: '+section.toUpperCase(),[{name:'Item',value:'**'+(_sItem.text||'')+'**',inline:true}],0x22d46a);
   var item=state.strategy[section].find(function(x){return x.id===id;});
   if(item)item.checked=!item.checked;save();renderStrategy();
 }
@@ -3119,13 +3283,11 @@ function addHabit(){
   inp.value='';save();renderAccountability();
 }
 function toggleHabit(id){
-  var _hItem=state.habits.find(function(x){return x.id===id;});
   var h=state.habits.find(function(x){return x.id===id;});if(!h)return;
   var t=today();
   if(h.completions.indexOf(t)>-1)h.completions=h.completions.filter(function(c){return c!==t;});
   else h.completions.push(t);
   save();renderAccountability();
-  if(_hItem&&_hItem.log&&_hItem.log.indexOf(today())>=0)dcNotify('\ud83d\udd25 Habit Tracked',[{name:'Habit',value:'**'+(_hItem.text||'')+'**',inline:true}],0x22d46a);
 }
 function delHabit(id){state.habits=state.habits.filter(function(x){return x.id!==id;});save();renderAccountability();}
 function streak(h){var s=0,d=new Date();while(true){if(h.completions.indexOf(dayKey(d))>-1){s++;d.setDate(d.getDate()-1);}else break;}return s;}
@@ -3592,6 +3754,7 @@ function openSettings(){
   var dn2= document.getElementById('dcNewsAlerts');   if(dn2)dn2.checked = !!cfg.dcNewsAlerts;
   var db = document.getElementById('dcBotSignals');   if(db) db.checked = !!cfg.dcBotSignals;
   var dd = document.getElementById('dcDailySummary'); if(dd) dd.checked = !!cfg.dcDailySummary;
+  var sr = document.getElementById('dcSignalRole'); if(sr) sr.value = cfg.dcSignalRole||'';
   buildThemeGrid();
   buildAccentGrid();
   buildPanelEditor();
@@ -4285,6 +4448,7 @@ buildPlannerWin();
 buildQuoteWin();
 buildCalcsWin();
 buildBotWin();
+buildSignalWin();
 
 buildToggles();
 initElectron();
