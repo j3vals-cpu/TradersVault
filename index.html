@@ -3430,8 +3430,29 @@ var LAYOUT_PRESETS = [
 var cfg = (function(){
   try { return JSON.parse(localStorage.getItem('vd_cfg') || '{}'); } catch(e){ return {}; }
 })();
+// Load cfg from Electron file storage (overrides localStorage if available)
+(async function loadCfgFromFile() {
+  if (window.electronAPI && window.electronAPI.loadData) {
+    try {
+      var saved = await window.electronAPI.loadData('vault-cfg');
+      if (saved && typeof saved === 'object') {
+        Object.keys(saved).forEach(function(k) { cfg[k] = saved[k]; });
+      }
+    } catch(e) {}
+  }
+})();
 
-function saveCfg(){ localStorage.setItem('vd_cfg', JSON.stringify(cfg)); }
+var _cfgSaveTimer = null;
+function saveCfg(){
+  try { localStorage.setItem('vd_cfg', JSON.stringify(cfg)); } catch(e) {}
+  // Also save to Electron file storage for persistence
+  if (_cfgSaveTimer) clearTimeout(_cfgSaveTimer);
+  _cfgSaveTimer = setTimeout(function() {
+    if (window.electronAPI && window.electronAPI.saveData) {
+      window.electronAPI.saveData('vault-cfg', cfg);
+    }
+  }, 500);
+}
 
 function applyTheme(themeId, accentId, customAccent){
   var theme = THEMES.find(function(t){return t.id===themeId;}) || THEMES[0];
@@ -3556,12 +3577,12 @@ function openSettings(){
   document.getElementById('settingsName').value = cfg.userName||'';
   // Load custom promo fields
   try {
-    var cp = JSON.parse(localStorage.getItem('tv_custom_promo') || 'null');
+    var cp = cfg.customPromo || JSON.parse(localStorage.getItem('tv_custom_promo') || 'null');
     if (cp) {
-      document.getElementById('promoMyFirm').value = cp.firm || '';
-      document.getElementById('promoMyText').value = cp.text || '';
-      document.getElementById('promoMyCode').value = cp.code || '';
-      document.getElementById('promoMyLink').value = cp.link || '';
+      var pf=document.getElementById('promoMyFirm'); if(pf) pf.value = cp.firm || '';
+      var pt=document.getElementById('promoMyText'); if(pt) pt.value = cp.text || '';
+      var pc=document.getElementById('promoMyCode'); if(pc) pc.value = cp.code || '';
+      var pl=document.getElementById('promoMyLink'); if(pl) pl.value = cp.link || '';
     }
   } catch(e) {}
   document.getElementById('settingsCurrency').value = cfg.currency||'$';
@@ -5891,9 +5912,9 @@ function applyPromotions(promos) {
   // Merge admin promos with user's custom promo
   var userPromo = null;
   try {
-    var cp = JSON.parse(localStorage.getItem('tv_custom_promo') || 'null');
+    var cp = cfg.customPromo || JSON.parse(localStorage.getItem('tv_custom_promo') || 'null');
     if (cp && cp.firm && cp.link) userPromo = cp;
-  } catch(e){}
+  } catch(e) {}
   _activePromos = promos.filter(function(p) { return p.active; });
   if (userPromo) _activePromos.push(userPromo);
   if (!_activePromos.length) { hidePromoBanner(); return; }
@@ -5942,13 +5963,15 @@ function openPromoLink() {
 // User custom promo (streamer sets their own referral)
 function setCustomPromo(firm, text, code, link, color) {
   var cp = { firm: firm, text: text, code: code, link: link, color: color || '#e8b84b', active: true };
-  localStorage.setItem('tv_custom_promo', JSON.stringify(cp));
+  cfg.customPromo = cp; saveCfg();
+  try { localStorage.setItem('tv_custom_promo', JSON.stringify(cp)); } catch(e) {}
   // Re-apply with the custom promo included
   applyPromotions(_activePromos.filter(function(p) { return !p._isCustom; }));
 }
 
 function clearCustomPromo() {
-  localStorage.removeItem('tv_custom_promo');
+  cfg.customPromo = null; saveCfg();
+  try { localStorage.removeItem('tv_custom_promo'); } catch(e) {}
   applyPromotions(_activePromos.filter(function(p) { return !p._isCustom; }));
 }
 
