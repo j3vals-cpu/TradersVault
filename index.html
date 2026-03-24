@@ -6140,6 +6140,14 @@ function openGainsCard() {
       dayMap[log.date] += (log.pnl || 0);
     });
   });
+  // Include Prop Tracker net P&L in total
+  (state.propTracker || []).forEach(function(pt) {
+    var cpu = pt.costPerUnit || pt.cost || 0;
+    var qty = pt.qty || 1;
+    var earned = 0;
+    (pt.payouts || []).forEach(function(p) { earned += p.amount; });
+    totalPnl += (earned - cpu * qty);
+  });
 
   var winDays = 0, lossDays = 0;
   var equityData = [];
@@ -6163,15 +6171,36 @@ function openGainsCard() {
   var _cardUrl   = sb.cardurl   || 'tradersvault.app';
   var _cardBadge = sb.cardbadge || 'PROP TRADER';
 
-  // Firm breakdown
-  var firms = (state.firms || []).map(function(f) {
+  // Firm breakdown — merge Trading accounts + Prop Tracker entries
+  var firmMap = {};
+  // From Trading accounts (state.accounts)
+  (state.firms || []).forEach(function(f) {
     var accs = allAccounts.filter(function(a) { return a.firmId === f.id; });
-    var fp   = 0;
+    if (!accs.length) return;
+    var fp = 0;
     accs.forEach(function(a) {
       fp += typeof a.pnl === 'number' ? a.pnl : ((a.currentBalance || a.balance || a.startBalance || 0) - (a.startBalance || 0));
     });
-    return { name: f.name, pnl: fp, color: f.color || '#e8b84b', count: accs.length };
-  }).filter(function(f) { return f.count > 0; });
+    var key = f.name.trim().toLowerCase();
+    if (!firmMap[key]) firmMap[key] = { name: f.name, pnl: 0, color: f.color || '#e8b84b', count: 0 };
+    firmMap[key].pnl += fp;
+    firmMap[key].count += accs.length;
+    if (f.color) firmMap[key].color = f.color;
+  });
+  // From Prop Tracker (state.propTracker)
+  (state.propTracker || []).forEach(function(pt) {
+    var key = pt.name.trim().toLowerCase();
+    var cpu = pt.costPerUnit || pt.cost || 0;
+    var qty = pt.qty || 1;
+    var spent = cpu * qty;
+    var earned = 0;
+    (pt.payouts || []).forEach(function(p) { earned += p.amount; });
+    var net = earned - spent;
+    if (!firmMap[key]) firmMap[key] = { name: pt.name.trim(), pnl: 0, color: '#e8b84b', count: 0 };
+    firmMap[key].pnl += net;
+    firmMap[key].count += qty;
+  });
+  var firms = Object.keys(firmMap).map(function(k) { return firmMap[k]; }).filter(function(f) { return f.count > 0; });
 
   // Equity bars — normalise to max
   var maxAbs = Math.max.apply(null, equityData.map(function(v){return Math.abs(v);})) || 1;
