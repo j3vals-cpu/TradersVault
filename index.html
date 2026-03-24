@@ -453,6 +453,18 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .prop-row:hover .prop-firm-del{opacity:1;}
 .prop-firm-del:hover{color:var(--red);}
 
+/* ───── PROMO BANNER ───── */
+.promo-banner{display:none;align-items:center;gap:10px;padding:6px 14px;background:rgba(232,184,75,.06);border:1px solid rgba(232,184,75,.15);border-radius:8px;margin:6px 12px;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.promo-banner:hover{background:rgba(232,184,75,.12);border-color:rgba(232,184,75,.3);}
+.promo-banner.active{display:flex;}
+.promo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.promo-firm{font-size:11px;font-weight:800;color:var(--text);}
+.promo-text{font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.promo-code{font-family:'Geist Mono',monospace;font-size:9px;color:var(--teal);background:var(--teal-dim);padding:2px 7px;border-radius:4px;font-weight:700;letter-spacing:.5px;flex-shrink:0;}
+.promo-cta{font-size:9px;font-weight:800;color:var(--gold);flex-shrink:0;}
+/* User custom promo in settings */
+.promo-custom{padding:12px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;margin-top:10px;}
+
 /* ───── STRATEGY ───── */
 .strat-section{margin-bottom:10px;}
 .strat-section-title{font-size:10px;font-weight:800;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
@@ -893,6 +905,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 <!-- Hover zone to reveal hidden dock -->
 <div class="dock-hover-zone" id="dockHoverZone"></div>
 
+<!-- PROMO BANNER -->
+<div class="promo-banner" id="promoBanner" onclick="openPromoLink()">
+  <div class="promo-dot" id="promoDot" style="background:var(--gold);"></div>
+  <span class="promo-firm" id="promoFirm"></span>
+  <span class="promo-text" id="promoText"></span>
+  <span class="promo-code" id="promoCode" style="display:none;"></span>
+  <span class="promo-cta">→</span>
+</div>
+
 <!-- CANVAS -->
 <div class="canvas" id="canvas"></div>
 
@@ -1149,17 +1170,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div class="settings-panel" id="stab-identity">
       <div class="s-lbl" style="margin-top:0;">Personal</div>
       <div class="srow">
-        <span class="srow-lbl">Your Name</span>
+        <span class="srow-lbl">Display Name</span>
         <div class="srow-ctrl">
-          <input class="s-input" id="settingsName" placeholder="e.g. Alex" maxlength="30" oninput="previewGreeting()">
+          <input class="s-input" id="settingsName" placeholder="e.g. Alex" maxlength="30" oninput="cfg.userName=this.value.trim();saveCfg();previewGreeting()">
         </div>
       </div>
-      <div class="srow">
-        <span class="srow-lbl">App Title</span>
-        <div class="srow-ctrl">
-          <input class="s-input" id="settingsAppTitle" placeholder="Traders Vault" maxlength="20">
-        </div>
-      </div>
+      <div style="font-size:9px;color:var(--text3);margin:-4px 0 8px;padding:0 2px;">Shown on your PnL cards and greeting bar</div>
       <div id="greetPreview" style="padding:10px 14px;background:var(--panel2);border-radius:8px;font-size:12px;color:var(--text2);border:1px solid var(--border2);margin-top:4px;"></div>
       <div class="s-lbl">Currency</div>
       <div class="srow">
@@ -1167,13 +1183,35 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <div class="srow-ctrl">
           <select class="s-input" id="settingsCurrency" style="cursor:pointer;">
             <option value="$">$ USD</option>
-            <option value="£">£ GBP</option>
-            <option value="€">€ EUR</option>
+            <option value="&#163;">&#163; GBP</option>
+            <option value="&#8364;">&#8364; EUR</option>
             <option value="A$">A$ AUD</option>
             <option value="C$">C$ CAD</option>
-            <option value="¥">¥ JPY</option>
+            <option value="&#165;">&#165; JPY</option>
           </select>
         </div>
+      </div>
+      <div class="s-lbl">Prop Firm Promotion</div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:8px;">Add your own referral link. Shows as a promo banner in the app — great for streamers.</div>
+      <div class="srow">
+        <span class="srow-lbl">Firm Name</span>
+        <div class="srow-ctrl"><input class="s-input" id="promoMyFirm" placeholder="e.g. Apex" maxlength="30"></div>
+      </div>
+      <div class="srow">
+        <span class="srow-lbl">Promo Text</span>
+        <div class="srow-ctrl"><input class="s-input" id="promoMyText" placeholder="e.g. 80% off evals" maxlength="60"></div>
+      </div>
+      <div class="srow">
+        <span class="srow-lbl">Discount Code</span>
+        <div class="srow-ctrl"><input class="s-input" id="promoMyCode" placeholder="e.g. J3TRADES" maxlength="20"></div>
+      </div>
+      <div class="srow">
+        <span class="srow-lbl">Referral Link</span>
+        <div class="srow-ctrl"><input class="s-input" id="promoMyLink" placeholder="https://..." maxlength="200"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <button class="snap-btn" onclick="saveMyPromo()" style="background:var(--green-dim);border-color:var(--green);color:var(--green);">Save Promo</button>
+        <button class="snap-btn" onclick="clearMyPromo()">Clear</button>
       </div>
     </div>
 
@@ -2698,6 +2736,7 @@ function openPropCard() {
   var _cardName=sb.cardname||'TRADERS VAULT';
   var _cardSub=sb.cardsub||'VAULTED DESK';
   var _cardUrl=sb.cardurl||'tradersvault.app';
+  var _userName=cfg.userName||(tvSession&&tvSession.user?tvSession.user.full_name:'')||'';
 
   // Firm breakdown rows
   var groups={};
@@ -2784,6 +2823,7 @@ function openPropCard() {
         +'<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">'+_cardUrl+'</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">'+_cardSub+'</div></div>'
         +'<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.8.1</div>'
       +'</div>'
+      +(_userName?'<div style="font-size:12px;font-weight:700;color:rgba(240,238,232,.6);letter-spacing:.3px;">'+_userName+'</div>':'')
       +'<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRACKER</div>'
     +'</div>'
     +'</div>'; // end card
@@ -3454,7 +3494,7 @@ function applyCurrency(sym){
 
 function applyAllCfg(){
   if(cfg.themeId || cfg.accentId) applyTheme(cfg.themeId||'vault', cfg.accentId||'gold', cfg.customAccent);
-  if(cfg.appTitle) applyAppTitle(cfg.appTitle);
+  // App title locked — only admin branding can change it
   if(cfg.currency) applyCurrency(cfg.currency);
   // Restore opacity
   if(cfg.opacity != null){
@@ -3514,7 +3554,16 @@ function openSettings(){
   buildLayoutGrid();
   // Populate identity fields
   document.getElementById('settingsName').value = cfg.userName||'';
-  document.getElementById('settingsAppTitle').value = cfg.appTitle||'';
+  // Load custom promo fields
+  try {
+    var cp = JSON.parse(localStorage.getItem('tv_custom_promo') || 'null');
+    if (cp) {
+      document.getElementById('promoMyFirm').value = cp.firm || '';
+      document.getElementById('promoMyText').value = cp.text || '';
+      document.getElementById('promoMyCode').value = cp.code || '';
+      document.getElementById('promoMyLink').value = cp.link || '';
+    }
+  } catch(e) {}
   document.getElementById('settingsCurrency').value = cfg.currency||'$';
   document.getElementById('customAccentPicker').value = cfg.customAccent||'#e8b84b';
   document.getElementById('customAccentHex').textContent = cfg.customAccent||'#e8b84b';
@@ -3696,7 +3745,6 @@ function previewOpacity(val){
 function saveSettings(){
   // Identity
   cfg.userName = document.getElementById('settingsName').value.trim();
-  cfg.appTitle  = document.getElementById('settingsAppTitle').value.trim();
   cfg.currency  = document.getElementById('settingsCurrency').value;
 
   // Transparency
@@ -5540,6 +5588,7 @@ function startHeartbeat() {
       });
       var v = await r.json();
       if (v && v.branding) applyServerBranding(v.branding);
+      if (v && v.promotions) applyPromotions(v.promotions);
       if (v) checkForUpdate(v);
       if (v && v.banned) { doLogout(); }
     } catch(e) {}
@@ -5716,6 +5765,7 @@ async function validateSessionSilent(token) {
     applyLicenceBadge(v);
     checkForUpdate(v);
     if (v.branding) applyServerBranding(v.branding);
+    if (v.promotions) applyPromotions(v.promotions);
     if (!v.valid && tvSession && !tvSession.skipped) {
       showUpgradePrompt(v);
     }
@@ -5751,6 +5801,96 @@ function applyServerBranding(b) {
   }
   // Store for gains card
   window._serverBranding = b;
+}
+
+// ── Promotions ──────────────────────────────────────────
+var _activePromos = [];
+var _currentPromoIdx = 0;
+var _promoRotateTimer = null;
+
+function applyPromotions(promos) {
+  if (!promos || !Array.isArray(promos)) { _activePromos = []; hidePromoBanner(); return; }
+  // Merge admin promos with user's custom promo
+  var userPromo = null;
+  try {
+    var cp = JSON.parse(localStorage.getItem('tv_custom_promo') || 'null');
+    if (cp && cp.firm && cp.link) userPromo = cp;
+  } catch(e){}
+  _activePromos = promos.filter(function(p) { return p.active; });
+  if (userPromo) _activePromos.push(userPromo);
+  if (!_activePromos.length) { hidePromoBanner(); return; }
+  _currentPromoIdx = 0;
+  showPromo(_activePromos[0]);
+  // Rotate promos every 30 seconds if multiple
+  if (_promoRotateTimer) clearInterval(_promoRotateTimer);
+  if (_activePromos.length > 1) {
+    _promoRotateTimer = setInterval(function() {
+      _currentPromoIdx = (_currentPromoIdx + 1) % _activePromos.length;
+      showPromo(_activePromos[_currentPromoIdx]);
+    }, 30000);
+  }
+}
+
+function showPromo(p) {
+  var banner = document.getElementById('promoBanner');
+  if (!banner || !p) return;
+  document.getElementById('promoFirm').textContent = p.firm || '';
+  document.getElementById('promoText').textContent = p.text || '';
+  var dot = document.getElementById('promoDot');
+  if (dot) dot.style.background = p.color || 'var(--gold)';
+  var code = document.getElementById('promoCode');
+  if (code) { if (p.code) { code.textContent = p.code; code.style.display = ''; } else { code.style.display = 'none'; } }
+  banner.classList.add('active');
+  banner.dataset.link = p.link || '';
+}
+
+function hidePromoBanner() {
+  var banner = document.getElementById('promoBanner');
+  if (banner) banner.classList.remove('active');
+  if (_promoRotateTimer) { clearInterval(_promoRotateTimer); _promoRotateTimer = null; }
+}
+
+function openPromoLink() {
+  var banner = document.getElementById('promoBanner');
+  var link = banner ? banner.dataset.link : '';
+  if (!link) return;
+  if (window.electronAPI && window.electronAPI.openExternal) {
+    window.electronAPI.openExternal(link);
+  } else {
+    window.open(link, '_blank');
+  }
+}
+
+// User custom promo (streamer sets their own referral)
+function setCustomPromo(firm, text, code, link, color) {
+  var cp = { firm: firm, text: text, code: code, link: link, color: color || '#e8b84b', active: true };
+  localStorage.setItem('tv_custom_promo', JSON.stringify(cp));
+  // Re-apply with the custom promo included
+  applyPromotions(_activePromos.filter(function(p) { return !p._isCustom; }));
+}
+
+function clearCustomPromo() {
+  localStorage.removeItem('tv_custom_promo');
+  applyPromotions(_activePromos.filter(function(p) { return !p._isCustom; }));
+}
+
+// Save/clear from settings UI
+function saveMyPromo() {
+  var firm = (document.getElementById('promoMyFirm')||{}).value||'';
+  var text = (document.getElementById('promoMyText')||{}).value||'';
+  var code = (document.getElementById('promoMyCode')||{}).value||'';
+  var link = (document.getElementById('promoMyLink')||{}).value||'';
+  if (!firm || !link) { toast('Firm name and link required', 'error'); return; }
+  setCustomPromo(firm, text, code, link);
+  toast('Promo saved', 'success');
+}
+function clearMyPromo() {
+  clearCustomPromo();
+  if (document.getElementById('promoMyFirm')) document.getElementById('promoMyFirm').value = '';
+  if (document.getElementById('promoMyText')) document.getElementById('promoMyText').value = '';
+  if (document.getElementById('promoMyCode')) document.getElementById('promoMyCode').value = '';
+  if (document.getElementById('promoMyLink')) document.getElementById('promoMyLink').value = '';
+  toast('Promo cleared', 'info');
 }
 
 // ── Save session ────────────────────────────────────────────────
@@ -6181,6 +6321,7 @@ function openGainsCard() {
   var _cardSub   = sb.cardsub   || 'VAULTED DESK';
   var _cardUrl   = sb.cardurl   || 'tradersvault.app';
   var _cardBadge = sb.cardbadge || 'PROP TRADER';
+  var _userName2 = cfg.userName || (tvSession && tvSession.user ? tvSession.user.full_name : '') || '';
 
   // Firm breakdown — merge Trading accounts + Prop Tracker entries
   var firmMap = {};
@@ -6320,6 +6461,7 @@ function openGainsCard() {
         + '<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">' + _cardUrl + '</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">' + _cardSub + '</div></div>'
         + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v1.8.1</div>'
       + '</div>'
+      + (_userName2 ? '<div style="font-size:12px;font-weight:700;color:rgba(240,238,232,.6);letter-spacing:.3px;">' + _userName2 + '</div>' : '')
       + '<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRADER</div>'
     + '</div>'
 
