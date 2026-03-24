@@ -5796,7 +5796,7 @@ function startHeartbeat() {
           user_id: tvSession.userId || tvSession.id || '',
           email: tvSession.email || '',
           token: tvSession.token,
-          app_version: '1.9.0',
+          app_version: '1.9.1',
           os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
           session_id: tvSession.sessionId || '',
           pnl: getPnlSnapshot()
@@ -6030,7 +6030,7 @@ async function validateToken(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token,
-        app_version: '1.9.0',
+        app_version: '1.9.1',
         os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
         pnl: typeof getPnlSnapshot === 'function' ? getPnlSnapshot() : null
@@ -6245,7 +6245,7 @@ function applyLicenceBadge(v) {
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
   // compare with current app version — read from the topbar display
-  var current = '1.9.0';
+  var current = '1.9.1';
   // semver compare: return true if remote > current
   function isNewer(remote, local) {
     var r = remote.split('.').map(Number);
