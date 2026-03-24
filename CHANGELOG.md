@@ -1,14 +1,15 @@
-Traders Vault v1.7.9
+Traders Vault v1.8.0
 
 ## New
-- In-app update download with progress bar (no more browser popups)
-- Prop Tracker PnL Card — shareable card with Total Spent, Payouts, Net P&L, ROI %
+- Prop Tracker PnL Card — shareable card (Total Spent, Payouts, Net P&L, ROI %, firm breakdown)
+- In-app update download with progress bar
 - macOS support — .pkg installer for Intel and Apple Silicon
 
 ## Fixes
-- Fixed dock/undock bug where tabs get stuck under panels
+- Fixed PnL card text rendering (no more green/red block behind numbers)
+- Fixed Gains Card text rendering (same fix)
+- Fixed dock/undock tab overlap
 - Fixed update banner loop
-- Updates now download and install inside the app
 
 ---
 by J3 | Traders Vault
