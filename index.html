@@ -5983,6 +5983,17 @@ function doUpdate() {
     toast('No update URL found', 'error');
     return;
   }
+  // On Mac, swap .exe URL for .pkg
+  var dlUrl = tvUpdateInfo.update_url;
+  var platform = window.electronAPI ? window.electronAPI.platform : 'win32';
+  if (platform === 'darwin' && dlUrl.indexOf('.exe') !== -1) {
+    // Determine arch: Apple Silicon (arm64) vs Intel (x64)
+    var arch = (navigator.userAgent.indexOf('ARM') !== -1 || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 0) ? 'arm64' : 'x64';
+    // Convert: Traders.Vault.Setup.1.8.2.exe -> Traders-Vault-1.8.2-arm64.pkg
+    var ver = dlUrl.match(/(\d+\.\d+\.\d+)/); 
+    if (ver) dlUrl = dlUrl.replace(/[^/]+$/, 'Traders-Vault-' + ver[1] + '-' + arch + '.pkg');
+  }
+
   var btn = document.querySelector('#tvUpdateBanner button');
   var titleEl = document.getElementById('updateBannerTitle');
   var notesEl = document.getElementById('updateBannerNotes');
@@ -6001,7 +6012,7 @@ function doUpdate() {
       if (notesEl) notesEl.textContent = mb + ' / ' + totalMb + ' MB';
     });
 
-    window.electronAPI.downloadUpdate(tvUpdateInfo.update_url).then(function(result) {
+    window.electronAPI.downloadUpdate(dlUrl).then(function(result) {
       if (result.ok) {
         if (titleEl) titleEl.textContent = '✓ Download complete';
         if (notesEl) notesEl.textContent = 'Click to install and restart.';
@@ -6024,7 +6035,7 @@ function doUpdate() {
     });
   } else {
     // Fallback: open in browser
-    window.open(tvUpdateInfo.update_url, '_blank');
+    window.open(dlUrl, '_blank');
     toast('Download started in your browser', 'info');
   }
 }
