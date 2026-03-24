@@ -54,6 +54,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .snap-btn{height:26px;padding:0 10px;background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .snap-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);box-shadow:0 0 12px var(--gold-dim);}
 .snap-btn svg{width:11px;height:11px;fill:currentColor;}
+.topbar-sync-btn{height:26px;width:26px;padding:0;background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--text3);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-app-region:no-drag;}
+.topbar-sync-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);box-shadow:0 0 12px var(--gold-dim);}
+.topbar-sync-btn.syncing{animation:syncPulse .8s ease-in-out infinite;color:var(--gold);border-color:var(--gold);}
+.topbar-sync-btn.sync-ok{color:var(--green);border-color:var(--green);}
+.topbar-sync-btn.sync-err{color:var(--red);border-color:var(--red);}
+@keyframes syncPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.92);}}
 .win.snapping{transition:left .35s cubic-bezier(.34,1.3,.64,1),top .35s cubic-bezier(.34,1.3,.64,1),width .35s cubic-bezier(.34,1.3,.64,1),height .35s cubic-bezier(.34,1.3,.64,1)!important;}
 .win.dragging{transition:none!important;}
 .trans-wrap{display:flex;align-items:center;gap:6px;padding:0 8px;border-left:1px solid var(--border2);}
@@ -984,6 +990,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 <div class="topbar2">
   <div class="panel-toggles" id="panelToggles"></div>
   <div class="topbar2-gap"></div>
+  <button class="topbar-sync-btn" id="topbarSyncBtn" onclick="CloudSync.sync()" title="Cloud Sync" style="display:none;">&#9729;</button>
   <button class="snap-btn" onclick="snapToDefault()">
     <svg viewBox="0 0 16 16"><path d="M1 1h6v6H1zm8 0h6v6H9zM1 9h6v6H1zm8 0h6v6H9z" fill-rule="evenodd"/></svg>
     Default Layout
@@ -3822,37 +3829,42 @@ var CloudSync = (function() {
     var btn = document.getElementById('syncBtn');
     var icon = document.getElementById('syncCloudIcon');
     var status = document.getElementById('syncStatus');
-    if (!btn) return;
+    var tbBtn = document.getElementById('topbarSyncBtn');
 
-    btn.classList.remove('syncing', 'error', 'success');
-    if (icon) icon.classList.remove('idle', 'syncing', 'done');
+    // Update settings panel button
+    if (btn) {
+      btn.classList.remove('syncing', 'error', 'success');
+      if (icon) icon.classList.remove('idle', 'syncing', 'done');
+    }
+    // Update topbar button
+    if (tbBtn) {
+      tbBtn.classList.remove('syncing', 'sync-ok', 'sync-err');
+      tbBtn.disabled = false;
+    }
 
     if (mode === 'syncing') {
-      btn.disabled = true;
-      btn.classList.add('syncing');
-      btn.innerHTML = '&#9729; Syncing...';
+      if (btn) { btn.disabled = true; btn.classList.add('syncing'); btn.innerHTML = '&#9729; Syncing...'; }
       if (icon) { icon.classList.add('syncing'); icon.innerHTML = '&#9729;'; }
       if (status) { status.style.color = 'var(--text3)'; status.textContent = msg || 'Syncing with cloud...'; }
+      if (tbBtn) { tbBtn.classList.add('syncing'); tbBtn.disabled = true; }
     } else if (mode === 'success') {
-      btn.disabled = false;
-      btn.classList.add('success');
-      btn.innerHTML = '&#9729; Synced &#10003;';
+      if (btn) { btn.disabled = false; btn.classList.add('success'); btn.innerHTML = '&#9729; Synced &#10003;'; }
       if (icon) { icon.classList.add('done'); icon.innerHTML = '&#9729; &#10003;'; }
       if (status) { status.style.color = 'var(--green)'; status.textContent = msg || 'Synced successfully'; }
+      if (tbBtn) { tbBtn.classList.add('sync-ok'); tbBtn.innerHTML = '&#10003;'; }
       setTimeout(function() { setUI('idle'); }, 3000);
     } else if (mode === 'error') {
-      btn.disabled = false;
-      btn.classList.add('error');
-      btn.innerHTML = '&#9729; Sync Failed';
+      if (btn) { btn.disabled = false; btn.classList.add('error'); btn.innerHTML = '&#9729; Sync Failed'; }
       if (icon) { icon.classList.add('idle'); icon.innerHTML = '&#9729;'; }
       if (status) { status.style.color = 'var(--red)'; status.textContent = msg || 'Sync failed'; }
+      if (tbBtn) { tbBtn.classList.add('sync-err'); tbBtn.innerHTML = '&#9729;'; }
       setTimeout(function() { setUI('idle'); }, 3000);
     } else {
       // idle
-      btn.disabled = false;
-      btn.innerHTML = '&#9729; SYNC';
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#9729; SYNC'; }
       if (icon) { icon.classList.add('idle'); icon.innerHTML = '&#9729;'; }
       if (status && !msg) { status.textContent = _lastSync ? 'Last synced: ' + new Date(_lastSync).toLocaleTimeString() : ''; status.style.color = 'var(--text3)'; }
+      if (tbBtn) { tbBtn.innerHTML = '&#9729;'; }
     }
   }
 
@@ -4014,6 +4026,33 @@ var CloudSync = (function() {
 
   return { pull: pull, push: push, sync: sync, setUI: setUI };
 })();
+
+// ── Cloud Sync Access Control ──────────────────────────────────
+var _canSync = false;
+
+async function checkSyncAccess(userValidation) {
+  var syncMode = 'all'; // default: everyone gets sync
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/app_config?key=eq.cloud_sync_access&select=value', {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + (tvSession && tvSession.token || '') }
+    });
+    if (r.ok) {
+      var rows = await r.json();
+      if (rows && rows.length > 0 && rows[0].value) syncMode = rows[0].value;
+    }
+  } catch(e) { /* default to 'all' on error */ }
+
+  var userTier = (userValidation && (userValidation.licence_type || userValidation.licence_tier)) || 'free';
+  _canSync = syncMode === 'all' || userTier === 'monthly' || userTier === 'lifetime';
+  applySyncVisibility();
+}
+
+function applySyncVisibility() {
+  var topbarBtn = document.getElementById('topbarSyncBtn');
+  var settingsWrap = document.querySelector('.sync-wrap');
+  if (topbarBtn) topbarBtn.style.display = _canSync ? 'flex' : 'none';
+  if (settingsWrap) settingsWrap.style.display = _canSync ? '' : 'none';
+}
 
 function applyTheme(themeId, accentId, customAccent){
   var theme = THEMES.find(function(t){return t.id===themeId;}) || THEMES[0];
@@ -6724,6 +6763,7 @@ async function doLogin() {
     setAuthStatus('✓ Welcome back!', '#22d46a');
     setTimeout(hideLoginScreen, 600);
     applyLicenceBadge(validate);
+    checkSyncAccess(validate);
     checkForUpdate(validate);
     startHeartbeat();
   } catch(e) {
@@ -6818,6 +6858,7 @@ async function validateSessionSilent(token) {
     }
   } else if (v) {
     applyLicenceBadge(v);
+    checkSyncAccess(v);
     checkForUpdate(v);
     if (v.branding) applyServerBranding(v.branding);
     if (v.promotions) applyPromotions(v.promotions);
@@ -7136,6 +7177,8 @@ function showAccountModal() {
 function tvSignOut() {
   localStorage.removeItem('tv_session');
   tvSession = null;
+  _canSync = false;
+  applySyncVisibility();
   var badge = document.getElementById('tvLicenceBadge');
   if (badge) badge.parentNode.removeChild(badge);
   var modal = document.getElementById('tvAccountModal');
