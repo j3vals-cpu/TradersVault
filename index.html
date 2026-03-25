@@ -104,8 +104,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
 /* Settings modal overrides */
 .settings-modal{width:560px;max-width:96vw;padding:0;overflow:hidden;}
-.settings-tabs{display:flex;border-bottom:1px solid var(--border2);}
-.stab{flex:1;padding:13px 8px;font-size:10px;font-weight:800;letter-spacing:.3px;text-align:center;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;transition:all .18s;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.settings-tabs{display:flex;border-bottom:1px solid var(--border2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.settings-tabs::-webkit-scrollbar{display:none;}
+.stab{flex-shrink:0;padding:13px 10px;font-size:10px;font-weight:800;letter-spacing:.3px;text-align:center;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;transition:all .18s;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
 .stab:hover{color:var(--text2);}
 .stab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .settings-panel{display:none;padding:18px 20px 20px;}
