@@ -201,6 +201,54 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .dock-autohide-btn{height:24px;padding:0 8px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text3);font-family:Cabinet Grotesk,sans-serif;font-size:9px;font-weight:800;cursor:pointer;transition:all .15s;}
 .dock-autohide-btn.on{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
 .dock-autohide-btn:hover{border-color:var(--gold);color:var(--gold);}
+/* Dock position selector button */
+.dock-pos-btn{height:24px;padding:0 8px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text3);font-family:Cabinet Grotesk,sans-serif;font-size:9px;font-weight:800;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.dock-pos-btn:hover{border-color:var(--gold);color:var(--gold);}
+.dock-pos-menu{position:absolute;bottom:calc(100% + 6px);right:10px;background:rgba(7,7,10,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px;display:none;gap:4px;z-index:9999;flex-direction:column;min-width:90px;box-shadow:0 8px 32px rgba(0,0,0,0.6);pointer-events:auto;}
+.dock-pos-menu.show{display:flex;}
+.dock-pos-menu button{padding:6px 10px;background:transparent;border:1px solid transparent;border-radius:5px;color:var(--text2);font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;white-space:nowrap;}
+.dock-pos-menu button:hover{background:var(--gold-dim);color:var(--gold);border-color:var(--gold);}
+.dock-pos-menu button.active{background:var(--panel4);color:var(--text);border-color:var(--border3);}
+
+/* ── Dock position: bottom ── */
+.dock-pos-bottom .dock-bar{top:auto;bottom:0;left:0;right:0;border-bottom:none;border-top:1px solid rgba(255,255,255,0.07);}
+.dock-pos-bottom .dock-hover-zone{top:auto;bottom:0;left:0;right:0;height:20px;width:auto;}
+.dock-pos-bottom.dock-hidden .dock-bar{transform:translateY(100%);}
+.dock-pos-bottom .canvas{margin-top:0;margin-bottom:36px;}
+.dock-pos-bottom.dock-hidden .canvas{margin-bottom:0;}
+.dock-pos-bottom .dock-pos-menu{bottom:auto;top:calc(100% + 6px);}
+
+/* ── Dock position: left ── */
+.dock-pos-left .dock-bar{top:0;left:0;right:auto;bottom:0;width:42px;height:auto;flex-direction:column;padding:8px 4px;gap:6px;border-bottom:none;border-right:1px solid rgba(255,255,255,0.07);overflow-y:auto;overflow-x:hidden;}
+.dock-pos-left .dock-hover-zone{top:0;left:0;bottom:0;right:auto;width:20px;height:auto;}
+.dock-pos-left.dock-hidden .dock-bar{transform:translateX(-100%);}
+.dock-pos-left .canvas{margin-top:0;margin-left:42px;}
+.dock-pos-left.dock-hidden .canvas{margin-left:0;}
+.dock-pos-left .dock-divider{width:24px;height:1px;flex-shrink:0;}
+.dock-pos-left .dock-clock{font-size:9px;padding:3px 4px;writing-mode:vertical-lr;text-orientation:mixed;}
+.dock-pos-left .dock-panel-btn{writing-mode:vertical-lr;text-orientation:mixed;padding:6px 3px;height:auto;font-size:8px;}
+.dock-pos-left #dockPanelBtns{flex-direction:column;gap:3px;}
+.dock-pos-left #dockQuote{display:none;}
+.dock-pos-left .dock-autohide-btn,.dock-pos-left .dock-undock-btn,.dock-pos-left .dock-pos-btn{writing-mode:vertical-lr;text-orientation:mixed;padding:6px 3px;height:auto;font-size:8px;}
+.dock-pos-left #dockSession,.dock-pos-left #dockSessionTimer,.dock-pos-left #dockNewsLabel,.dock-pos-left #dockPnl,.dock-pos-left #dockPomo{font-size:8px;}
+.dock-pos-left #dockNextNews,.dock-pos-left #dockOpacity{display:none;}
+.dock-pos-left .dock-pos-menu{bottom:auto;top:auto;left:calc(100% + 6px);right:auto;}
+
+/* ── Dock position: right ── */
+.dock-pos-right .dock-bar{top:0;left:auto;right:0;bottom:0;width:42px;height:auto;flex-direction:column;padding:8px 4px;gap:6px;border-bottom:none;border-left:1px solid rgba(255,255,255,0.07);overflow-y:auto;overflow-x:hidden;}
+.dock-pos-right .dock-hover-zone{top:0;right:0;bottom:0;left:auto;width:20px;height:auto;}
+.dock-pos-right.dock-hidden .dock-bar{transform:translateX(100%);}
+.dock-pos-right .canvas{margin-top:0;margin-right:42px;}
+.dock-pos-right.dock-hidden .canvas{margin-right:0;}
+.dock-pos-right .dock-divider{width:24px;height:1px;flex-shrink:0;}
+.dock-pos-right .dock-clock{font-size:9px;padding:3px 4px;writing-mode:vertical-lr;text-orientation:mixed;}
+.dock-pos-right .dock-panel-btn{writing-mode:vertical-lr;text-orientation:mixed;padding:6px 3px;height:auto;font-size:8px;}
+.dock-pos-right #dockPanelBtns{flex-direction:column;gap:3px;}
+.dock-pos-right #dockQuote{display:none;}
+.dock-pos-right .dock-autohide-btn,.dock-pos-right .dock-undock-btn,.dock-pos-right .dock-pos-btn{writing-mode:vertical-lr;text-orientation:mixed;padding:6px 3px;height:auto;font-size:8px;}
+.dock-pos-right #dockSession,.dock-pos-right #dockSessionTimer,.dock-pos-right #dockNewsLabel,.dock-pos-right #dockPnl,.dock-pos-right #dockPomo{font-size:8px;}
+.dock-pos-right #dockNextNews,.dock-pos-right #dockOpacity{display:none;}
+.dock-pos-right .dock-pos-menu{bottom:auto;top:auto;right:calc(100% + 6px);left:auto;}
 
 /* ───── FLOATING WINDOWS ───── */
 .win{
@@ -1062,7 +1110,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   <!-- Motivational quote -->
   <div id="dockQuote" style="font-family:'Cabinet Grotesk',sans-serif;font-size:9px;color:var(--text2);font-style:italic;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px;min-width:0;cursor:pointer;" onclick="nextDockQuote()" title="Click for next quote"></div>
 
-  <!-- Auto-hide + undock -->
+  <!-- Dock position + Auto-hide + undock -->
+  <div style="position:relative;flex-shrink:0;">
+    <button class="dock-pos-btn" id="dockPosBtn" onclick="toggleDockPosMenu()" title="Change dock position">&#9646; Position</button>
+    <div class="dock-pos-menu" id="dockPosMenu">
+      <button onclick="setDockPosition('top')" data-pos="top" class="active">&#9650; Top</button>
+      <button onclick="setDockPosition('bottom')" data-pos="bottom">&#9660; Bottom</button>
+      <button onclick="setDockPosition('left')" data-pos="left">&#9668; Left</button>
+      <button onclick="setDockPosition('right')" data-pos="right">&#9658; Right</button>
+    </div>
+  </div>
   <button class="dock-autohide-btn" id="dockAutoHideBtn" onclick="toggleDockAutoHide()" ondblclick="pinDock()" title="Click: auto-hide | Double-click: pin">&#9654; Auto-hide</button>
   <button class="dock-undock-btn" onclick="toggleDockMode()" title="Exit dock mode">&#8679; Undock</button>
 </div>
@@ -1318,6 +1375,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <span class="srow-lbl">Custom Accent</span>
         <input type="color" id="customAccentPicker" style="width:40px;height:32px;border:1px solid var(--border2);border-radius:6px;background:var(--panel2);cursor:pointer;padding:2px;" oninput="applyCustomAccent(this.value)">
         <span style="font-size:10px;color:var(--text3);font-family:'Geist Mono',monospace;" id="customAccentHex">#e8b84b</span>
+      </div>
+      <div class="s-lbl">Dock Position</div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:8px;">Choose which edge of the screen the dock bar appears on when in Dock mode.</div>
+      <div id="settingsDockPos" style="display:flex;gap:6px;">
+        <button class="snap-btn dock-pos-opt active" data-pos="top" onclick="setDockPosition('top')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9650; Top</button>
+        <button class="snap-btn dock-pos-opt" data-pos="bottom" onclick="setDockPosition('bottom')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9660; Bottom</button>
+        <button class="snap-btn dock-pos-opt" data-pos="left" onclick="setDockPosition('left')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9668; Left</button>
+        <button class="snap-btn dock-pos-opt" data-pos="right" onclick="setDockPosition('right')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9658; Right</button>
       </div>
     </div>
 
@@ -3512,6 +3577,7 @@ var _overlayActive=false;
 var _dockMode = false;
 var _dockAutoHide = false;
 var _dockHideTimer = null;
+var _dockPosition = 'top'; // 'top' | 'bottom' | 'left' | 'right'
 
 function toggleDockMode() {
   _dockMode = !_dockMode;
@@ -3523,6 +3589,8 @@ function applyDockMode() {
   var btn = document.getElementById('dockBtn');
   if (_dockMode) {
     chrome.classList.add('dock-mode');
+    // Apply saved dock position
+    applyDockPositionClass();
     if (btn) { btn.style.borderColor='var(--purple)'; btn.style.color='var(--purple)'; }
     // Snap all visible windows to top row
     snapWindowsToDock();
@@ -3534,8 +3602,10 @@ function applyDockMode() {
     startDockQuoteRotation();
     // Auto-hide setup
     setupDockAutoHide();
+    // Update hit rects for new position
+    scheduleHitRects();
   } else {
-    chrome.classList.remove('dock-mode','dock-hidden');
+    chrome.classList.remove('dock-mode','dock-hidden','dock-pos-top','dock-pos-bottom','dock-pos-left','dock-pos-right');
     if (btn) { btn.style.borderColor=''; btn.style.color=''; }
     _dockAutoHide = false;
     var autoBtn = document.getElementById('dockAutoHideBtn');
@@ -3543,6 +3613,7 @@ function applyDockMode() {
     cleanupDockAutoHide();
     // Reposition windows below restored topbar + topbar2
     repositionAfterUndock();
+    scheduleHitRects();
   }
 }
 
@@ -3570,21 +3641,42 @@ function snapWindowsToDock() {
   var wins = Array.from(document.querySelectorAll('.win:not(.hidden)'));
   if (!wins.length) return;
   var screenW = window.screen.width || window.innerWidth;
-  var dockH = 44; // dock bar height + gap
+  var screenH = window.innerHeight;
   var gap = 8;
-  var maxH = Math.min(window.innerHeight - dockH - 20, 500);
-  // Give each panel equal width across full screen
-  var panelW = Math.floor((screenW - gap * (wins.length + 1)) / wins.length);
-  panelW = Math.max(260, Math.min(panelW, 520));
-  var totalW = wins.length * panelW + (wins.length - 1) * gap;
-  var startX = Math.max(gap, Math.floor((screenW - totalW) / 2));
-  wins.forEach(function(w, i) {
-    w.style.width = panelW + 'px';
-    var h = parseInt(w.style.height) || w.offsetHeight || 340;
-    if (h > maxH) w.style.height = maxH + 'px';
-    w.style.left = (startX + i * (panelW + gap)) + 'px';
-    w.style.top = dockH + 'px';
-  });
+
+  if (_dockPosition === 'left' || _dockPosition === 'right') {
+    // Vertical dock: stack panels to the right/left of dock
+    var dockW = 50; // dock bar width + gap
+    var maxW = Math.min(screenW - dockW - 20, 520);
+    var panelH = Math.floor((screenH - gap * (wins.length + 1)) / wins.length);
+    panelH = Math.max(200, Math.min(panelH, 500));
+    var totalH = wins.length * panelH + (wins.length - 1) * gap;
+    var startY = Math.max(gap, Math.floor((screenH - totalH) / 2));
+    var startX = _dockPosition === 'left' ? dockW : gap;
+    wins.forEach(function(w, i) {
+      var curW = parseInt(w.style.width) || w.offsetWidth || 340;
+      if (curW > maxW) w.style.width = maxW + 'px';
+      w.style.height = panelH + 'px';
+      w.style.left = startX + 'px';
+      w.style.top = (startY + i * (panelH + gap)) + 'px';
+    });
+  } else {
+    // Horizontal dock (top/bottom)
+    var dockH = 44; // dock bar height + gap
+    var maxH = Math.min(screenH - dockH - 20, 500);
+    var panelW = Math.floor((screenW - gap * (wins.length + 1)) / wins.length);
+    panelW = Math.max(260, Math.min(panelW, 520));
+    var totalW = wins.length * panelW + (wins.length - 1) * gap;
+    var startX = Math.max(gap, Math.floor((screenW - totalW) / 2));
+    var topY = _dockPosition === 'bottom' ? gap : dockH;
+    wins.forEach(function(w, i) {
+      w.style.width = panelW + 'px';
+      var h = parseInt(w.style.height) || w.offsetHeight || 340;
+      if (h > maxH) w.style.height = maxH + 'px';
+      w.style.left = (startX + i * (panelW + gap)) + 'px';
+      w.style.top = topY + 'px';
+    });
+  }
 }
 
 function renderDockPanelBtns() {
@@ -3696,6 +3788,111 @@ function cleanupDockAutoHide() {
     zone.removeEventListener('mouseenter', zone._dockMouseEnter);
   }
 }
+
+// ─── DOCK POSITION ────────────────────────────────────────────
+function applyDockPositionClass() {
+  var chrome = document.querySelector('.chrome');
+  if (!chrome) return;
+  chrome.classList.remove('dock-pos-top','dock-pos-bottom','dock-pos-left','dock-pos-right');
+  if (_dockPosition && _dockPosition !== 'top') {
+    chrome.classList.add('dock-pos-' + _dockPosition);
+  }
+  // Update position menu active state
+  var menu = document.getElementById('dockPosMenu');
+  if (menu) {
+    var btns = menu.querySelectorAll('button');
+    btns.forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-pos') === _dockPosition);
+    });
+  }
+}
+
+function setDockPosition(pos) {
+  if (!pos) pos = 'top';
+  _dockPosition = pos;
+  cfg.dockPosition = pos;
+  saveCfg();
+  // Re-apply position class
+  applyDockPositionClass();
+  // Sync settings panel buttons
+  syncDockPosButtons();
+  // Reset auto-hide so direction changes
+  if (_dockAutoHide) {
+    cleanupDockAutoHide();
+    setupDockAutoHide();
+  }
+  // Re-snap windows for new position
+  if (_dockMode) {
+    snapWindowsToDock();
+  }
+  // Update hit rects
+  scheduleHitRects();
+  // Close dock bar menu
+  var menu = document.getElementById('dockPosMenu');
+  if (menu) menu.classList.remove('show');
+}
+
+function syncDockPosButtons() {
+  // Sync dock bar position menu
+  var menu = document.getElementById('dockPosMenu');
+  if (menu) {
+    menu.querySelectorAll('button').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-pos') === _dockPosition);
+    });
+  }
+  // Sync settings panel position buttons
+  var settingsBtns = document.getElementById('settingsDockPos');
+  if (settingsBtns) {
+    settingsBtns.querySelectorAll('.dock-pos-opt').forEach(function(b) {
+      var isActive = b.getAttribute('data-pos') === _dockPosition;
+      b.classList.toggle('active', isActive);
+      if (isActive) {
+        b.style.borderColor = 'var(--gold)';
+        b.style.color = 'var(--gold)';
+        b.style.background = 'var(--gold-dim)';
+      } else {
+        b.style.borderColor = '';
+        b.style.color = '';
+        b.style.background = '';
+      }
+    });
+  }
+}
+
+function toggleDockPosMenu() {
+  var menu = document.getElementById('dockPosMenu');
+  if (menu) menu.classList.toggle('show');
+  // Close when clicking outside
+  if (menu && menu.classList.contains('show')) {
+    setTimeout(function() {
+      function closeMenu(e) {
+        if (!menu.contains(e.target) && e.target.id !== 'dockPosBtn') {
+          menu.classList.remove('show');
+          document.removeEventListener('click', closeMenu);
+        }
+      }
+      document.addEventListener('click', closeMenu);
+    }, 10);
+  }
+}
+
+// Load dock position from saved cfg on startup
+(function() {
+  // Defer to ensure cfg is loaded from file (async)
+  setTimeout(function() {
+    if (cfg.dockPosition) {
+      _dockPosition = cfg.dockPosition;
+    }
+    // If dock mode is already active, apply the position
+    var chrome = document.querySelector('.chrome');
+    if (chrome && chrome.classList.contains('dock-mode')) {
+      applyDockPositionClass();
+      scheduleHitRects();
+    }
+    // Sync settings buttons
+    syncDockPosButtons();
+  }, 500);
+})();
 
 function toggleOverlay(){
   if(!window.electronAPI)return;
@@ -4199,6 +4396,8 @@ function openSettings(){
   document.getElementById('settingsOpacity').value = opVal;
   document.getElementById('opacityVal').textContent = opVal + '%';
   previewGreeting();
+  // Sync dock position buttons
+  syncDockPosButtons();
   document.getElementById('settingsBtn').classList.add('active');
   document.getElementById('settingsModal').classList.add('open');
 }
@@ -5277,16 +5476,28 @@ function updateHitRects() {
     addRect(document.querySelector('.topbar2'));
     addRect(document.querySelector('.footer-bar'));
   } else if (isDockHidden) {
-    // Dock hidden: ONLY the thin hover zone should catch mouse at top
+    // Dock hidden: thin hover zone at the dock's edge
     var zone = document.getElementById('dockHoverZone');
     if (zone) {
-      rects.push({ x: 0, y: 0, w: window.innerWidth, h: 20 });
+      var dp = (typeof _dockPosition !== 'undefined') ? _dockPosition : 'top';
+      if (dp === 'bottom') {
+        rects.push({ x: 0, y: window.innerHeight - 20, w: window.innerWidth, h: 20 });
+      } else if (dp === 'left') {
+        rects.push({ x: 0, y: 0, w: 20, h: window.innerHeight });
+      } else if (dp === 'right') {
+        rects.push({ x: window.innerWidth - 20, y: 0, w: 20, h: window.innerHeight });
+      } else {
+        rects.push({ x: 0, y: 0, w: window.innerWidth, h: 20 });
+      }
     }
     // dock bar is off-screen — do NOT add it
   } else {
     // Dock visible: add dock bar
     var dock = document.getElementById('dockBar');
     if (dock && window.getComputedStyle(dock).display !== 'none') addRect(dock);
+    // Dock position menu (may overflow outside dock bar)
+    var posMenu = document.getElementById('dockPosMenu');
+    if (posMenu && posMenu.classList.contains('show')) addRect(posMenu);
   }
 
   // Modals
