@@ -50,22 +50,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .social-btn svg{width:12px;height:12px;fill:currentColor;}
 .panel-toggles{display:flex;gap:3px;background:rgba(18,18,22,0.55);border:1px solid var(--border2);border-radius:10px;padding:3px 4px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
 .panel-toggles::-webkit-scrollbar{display:none;}
-/* ── Horizontal (top/bottom) text-only pill toggles ── */
-.ptog{height:24px;padding:0 8px;border:none;border-radius:12px;font-family:'Cabinet Grotesk',sans-serif;cursor:pointer;transition:all .18s ease;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;font-size:10.5px;font-weight:700;letter-spacing:0.2px;color:var(--text3);white-space:nowrap;line-height:1;}
-.ptog .ptog-icon{display:none;}
-.ptog .ptog-label{font-size:inherit;font-weight:inherit;letter-spacing:inherit;color:inherit;line-height:1;transition:color .18s;white-space:nowrap;}
+/* ── Text-only pill toggles (always horizontal when not docked) ── */
+.ptog{height:24px;padding:0 8px;border:none;border-radius:5px;font-family:'Cabinet Grotesk',sans-serif;font-size:10.5px;font-weight:700;cursor:pointer;color:var(--text3);background:transparent;white-space:nowrap;transition:all .18s ease;}
 .ptog:hover{background:rgba(255,255,255,0.06);color:var(--text2);}
-.ptog.on{background:rgba(232,184,75,0.1);color:var(--gold);}
-.ptog.on::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:14px;height:2px;border-radius:1px;background:var(--gold);}
-/* ── Vertical (left/right) icon toggles ── */
-.topbar2.vertical-layout .panel-toggles{flex-direction:column;gap:2px;overflow-x:visible;overflow-y:auto;border-radius:10px;padding:4px 3px;}
-.topbar2.vertical-layout .ptog{width:36px;height:34px;padding:2px 0;flex-direction:column;gap:1px;font-size:8px;}
-.topbar2.vertical-layout .ptog .ptog-icon{display:block;font-size:16px;line-height:1;filter:grayscale(0.5) brightness(0.7);transition:filter .2s,transform .2s;}
-.topbar2.vertical-layout .ptog:hover .ptog-icon{filter:grayscale(0.2) brightness(0.9);transform:scale(1.08);}
-.topbar2.vertical-layout .ptog.on .ptog-icon{filter:grayscale(0) brightness(1.1);}
-.topbar2.vertical-layout .ptog .ptog-label{font-size:7px;font-weight:700;letter-spacing:0.2px;color:var(--text3);}
-.topbar2.vertical-layout .ptog:hover .ptog-label{color:var(--text2);}
-.topbar2.vertical-layout .ptog.on .ptog-label{color:var(--gold);}
+.ptog.on{background:var(--panel4);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4);}
 .snap-btn{height:26px;padding:0 10px;background:transparent;border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .snap-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);box-shadow:0 0 12px var(--gold-dim);}
 .snap-btn svg{width:11px;height:11px;fill:currentColor;}
@@ -2198,30 +2186,11 @@ function autoArrange(){
 var PTOG_LABELS={trading:'Trade',prop:'Prop',strategy:'Strategy',acc:'Journal',notes:'Notes',todo:'To-Do',planner:'Plan',quote:'Mind',calcs:'Calc',bot:'Bot',signal:'Signal',copier:'Copy'};
 function buildToggles(){
   var wrap=document.getElementById('panelToggles');
-  var tb2=document.querySelector('.topbar2');
-  var isVertical=(_dockPosition==='left'||_dockPosition==='right');
-  // Toggle layout class on topbar2
-  if(tb2){tb2.classList.toggle('vertical-layout',isVertical);}
-  if(isVertical){
-    // Icon + short label for vertical sidebar
-    wrap.innerHTML=WINS.map(function(w){
-      var ws=getWinState(w.id);
-      var lbl=PTOG_LABELS[w.id]||w.title;
-      return '<button class="ptog'+(ws.hidden?'':' on')+'" data-wid="'+w.id+'" onclick="toggleWin(this.dataset.wid)" title="'+w.title+'">'
-        +'<span class="ptog-icon">'+w.icon+'</span>'
-        +'<span class="ptog-label">'+lbl+'</span>'
-        +'</button>';
-    }).join('');
-  }else{
-    // Text-only compact pills for horizontal bar
-    wrap.innerHTML=WINS.map(function(w){
-      var ws=getWinState(w.id);
-      return '<button class="ptog'+(ws.hidden?'':' on')+'" data-wid="'+w.id+'" onclick="toggleWin(this.dataset.wid)" title="'+w.title+'">'
-        +'<span class="ptog-icon">'+w.icon+'</span>'
-        +'<span class="ptog-label">'+w.title+'</span>'
-        +'</button>';
-    }).join('');
-  }
+  // Always render simple text-only pill buttons
+  wrap.innerHTML=WINS.map(function(w){
+    var ws=getWinState(w.id);
+    return '<button class="ptog'+(ws.hidden?'':' on')+'" data-wid="'+w.id+'" onclick="toggleWin(this.dataset.wid)" title="'+w.title+'">'+w.title+'</button>';
+  }).join('');
 }
 
 function updateToggles(){
@@ -3698,6 +3667,8 @@ function applyDockMode() {
     var autoBtn = document.getElementById('dockAutoHideBtn');
     if (autoBtn) autoBtn.classList.remove('on');
     cleanupDockAutoHide();
+    // Rebuild toggles as horizontal text-only pills
+    buildToggles();
     // Reposition windows below restored topbar + topbar2
     repositionAfterUndock();
     scheduleHitRects();
@@ -3883,7 +3854,8 @@ function applyDockPositionClass() {
   var chrome = document.querySelector('.chrome');
   if (!chrome) return;
   chrome.classList.remove('dock-pos-top','dock-pos-bottom','dock-pos-left','dock-pos-right');
-  if (_dockPosition && _dockPosition !== 'top') {
+  // Only apply dock position classes when dock mode is actually active
+  if (_dockMode && _dockPosition && _dockPosition !== 'top') {
     chrome.classList.add('dock-pos-' + _dockPosition);
   }
   // Update position menu active state
@@ -3980,8 +3952,8 @@ function toggleDockPosMenu() {
       applyDockPositionClass();
       scheduleHitRects();
     }
-    // Rebuild toggles if position is not default
-    if (_dockPosition !== 'top') buildToggles();
+    // Rebuild toggles (always horizontal text-only when not in dock mode)
+    buildToggles();
     // Sync settings buttons
     syncDockPosButtons();
   }, 500);
@@ -4438,12 +4410,10 @@ function applyAllCfg(){
       if(bar && p.title) bar.textContent = p.title;
       var ico = document.querySelector('#win-'+p.id+' .win-icon');
       if(ico && p.icon) ico.innerHTML = p.icon;
-      // Update toggle button
+      // Update toggle button text
       var tog = document.querySelector('.ptog[data-wid="'+p.id+'"]');
       if(tog && p.title){
-        var _lbl=tog.querySelector('.ptog-label');
-        var _isVert=(_dockPosition==='left'||_dockPosition==='right');
-        if(_lbl) _lbl.textContent=_isVert?(PTOG_LABELS[p.id]||p.title):p.title;
+        tog.textContent=p.title;
       }
       // Apply visibility
       if(typeof p.hidden !== 'undefined'){
@@ -5025,7 +4995,7 @@ function resetSettings(){
     var tog=document.querySelector('.ptog[data-wid="'+w.id+'"]');
     if(bar&&d)bar.textContent=d.title;
     if(ico&&d)ico.innerHTML=d.icon;
-    if(tog&&d){var _lbl=tog.querySelector('.ptog-label');var _isV=(_dockPosition==='left'||_dockPosition==='right');if(_lbl)_lbl.textContent=_isV?(PTOG_LABELS[d.id]||d.title):d.title;var _ico=tog.querySelector('.ptog-icon');if(_ico)_ico.innerHTML=d.icon;}
+    if(tog&&d){tog.textContent=d.title;}
   });
   initHeader();
   closeSettings();
