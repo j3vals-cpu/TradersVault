@@ -1377,6 +1377,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
       <button class="stab" onclick="switchSettingsTab('templates',this)">&#128190; Templates</button>
       <button class="stab" onclick="switchSettingsTab('transparency',this)">&#9678; Glass</button>
       <button class="stab" onclick="switchSettingsTab('discord',this)">&#128172; Discord</button>
+      <button class="stab" onclick="switchSettingsTab('profile',this)">&#127760; Profile</button>
       <button class="stab" onclick="switchSettingsTab('data',this)">&#128190; Data</button>
     </div>
 
@@ -1506,6 +1507,50 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <button onclick="saveDiscordSettings()" style="flex:1;padding:9px;background:var(--gold);border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;">Save</button>
       </div>
       <div id="discordStatus" style="margin-top:8px;font-family:'Geist Mono',monospace;font-size:9px;min-height:14px;"></div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div class="settings-panel" id="stab-profile">
+      <div class="s-lbl" style="margin-top:0;">Public Profile</div>
+      <div style="background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:10px;color:rgba(232,184,75,.9);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Create a public profile page that others can view. Choose which sections to share — all toggles are <b>OFF</b> by default.
+      </div>
+      <div class="srow">
+        <span class="srow-lbl">Username</span>
+        <div class="srow-ctrl">
+          <input class="s-input" id="profileUsername" placeholder="e.g. alex_trades" maxlength="30" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'');updateProfileUrl()">
+        </div>
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin:-4px 0 8px;padding:0 2px;">Lowercase letters, numbers, and underscores only</div>
+      <div class="srow">
+        <span class="srow-lbl">Display Name</span>
+        <div class="srow-ctrl">
+          <input class="s-input" id="profileDisplayName" placeholder="e.g. Alex" maxlength="40">
+        </div>
+      </div>
+      <div class="srow" style="align-items:flex-start;">
+        <span class="srow-lbl" style="padding-top:8px;">Bio</span>
+        <div class="srow-ctrl">
+          <textarea class="s-input" id="profileBio" placeholder="Short bio (max 160 chars)" maxlength="160" rows="2" style="resize:vertical;min-height:44px;" oninput="document.getElementById('profileBioCount').textContent=this.value.length+'/160'"></textarea>
+          <div style="font-size:9px;color:var(--text3);text-align:right;margin-top:2px;" id="profileBioCount">0/160</div>
+        </div>
+      </div>
+      <div class="s-lbl">Visibility Toggles</div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:10px;">Choose which sections appear on your public profile page.</div>
+      <div class="srow"><span class="srow-lbl">Prop Tracker</span><div class="srow-ctrl" style="display:flex;justify-content:flex-end;"><button class="panel-vis-toggle" id="profToggleProp" onclick="this.classList.toggle('on')" title="Show Prop Tracker"></button></div></div>
+      <div class="srow"><span class="srow-lbl">Accountability</span><div class="srow-ctrl" style="display:flex;justify-content:flex-end;"><button class="panel-vis-toggle" id="profToggleAcc" onclick="this.classList.toggle('on')" title="Show Accountability"></button></div></div>
+      <div class="srow"><span class="srow-lbl">Trading</span><div class="srow-ctrl" style="display:flex;justify-content:flex-end;"><button class="panel-vis-toggle" id="profToggleTrading" onclick="this.classList.toggle('on')" title="Show Trading"></button></div></div>
+      <div class="srow"><span class="srow-lbl">P&amp;L Card</span><div class="srow-ctrl" style="display:flex;justify-content:flex-end;"><button class="panel-vis-toggle" id="profTogglePnl" onclick="this.classList.toggle('on')" title="Show P&amp;L Card"></button></div></div>
+      <div class="srow"><span class="srow-lbl">Streak</span><div class="srow-ctrl" style="display:flex;justify-content:flex-end;"><button class="panel-vis-toggle" id="profToggleStreak" onclick="this.classList.toggle('on')" title="Show Streak"></button></div></div>
+      <div class="srow"><span class="srow-lbl">Notes</span><div class="srow-ctrl" style="display:flex;justify-content:flex-end;"><button class="panel-vis-toggle" id="profToggleNotes" onclick="this.classList.toggle('on')" title="Show Notes"></button></div></div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button onclick="savePublicProfile()" style="flex:1;padding:10px;background:var(--gold);border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;">Save Profile</button>
+      </div>
+      <div id="profileStatus" style="margin-top:8px;font-family:'Geist Mono',monospace;font-size:9px;min-height:14px;"></div>
+      <div id="profileUrlWrap" style="display:none;margin-top:10px;padding:10px 14px;background:var(--panel2);border-radius:8px;border:1px solid var(--border2);">
+        <div style="font-size:9px;color:var(--text3);margin-bottom:4px;font-family:'Geist Mono',monospace;text-transform:uppercase;letter-spacing:1px;">Your Profile</div>
+        <a id="profileUrlLink" href="#" onclick="openProfileUrl();return false;" style="font-size:12px;color:var(--gold);text-decoration:none;font-weight:700;word-break:break-all;"></a>
+      </div>
     </div>
 
     <!-- DATA TAB -->
@@ -4385,6 +4430,307 @@ function applyAllCfg(){
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PUBLIC PROFILE — save/load from Supabase public_profiles table
+// ═══════════════════════════════════════════════════════════════
+
+var _publicProfile = null; // cached profile row
+
+function profileRestUrl() {
+  return SUPABASE_URL + '/rest/v1/public_profiles';
+}
+
+function profileHeaders(token) {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON,
+    'Authorization': 'Bearer ' + token
+  };
+}
+
+function setProfileStatus(msg, color) {
+  var el = document.getElementById('profileStatus');
+  if (el) { el.textContent = msg; el.style.color = color || 'var(--text3)'; }
+}
+
+function updateProfileUrl() {
+  var u = (document.getElementById('profileUsername') || {}).value || '';
+  var wrap = document.getElementById('profileUrlWrap');
+  var link = document.getElementById('profileUrlLink');
+  if (u.length > 0) {
+    var url = 'https://tradersvault.app/u/' + u;
+    if (wrap) wrap.style.display = '';
+    if (link) { link.textContent = url; link.href = url; }
+  } else {
+    if (wrap) wrap.style.display = 'none';
+  }
+}
+
+function openProfileUrl() {
+  var link = document.getElementById('profileUrlLink');
+  if (!link) return;
+  var url = link.href;
+  if (window.electronAPI && window.electronAPI.openExternal) {
+    window.electronAPI.openExternal(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+function buildPublicData() {
+  var data = {};
+  var showProp    = document.getElementById('profToggleProp');
+  var showAcc     = document.getElementById('profToggleAcc');
+  var showTrading = document.getElementById('profToggleTrading');
+  var showPnl     = document.getElementById('profTogglePnl');
+  var showStreak  = document.getElementById('profToggleStreak');
+  var showNotes   = document.getElementById('profToggleNotes');
+
+  // Prop Tracker
+  if (showProp && showProp.classList.contains('on')) {
+    var totalSpent = 0, totalPayouts = 0;
+    (state.propTracker || []).forEach(function(pt) {
+      totalSpent += (pt.cost || 0);
+      (pt.payouts || []).forEach(function(p) { totalPayouts += (p.amount || 0); });
+    });
+    data.prop_tracker = {
+      entries: (state.propTracker || []).map(function(pt) {
+        var payTotal = 0;
+        (pt.payouts || []).forEach(function(p) { payTotal += (p.amount || 0); });
+        return { name: pt.name, cost: pt.cost || 0, payouts: payTotal };
+      }),
+      total_spent: totalSpent,
+      total_payouts: totalPayouts,
+      net: totalPayouts - totalSpent
+    };
+  }
+
+  // Accountability
+  if (showAcc && showAcc.classList.contains('on')) {
+    var bestStreak = 0;
+    (state.habits || []).forEach(function(h) {
+      var s = typeof streak === 'function' ? streak(h) : 0;
+      if (s > bestStreak) bestStreak = s;
+    });
+    var todayKey = typeof today === 'function' ? today() : '';
+    var todayDone = 0;
+    (state.habits || []).forEach(function(h) {
+      if (h.completions && h.completions.indexOf(todayKey) > -1) todayDone++;
+    });
+    data.accountability = {
+      streak: bestStreak,
+      habits: (state.habits || []).map(function(h) { return h.name; }),
+      today_done: todayDone
+    };
+  }
+
+  // Trading
+  if (showTrading && showTrading.classList.contains('on')) {
+    data.trading = {
+      firms: (state.accounts || []).map(function(a) {
+        var firm = (state.firms || []).find(function(f) { return f.id === a.firmId; });
+        return {
+          name: firm ? firm.name : 'Unknown',
+          balance: a.currentBalance || 0,
+          pnl: (a.currentBalance || 0) - (a.startBalance || 0)
+        };
+      })
+    };
+  }
+
+  // P&L Card
+  if (showPnl && showPnl.classList.contains('on')) {
+    var totalPnl = 0, allLogs = [];
+    (state.accounts || []).forEach(function(a) {
+      totalPnl += (a.currentBalance || 0) - (a.startBalance || 0);
+      (a.dailyLogs || []).forEach(function(l) { allLogs.push(l); });
+    });
+    var winDays = allLogs.filter(function(l) { return l.pnl > 0; }).length;
+    var winRate = allLogs.length ? Math.round(winDays / allLogs.length * 100) : 0;
+    data.pnl_card = {
+      total_pnl: Math.round(totalPnl * 100) / 100,
+      firms: (state.firms || []).length,
+      win_rate: winRate
+    };
+  }
+
+  // Streak
+  if (showStreak && showStreak.classList.contains('on')) {
+    var best = 0;
+    (state.habits || []).forEach(function(h) {
+      var s = typeof streak === 'function' ? streak(h) : 0;
+      if (s > best) best = s;
+    });
+    data.streak = best;
+  }
+
+  // Notes (all notes — user can curate later)
+  if (showNotes && showNotes.classList.contains('on')) {
+    data.notes = (state.notes || []).map(function(n) {
+      return { title: n.title || '', body: (n.body || '').substring(0, 500) };
+    });
+  }
+
+  return data;
+}
+
+async function savePublicProfile() {
+  var token = tvSession && tvSession.token;
+  var userId = tvSession && (tvSession.userId || tvSession.id || (tvSession.user && tvSession.user.user_id));
+  if (!token || !userId) {
+    setProfileStatus('Sign in to save your profile', '#ff4d6d');
+    toast('Sign in to save your profile', 'error');
+    return;
+  }
+
+  var username    = (document.getElementById('profileUsername') || {}).value || '';
+  var displayName = (document.getElementById('profileDisplayName') || {}).value || '';
+  var bio         = (document.getElementById('profileBio') || {}).value || '';
+
+  // Validate username
+  if (!username || username.length < 2) {
+    setProfileStatus('Username must be at least 2 characters', '#ff4d6d');
+    return;
+  }
+  if (!/^[a-z0-9_]+$/.test(username)) {
+    setProfileStatus('Username: lowercase letters, numbers, underscores only', '#ff4d6d');
+    return;
+  }
+
+  var showProp    = !!(document.getElementById('profToggleProp') && document.getElementById('profToggleProp').classList.contains('on'));
+  var showAcc     = !!(document.getElementById('profToggleAcc') && document.getElementById('profToggleAcc').classList.contains('on'));
+  var showTrading = !!(document.getElementById('profToggleTrading') && document.getElementById('profToggleTrading').classList.contains('on'));
+  var showPnl     = !!(document.getElementById('profTogglePnl') && document.getElementById('profTogglePnl').classList.contains('on'));
+  var showStreak  = !!(document.getElementById('profToggleStreak') && document.getElementById('profToggleStreak').classList.contains('on'));
+  var showNotes   = !!(document.getElementById('profToggleNotes') && document.getElementById('profToggleNotes').classList.contains('on'));
+
+  setProfileStatus('Saving...', 'var(--text3)');
+
+  try {
+    // Check username uniqueness (exclude own row)
+    var checkUrl = profileRestUrl() + '?username=eq.' + encodeURIComponent(username) + '&user_id=neq.' + encodeURIComponent(userId) + '&select=user_id';
+    var checkR = await fetch(checkUrl, {
+      method: 'GET',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + token }
+    });
+    if (checkR.ok) {
+      var existing = await checkR.json();
+      if (existing.length > 0) {
+        setProfileStatus('Username "' + username + '" is already taken', '#ff4d6d');
+        return;
+      }
+    }
+
+    var publicData = buildPublicData();
+
+    var payload = {
+      user_id: userId,
+      username: username,
+      display_name: displayName,
+      bio: bio,
+      show_prop_tracker: showProp,
+      show_accountability: showAcc,
+      show_trading: showTrading,
+      show_pnl_card: showPnl,
+      show_streak: showStreak,
+      show_notes: showNotes,
+      public_data: publicData,
+      updated_at: new Date().toISOString()
+    };
+
+    // Upsert (POST with merge-duplicates, same pattern as cloud sync)
+    var r = await fetch(profileRestUrl(), {
+      method: 'POST',
+      headers: Object.assign({}, profileHeaders(token), {
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      }),
+      body: JSON.stringify(payload)
+    });
+
+    if (!r.ok) {
+      var errText = await r.text();
+      // Fallback: try PATCH if upsert fails (update existing row)
+      if (r.status === 409 || errText.indexOf('duplicate') >= 0) {
+        var patchR = await fetch(profileRestUrl() + '?user_id=eq.' + encodeURIComponent(userId), {
+          method: 'PATCH',
+          headers: Object.assign({}, profileHeaders(token), {
+            'Prefer': 'return=representation'
+          }),
+          body: JSON.stringify(payload)
+        });
+        if (!patchR.ok) {
+          var patchErr = await patchR.text();
+          throw new Error('Update failed: ' + patchR.status + ' ' + patchErr);
+        }
+        var patchResult = await patchR.json();
+        _publicProfile = patchResult[0] || payload;
+      } else {
+        throw new Error('Save failed: ' + r.status + ' ' + errText);
+      }
+    } else {
+      var result = await r.json();
+      _publicProfile = result[0] || payload;
+    }
+
+    setProfileStatus('Profile saved!', 'var(--green)');
+    toast('Public profile saved', 'success');
+    updateProfileUrl();
+    setTimeout(function() { setProfileStatus('', ''); }, 3000);
+  } catch(e) {
+    setProfileStatus('Error: ' + (e.message || 'Unknown error'), '#ff4d6d');
+    toast('Profile save failed', 'error');
+  }
+}
+
+async function loadPublicProfile() {
+  var token = tvSession && tvSession.token;
+  var userId = tvSession && (tvSession.userId || tvSession.id || (tvSession.user && tvSession.user.user_id));
+  if (!token || !userId) return;
+
+  try {
+    var url = profileRestUrl() + '?user_id=eq.' + encodeURIComponent(userId) + '&select=*';
+    var r = await fetch(url, {
+      method: 'GET',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) return;
+    var rows = await r.json();
+    if (rows.length === 0) { _publicProfile = null; return; }
+
+    _publicProfile = rows[0];
+    applyProfileToUI(_publicProfile);
+  } catch(e) {
+    // Silent fail — non-critical
+  }
+}
+
+function applyProfileToUI(p) {
+  if (!p) return;
+  var uEl = document.getElementById('profileUsername');      if (uEl) uEl.value = p.username || '';
+  var dEl = document.getElementById('profileDisplayName');   if (dEl) dEl.value = p.display_name || '';
+  var bEl = document.getElementById('profileBio');           if (bEl) { bEl.value = p.bio || ''; }
+  var bcEl = document.getElementById('profileBioCount');     if (bcEl) bcEl.textContent = (p.bio || '').length + '/160';
+
+  // Set toggles
+  var toggleMap = {
+    profToggleProp: p.show_prop_tracker,
+    profToggleAcc: p.show_accountability,
+    profToggleTrading: p.show_trading,
+    profTogglePnl: p.show_pnl_card,
+    profToggleStreak: p.show_streak,
+    profToggleNotes: p.show_notes
+  };
+  Object.keys(toggleMap).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      if (toggleMap[id]) { el.classList.add('on'); }
+      else { el.classList.remove('on'); }
+    }
+  });
+
+  updateProfileUrl();
+}
+
 // ─── Settings Modal ────────────────────────
 var _settingsActiveTab = 'theme';
 
@@ -4421,6 +4767,9 @@ function openSettings(){
   document.getElementById('settingsOpacity').value = opVal;
   document.getElementById('opacityVal').textContent = opVal + '%';
   previewGreeting();
+  // Populate profile tab
+  if (_publicProfile) applyProfileToUI(_publicProfile);
+  updateProfileUrl();
   // Sync dock position buttons
   syncDockPosButtons();
   document.getElementById('settingsBtn').classList.add('active');
@@ -7014,6 +7363,7 @@ async function doLogin() {
     checkSyncAccess(validate);
     checkForUpdate(validate);
     startHeartbeat();
+    loadPublicProfile();
   } catch(e) {
     setAuthStatus('Connection error — check internet', '#ff4d6d');
   }
@@ -7113,6 +7463,7 @@ async function validateSessionSilent(token) {
     if (!v.valid && tvSession && !tvSession.skipped) {
       showUpgradePrompt(v);
     }
+    loadPublicProfile();
   } else {
     tvSession = null;
     localStorage.removeItem('tv_session');
