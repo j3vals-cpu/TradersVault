@@ -1846,7 +1846,27 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <button class="modal-x" onclick="closeDXTradeModal()">&#10005;</button>
       </div>
     </div>
-    <div style="padding:18px 20px;">
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid var(--border2);background:var(--panel2);">
+      <button class="stab active" id="dxTabBrowser" onclick="switchDXTab('browser')" style="flex:1;">&#127760; Browser Login</button>
+      <button class="stab" id="dxTabManual" onclick="switchDXTab('manual')" style="flex:1;">&#9997; Manual Login</button>
+    </div>
+
+    <!-- BROWSER LOGIN TAB -->
+    <div id="dxPanelBrowser" style="padding:18px 20px;">
+      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(52,211,153,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Paste your prop firm's DXTrade URL, then log in normally in the window that opens.
+      </div>
+      <label class="f-lbl">Server URL</label>
+      <input class="f-in" id="dxBrowserServerUrl" placeholder="e.g. https://dxtrade.yourfirm.com">
+      <div id="dxBrowserStatus" style="margin-top:10px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
+      <div style="text-align:center;padding:10px 0 4px;">
+        <button class="btn-save" onclick="dxtradeBrowserConnect()" style="background:#10b981;min-width:220px;font-size:14px;padding:14px 30px;">&#127760; Open DXTrade Login</button>
+      </div>
+    </div>
+
+    <!-- MANUAL LOGIN TAB -->
+    <div id="dxPanelManual" style="padding:18px 20px;display:none;">
       <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(52,211,153,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
         &#9432; Connect your DXTrade account. Use the login provided by your prop firm.
       </div>
@@ -6626,12 +6646,63 @@ function rithmicConnect(){
 // ── DXTrade Connection ──────────────────────────────────────
 function openDXTradeModal(){
   document.getElementById('dxtradeModal').classList.add('open');
+  switchDXTab('browser');
 }
 function closeDXTradeModal(){
   document.getElementById('dxtradeModal').classList.remove('open');
   var s=document.getElementById('dxStatus');if(s){s.style.display='none';s.textContent='';}
-  var ids=['dxEnv','dxServerUrl','dxUser','dxPass'];
+  var bs=document.getElementById('dxBrowserStatus');if(bs){bs.style.display='none';bs.textContent='';}
+  var ids=['dxEnv','dxServerUrl','dxUser','dxPass','dxBrowserServerUrl'];
   ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
+}
+function switchDXTab(tab){
+  document.getElementById('dxPanelBrowser').style.display=tab==='browser'?'block':'none';
+  document.getElementById('dxPanelManual').style.display=tab==='manual'?'block':'none';
+  document.getElementById('dxTabBrowser').classList.toggle('active',tab==='browser');
+  document.getElementById('dxTabManual').classList.toggle('active',tab==='manual');
+}
+function dxBrowserSetStatus(msg,type){
+  var s=document.getElementById('dxBrowserStatus');if(!s)return;
+  s.style.display='block';s.innerHTML=msg;
+  var colors={info:'rgba(16,185,129,.1)',success:'rgba(34,212,106,.1)',error:'rgba(255,77,109,.1)'};
+  var borders={info:'rgba(16,185,129,.3)',success:'rgba(34,212,106,.3)',error:'rgba(255,77,109,.3)'};
+  s.style.background=colors[type]||colors.info;
+  s.style.border='1px solid '+(borders[type]||borders.info);
+  s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(52,211,153,.9)';
+}
+async function dxtradeBrowserConnect(){
+  var serverUrl=(document.getElementById('dxBrowserServerUrl')||{}).value.trim().replace(/\/+$/,'');
+  if(!serverUrl){dxBrowserSetStatus('&#9888; Enter the server URL first','error');return;}
+  if(!window.electronAPI||!window.electronAPI.dxtradeBrowserLogin){
+    dxBrowserSetStatus('&#9888; Browser login only works in the desktop app','error');return;
+  }
+  dxBrowserSetStatus('&#8635; Opening DXTrade &mdash; log in in the new window...','info');
+  var result=await window.electronAPI.dxtradeBrowserLogin(serverUrl);
+  if(!result.ok){
+    dxBrowserSetStatus('&#9888; Login cancelled or timed out','error');return;
+  }
+  // Save credentials
+  cfg.dxtradeCredentials={
+    serverUrl:serverUrl,
+    sessionId:result.sessionId,
+    token:result.token,
+    cookies:result.cookies
+  };
+  saveCfg();
+  // Add account to prop tracker
+  var firmName='DXTrade';
+  var firm=state.firms.find(function(f){return f.name===firmName;});
+  if(!firm){firm={id:uid(),name:firmName,color:'#10b981'};state.firms.push(firm);}
+  state.accounts.push({
+    id:uid(),firmId:firm.id,firmName:firmName,
+    acType:'live',label:'DXTrade Account',
+    startBalance:0,currentBalance:0,
+    profitTarget:0,totalProfitNeeded:0,consistency:0,
+    dailyLogs:[],color:firm.color,platform:'dxtrade'
+  });
+  save();renderFirmSelector();renderTrading();
+  toast('DXTrade connected!','success');
+  closeDXTradeModal();
 }
 function dxSetStatus(msg,type){
   var s=document.getElementById('dxStatus');if(!s)return;

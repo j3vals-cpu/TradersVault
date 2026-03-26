@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_, data) => callback(data)),
   openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  // DXTrade browser login
+  dxtradeBrowserLogin: (serverUrl) => ipcRenderer.invoke('dxtrade-browser-login', serverUrl),
   platform: process.platform,
   isElectron: true,
 });

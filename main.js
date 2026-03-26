@@ -458,6 +458,88 @@ ipcMain.handle('capture-screen', async () => {
   }
 });
 
+// ─── DXTRADE BROWSER LOGIN ──────────────────────────────────
+ipcMain.handle('dxtrade-browser-login', async (_, serverUrl) => {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const loginWin = new BrowserWindow({
+      width: 1000,
+      height: 700,
+      title: 'Connect DXTrade',
+      autoHideMenuBar: true,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      },
+    });
+
+    loginWin.loadURL(serverUrl);
+
+    const sess = loginWin.webContents.session;
+
+    const checkInterval = setInterval(async () => {
+      if (resolved) return;
+      try {
+        const cookies = await sess.cookies.get({ url: serverUrl });
+        const jsession = cookies.find(c => c.name === 'JSESSIONID');
+
+        if (jsession) {
+          const currentUrl = loginWin.webContents.getURL();
+          const isLoggedIn = !currentUrl.includes('/login') && !currentUrl.includes('/Login');
+
+          if (isLoggedIn) {
+            clearInterval(checkInterval);
+            const allCookies = {};
+            cookies.forEach(c => { allCookies[c.name] = c.value; });
+
+            let token = null;
+            try {
+              token = await loginWin.webContents.executeJavaScript(`
+                (function() {
+                  try {
+                    return localStorage.getItem('dx.token') ||
+                           sessionStorage.getItem('dx.token') ||
+                           localStorage.getItem('authToken') ||
+                           sessionStorage.getItem('authToken') ||
+                           '';
+                  } catch(e) { return ''; }
+                })()
+              `);
+            } catch(e) {}
+
+            resolved = true;
+            if (!loginWin.isDestroyed()) loginWin.close();
+            resolve({
+              ok: true,
+              serverUrl: serverUrl,
+              cookies: allCookies,
+              sessionId: jsession.value,
+              token: token || null,
+            });
+          }
+        }
+      } catch(e) {}
+    }, 2000);
+
+    loginWin.on('closed', () => {
+      clearInterval(checkInterval);
+      if (!resolved) {
+        resolved = true;
+        resolve({ ok: false, error: 'Window closed' });
+      }
+    });
+
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      if (!resolved) {
+        resolved = true;
+        if (!loginWin.isDestroyed()) loginWin.close();
+        resolve({ ok: false, error: 'Login timed out' });
+      }
+    }, 300000);
+  });
+});
+
 // macOS: hide dock icon since this is an overlay app
 if (isMac) {
   app.dock?.hide();
