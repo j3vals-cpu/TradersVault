@@ -104,9 +104,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
 /* Settings modal overrides */
 .settings-modal{width:560px;max-width:96vw;padding:0;overflow:hidden;}
-.settings-tabs{display:flex;border-bottom:1px solid var(--border2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.settings-tabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--border2);scrollbar-width:none;}
 .settings-tabs::-webkit-scrollbar{display:none;}
-.stab{flex-shrink:0;padding:13px 10px;font-size:10px;font-weight:800;letter-spacing:.3px;text-align:center;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;transition:all .18s;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.stab{flex-shrink:0;padding:10px 6px;font-size:9px;font-weight:800;letter-spacing:.2px;text-align:center;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;transition:all .18s;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
 .stab:hover{color:var(--text2);}
 .stab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .settings-panel{display:none;padding:18px 20px 20px;}
@@ -1368,12 +1368,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     </div>
     <div class="settings-tabs">
       <button class="stab active" onclick="switchSettingsTab('theme',this)">&#127912; Theme</button>
-      <button class="stab" onclick="switchSettingsTab('identity',this)">&#128100; Identity</button>
+      <button class="stab" onclick="switchSettingsTab('identity',this)">&#128100; ID</button>
       <button class="stab" onclick="switchSettingsTab('panels',this)">&#9881; Panels</button>
-      <button class="stab" onclick="switchSettingsTab('layouts',this)">&#9723; Layouts</button>
-      <button class="stab" onclick="switchSettingsTab('templates',this)">&#128190; Templates</button>
+      <button class="stab" onclick="switchSettingsTab('layouts',this)">&#9723; Layout</button>
+      <button class="stab" onclick="switchSettingsTab('templates',this)">&#128190; Tmpl</button>
       <button class="stab" onclick="switchSettingsTab('transparency',this)">&#9678; Glass</button>
-      <button class="stab" onclick="switchSettingsTab('discord',this)">&#128172; Discord</button>
+      <button class="stab" onclick="switchSettingsTab('discord',this)">&#128172; DC</button>
       <button class="stab" onclick="switchSettingsTab('profile',this)">&#127760; Profile</button>
       <button class="stab" onclick="switchSettingsTab('data',this)">&#128190; Data</button>
     </div>
@@ -1483,7 +1483,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
       <div class="srow">
         <span class="srow-lbl">Webhook URL</span>
         <div class="srow-ctrl">
-          <input class="s-input" id="discordWebhook" placeholder="https://discord.com/api/webhooks/..." oninput="cfg.discordWebhook=this.value;saveCfg()">
+          <input class="s-input" id="discordWebhook" placeholder="https://discord.com/api/webhooks/..." oninput="cfg.discordWebhook=this.value;saveCfg();var _d=document.querySelector('#sigDcStatus div'),_t=document.querySelector('#sigDcStatus span');if(_d)_d.style.background=this.value?'var(--green)':'var(--red)';if(_t)_t.textContent=this.value?'Discord Connected':'No Discord webhook';">
         </div>
       </div>
       <div class="srow">
@@ -1602,8 +1602,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:36px;height:36px;background:linear-gradient(135deg,#00d4ff,#0099cc);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(0,212,255,.3);">&#9875;</div>
           <div>
-            <div style="font-size:15px;font-weight:900;color:#fff;">Connect Tradovate</div>
-            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:1px;">LIVE · DEMO · PROP ACCOUNTS</div>
+            <div id="tvModalTitle" style="font-size:15px;font-weight:900;color:#fff;">Connect Tradovate</div>
+            <div id="tvModalSubtitle" style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:1px;">LIVE · DEMO · PROP ACCOUNTS</div>
           </div>
         </div>
         <button class="modal-x" onclick="closeTradovateModal()">&#10005;</button>
@@ -1618,6 +1618,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
     <!-- LOGIN TAB -->
     <div id="tvPanelLogin" style="padding:18px 20px;">
+      <div id="tvAmpNote" style="display:none;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.25);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:10px;color:rgba(255,159,107,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#128310; <b>AMP Futures users:</b> AMP accounts using Tradovate technology connect through the Tradovate API. Use your <b>Tradovate credentials</b> (not your AMP login).
+      </div>
       <div style="background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(0,212,255,.9);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
         &#9432; Requires a Tradovate API key. Go to <b>Tradovate → Settings → Add-Ons → API Access</b> to generate your CID and Secret.
       </div>
@@ -2382,7 +2385,7 @@ var _sessionMode = 'london'; // london, ny, asia, all
 
 function buildTradingWin(){
   var el=createWindow({id:'trading',title:'Trading',icon:'&#128200;',
-    extraBtns:'<button class="padd" onclick="openFirmModal()" style="margin-right:4px;">+ Firm</button><button class="padd sec" onclick="openTradovateModal()" style="margin-right:4px;">+ Account</button><button class="padd sec" onclick="openProjectXModal()" style="margin-right:4px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#9881; ProjectX</button><button class="padd" onclick="openGainsCard()" style="margin-right:4px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(232,184,75,.1));border-color:var(--gold);color:var(--gold);">&#128247; Share</button>'
+    extraBtns:'<button class="padd" onclick="openFirmModal()" style="margin-right:4px;">+ Firm</button><button class="padd sec" onclick="openTradovateModal()" style="margin-right:4px;">+ Account</button><button class="padd sec" onclick="openAmpModal()" style="margin-right:4px;background:linear-gradient(135deg,#ff6b35,#e05520);">&#128310; AMP</button><button class="padd sec" onclick="openProjectXModal()" style="margin-right:4px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#9881; ProjectX</button><button class="padd" onclick="openGainsCard()" style="margin-right:4px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(232,184,75,.1));border-color:var(--gold);color:var(--gold);">&#128247; Share</button>'
   });
   var body=document.getElementById('wbody-trading');
 
@@ -2483,6 +2486,7 @@ function delAccount(id){state.accounts=state.accounts.filter(function(a){return 
 // TRADOVATE CONNECT
 // ═══════════════════════════════════════════
 var _tvToken=null, _tvEnv='live', _tvRefreshTimer=null;
+var _tvConnectSource='tradovate'; // 'tradovate' or 'amp' — tracks which platform initiated the connection
 
 var TV_URLS={
   live:'https://live.tradovateapi.com/v1',
@@ -2490,12 +2494,31 @@ var TV_URLS={
 };
 
 function openTradovateModal(){
+  _tvConnectSource='tradovate';
   // Populate firm selects
   var opts='<option value="">Select firm...</option>';
   state.firms.forEach(function(f){opts+='<option value="'+f.id+'">'+esc(f.name)+'</option>';});
   document.getElementById('acFirm2').innerHTML=opts;
   // Reset status
   tvSetStatus('','');
+  // Reset header to Tradovate
+  var hdr=document.getElementById('tvModalTitle');if(hdr)hdr.textContent='Connect Tradovate';
+  var sub=document.getElementById('tvModalSubtitle');if(sub)sub.textContent='LIVE \u00b7 DEMO \u00b7 PROP ACCOUNTS';
+  var ampNote=document.getElementById('tvAmpNote');if(ampNote)ampNote.style.display='none';
+  document.getElementById('tradovateModal').classList.add('open');
+}
+function openAmpModal(){
+  _tvConnectSource='amp';
+  // Populate firm selects
+  var opts='<option value="">Select firm...</option>';
+  state.firms.forEach(function(f){opts+='<option value="'+f.id+'">'+esc(f.name)+'</option>';});
+  document.getElementById('acFirm2').innerHTML=opts;
+  // Reset status
+  tvSetStatus('','');
+  // Update header for AMP
+  var hdr=document.getElementById('tvModalTitle');if(hdr)hdr.textContent='Connect AMP (via Tradovate)';
+  var sub=document.getElementById('tvModalSubtitle');if(sub)sub.textContent='AMP FUTURES \u00b7 TRADOVATE API';
+  var ampNote=document.getElementById('tvAmpNote');if(ampNote)ampNote.style.display='block';
   document.getElementById('tradovateModal').classList.add('open');
 }
 function closeTradovateModal(){
@@ -2563,7 +2586,7 @@ function tradovateConnect(){
     tvSetStatus('&#9989; '+count+' account'+(count!==1?'s':'')+' imported successfully!','success');
     renderTrading();save();
     setTimeout(closeTradovateModal,1800);
-    toast('Tradovate: '+count+' account'+(count!==1?'s':'')+' imported','success');
+    toast((_tvConnectSource==='amp'?'AMP (Tradovate)':'Tradovate')+': '+count+' account'+(count!==1?'s':'')+' imported','success');
     // Schedule token refresh every 85 min
     if(_tvRefreshTimer)clearInterval(_tvRefreshTimer);
     _tvRefreshTimer=setInterval(function(){tvRefreshToken(baseUrl,cid,sec,user);},85*60*1000);
@@ -2647,6 +2670,7 @@ function tvGuessFirmName(accountName){
   if(name.indexOf('ELITE')>-1)return'Elite Trader';
   if(name.indexOf('TAKE')>-1)return'Take Profit Trader';
   if(name.indexOf('BULENOX')>-1)return'Bulenox';
+  if(name.indexOf('AMP')>-1||_tvConnectSource==='amp')return'AMP Futures';
   return'Tradovate';
 }
 
@@ -3236,7 +3260,18 @@ function buildSignalWin() {
   if (!body) return;
   body.className = 'win-body signal-body';
   body.innerHTML = 
-    '<div class="signal-controls">'
+    '<div id="sigDiscordSetup" style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">'
+    + '<div id="sigDcStatus" style="display:flex;align-items:center;gap:6px;flex:1;">'
+    +   '<div style="width:7px;height:7px;border-radius:50%;background:' + (cfg.discordWebhook ? 'var(--green)' : 'var(--red)') + ';"></div>'
+    +   '<span style="font-size:10px;color:var(--text2);">' + (cfg.discordWebhook ? 'Discord Connected' : 'No Discord webhook') + '</span>'
+    + '</div>'
+    + '<button class="signal-bias-btn" onclick="toggleSigDiscordInput()" style="font-size:9px;padding:4px 10px;">' + (cfg.discordWebhook ? 'Change' : 'Connect') + '</button>'
+    + '</div>'
+    + '<div id="sigDcInput" style="display:none;padding:8px 12px;border-bottom:1px solid var(--border);">'
+    +   '<input class="signal-caption" id="sigDcUrl" placeholder="https://discord.com/api/webhooks/..." value="' + (cfg.discordWebhook || '') + '" style="margin-bottom:6px;">'
+    +   '<button class="signal-fire-btn" onclick="saveSigDiscord()" style="font-size:10px;padding:6px;">Save Webhook</button>'
+    + '</div>'
+    + '<div class="signal-controls">'
     + '<div class="signal-bias">'
     +   '<button class="signal-bias-btn long" id="sigLong" onclick="setSignalBias(\'long\')">\ud83d\udfe2 LONG</button>'
     +   '<button class="signal-bias-btn" id="sigShort" onclick="setSignalBias(\'short\')">\ud83d\udd34 SHORT</button>'
@@ -3258,6 +3293,30 @@ function setSignalBias(bias) {
     var btn = document.getElementById('sig' + b.charAt(0).toUpperCase() + b.slice(1));
     if (btn) btn.className = 'signal-bias-btn' + (b === bias ? ' ' + bias : '');
   });
+}
+
+function toggleSigDiscordInput() {
+  var el = document.getElementById('sigDcInput');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function saveSigDiscord() {
+  var url = document.getElementById('sigDcUrl').value.trim();
+  if (url && !url.startsWith('https://discord.com/api/webhooks/')) {
+    document.getElementById('sigStatus').textContent = 'Invalid webhook URL';
+    return;
+  }
+  cfg.discordWebhook = url;
+  saveCfg();
+  document.getElementById('sigDcInput').style.display = 'none';
+  // Update status indicator
+  var dot = document.querySelector('#sigDcStatus div');
+  var text = document.querySelector('#sigDcStatus span');
+  if (dot) dot.style.background = url ? 'var(--green)' : 'var(--red)';
+  if (text) text.textContent = url ? 'Discord Connected' : 'No Discord webhook';
+  document.getElementById('sigStatus').textContent = url ? 'Webhook saved' : 'Webhook removed';
+  // Sync Settings > Discord tab input
+  var settingsInput = document.getElementById('discordWebhook');
+  if (settingsInput) settingsInput.value = url;
 }
 
 async function fireSignal() {
@@ -6340,6 +6399,7 @@ var BROKERS = {
   projectx:  { label:'Project X',       color:'#7c3aed', icon:'⚙ï¸', hasApi: true  },
   mt5:       { label:'MetaTrader 5',    color:'#3b82f6', icon:'📊', hasApi: false },
   rithmic:   { label:'Rithmic',         color:'#e8b84b', icon:'⚡', hasApi: false },
+  amp:       { label:'AMP (via Tradovate)', color:'#ff6b35', icon:'🔶', hasApi: true  },
 };
 var STRATEGIES = {
   ema_cross: { label:'EMA Crossover',  desc:'Fast EMA crosses Slow EMA' },
