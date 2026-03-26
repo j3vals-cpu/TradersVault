@@ -50,15 +50,26 @@ function createSplash() {
   splashWindow.show();
 }
 
+function getAllScreenBounds() {
+  const displays = screen.getAllDisplays();
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  displays.forEach(d => {
+    minX = Math.min(minX, d.bounds.x);
+    minY = Math.min(minY, d.bounds.y);
+    maxX = Math.max(maxX, d.bounds.x + d.bounds.width);
+    maxY = Math.max(maxY, d.bounds.y + d.bounds.height);
+  });
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
 function createWindow() {
-  const primary = screen.getPrimaryDisplay();
-  const { width, height } = primary.bounds;
+  const allBounds = getAllScreenBounds();
 
   mainWindow = new BrowserWindow({
-    x: 0,
-    y: 0,
-    width: width,
-    height: height,
+    x: allBounds.x,
+    y: allBounds.y,
+    width: allBounds.width,
+    height: allBounds.height,
     transparent: true,
     backgroundColor: '#00000000',
     hasShadow: false,
@@ -200,13 +211,16 @@ ipcMain.handle('window-maximize', () => {
     mainWindow.setIgnoreMouseEvents(false);
     isIgnoringMouse = false;
     if (mousePoller) { clearInterval(mousePoller); mousePoller = null; }
-    const primary = screen.getPrimaryDisplay();
-    const { width, height } = primary.workAreaSize;
+    // Use the display the cursor is on, not primary
+    const cursor = screen.getCursorScreenPoint();
+    const currentDisplay = screen.getDisplayNearestPoint(cursor);
+    const { x: dx, y: dy } = currentDisplay.bounds;
+    const { width, height } = currentDisplay.workAreaSize;
     const w = Math.round(width * 0.8);
     const h = Math.round(height * 0.8);
     mainWindow.setBounds({
-      x: Math.round((width - w) / 2),
-      y: Math.round((height - h) / 2),
+      x: dx + Math.round((width - w) / 2),
+      y: dy + Math.round((height - h) / 2),
       width: w,
       height: h
     });
@@ -216,9 +230,8 @@ ipcMain.handle('window-maximize', () => {
   } else {
     // Switch back to overlay mode
     isOverlayMode = true;
-    const primary = screen.getPrimaryDisplay();
-    const { width, height } = primary.bounds;
-    mainWindow.setBounds({ x: 0, y: 0, width, height });
+    const allBounds = getAllScreenBounds();
+    mainWindow.setBounds(allBounds);
     mainWindow.setResizable(false);
     mainWindow.setMovable(false);
     mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
@@ -322,15 +335,7 @@ ipcMain.handle('get-data-path', () => dataDir);
 ipcMain.handle('get-window-bounds', () => mainWindow.getBounds());
 
 ipcMain.handle('expand-to-all-screens', () => {
-  const displays = screen.getAllDisplays();
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  displays.forEach(d => {
-    minX = Math.min(minX, d.bounds.x);
-    minY = Math.min(minY, d.bounds.y);
-    maxX = Math.max(maxX, d.bounds.x + d.bounds.width);
-    maxY = Math.max(maxY, d.bounds.y + d.bounds.height);
-  });
-  const b = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+  const b = getAllScreenBounds();
   mainWindow.setBounds(b);
   return b;
 });
@@ -342,6 +347,19 @@ app.whenReady().then(() => {
   createTray();
   setupAutoLaunch();
   startMousePoller();
+
+  // Re-expand overlay when monitors change (plug in / unplug)
+  screen.on('display-added', () => {
+    if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setBounds(getAllScreenBounds());
+    }
+  });
+  screen.on('display-removed', () => {
+    if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setBounds(getAllScreenBounds());
+    }
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
