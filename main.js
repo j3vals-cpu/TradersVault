@@ -242,6 +242,7 @@ ipcMain.handle('open-external', (_, url) => { if (url) shell.openExternal(url); 
   app.quit();
 });
 ipcMain.handle('get-overlay-state', () => ({ overlayMode: isOverlayMode, opacity: currentOpacity }));
+ipcMain.handle('get-app-version', () => app.getVersion());
 
 // ─── POP-OUT PANELS ─────────────────────────────────────────
 const popoutWindows = {};

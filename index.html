@@ -7292,7 +7292,7 @@ function startHeartbeat() {
           user_id: tvSession.userId || tvSession.id || '',
           email: tvSession.email || '',
           token: tvSession.token,
-          app_version: '2.0.4',
+          app_version: _appVersion,
           os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
           session_id: tvSession.sessionId || '',
           pnl: getPnlSnapshot()
@@ -7537,7 +7537,7 @@ async function validateToken(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: token,
-        app_version: '2.0.4',
+        app_version: _appVersion,
         os: window.electronAPI ? window.electronAPI.platform || 'windows' : 'browser',
         session_id: tvSession && tvSession.sessionId || (Math.random().toString(36).slice(2)),
         pnl: typeof getPnlSnapshot === 'function' ? getPnlSnapshot() : null
@@ -7750,6 +7750,12 @@ function applyLicenceBadge(v) {
   topbar.appendChild(badge);
 }
 
+// ── App version (read from Electron package.json, fallback for browser) ──
+var _appVersion = '2.0.6';
+var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
+  ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
+  : Promise.resolve(_appVersion);
+
 // ── Update system (FORCED auto-update) ──────────────────────────
 var _forceUpdateRunning = false;
 
@@ -7765,7 +7771,7 @@ function isNewerVersion(remote, local) {
 
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
-  var current = '2.0.4';
+  var current = _appVersion;
   if (!isNewerVersion(v.latest_version, current)) return;
   v.update_url = v.update_url || v.latest_url || v.download_url;
   tvUpdateInfo = v;

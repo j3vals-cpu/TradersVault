@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   downloadUpdate: (url) => ipcRenderer.invoke('download-update', url),
   onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_, data) => callback(data)),
   openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   platform: process.platform,
   isElectron: true,
 });
