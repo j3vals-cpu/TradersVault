@@ -1,10 +1,10 @@
 {
   "name": "traders-vault",
   "productName": "Traders Vault",
-  "version": "2.0.4",
-  "description": "Traders Vault — Vaulted Desk. The overlay trading command centre for prop traders.",
+  "version": "2.0.5",
+  "description": "Traders Vault \u2014 Vaulted Desk. The overlay trading command centre for prop traders.",
   "main": "main.js",
-  "author": "J3 | Traders Vault — Vaulted Desk",
+  "author": "J3 | Traders Vault \u2014 Vaulted Desk",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -24,7 +24,7 @@
   "build": {
     "appId": "com.j3traders.vault",
     "productName": "Traders Vault",
-    "copyright": "Copyright © 2026 J3 | Traders Vault — Vaulted Desk",
+    "copyright": "Copyright \u00a9 2026 J3 | Traders Vault \u2014 Vaulted Desk",
     "asar": true,
     "directories": {
       "output": "dist"
