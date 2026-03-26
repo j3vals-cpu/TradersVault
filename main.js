@@ -188,9 +188,47 @@ ipcMain.handle('set-overlay', (_, enable) => {
   return enable;
 });
 
-ipcMain.handle('window-minimize', () => mainWindow.minimize());
+ipcMain.handle('window-minimize', () => {
+  mainWindow.hide();
+});
+
 ipcMain.handle('window-maximize', () => {
-  mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize();
+  if (isOverlayMode) {
+    // Switch to windowed mode
+    isOverlayMode = false;
+    mainWindow.setAlwaysOnTop(false);
+    mainWindow.setIgnoreMouseEvents(false);
+    isIgnoringMouse = false;
+    if (mousePoller) { clearInterval(mousePoller); mousePoller = null; }
+    const primary = screen.getPrimaryDisplay();
+    const { width, height } = primary.workAreaSize;
+    const w = Math.round(width * 0.8);
+    const h = Math.round(height * 0.8);
+    mainWindow.setBounds({
+      x: Math.round((width - w) / 2),
+      y: Math.round((height - h) / 2),
+      width: w,
+      height: h
+    });
+    mainWindow.setResizable(true);
+    mainWindow.setMovable(true);
+    mainWindow.setSkipTaskbar(false);
+  } else {
+    // Switch back to overlay mode
+    isOverlayMode = true;
+    const primary = screen.getPrimaryDisplay();
+    const { width, height } = primary.bounds;
+    mainWindow.setBounds({ x: 0, y: 0, width, height });
+    mainWindow.setResizable(false);
+    mainWindow.setMovable(false);
+    mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    isIgnoringMouse = true;
+    startMousePoller();
+    mainWindow.setSkipTaskbar(false);
+  }
+  mainWindow.webContents.send('overlay-mode-changed', isOverlayMode);
+  return isOverlayMode;
 });
 ipcMain.handle('window-close', () => {
   app.isQuitting = true;
@@ -204,6 +242,52 @@ ipcMain.handle('open-external', (_, url) => { if (url) shell.openExternal(url); 
   app.quit();
 });
 ipcMain.handle('get-overlay-state', () => ({ overlayMode: isOverlayMode, opacity: currentOpacity }));
+
+// ─── POP-OUT PANELS ─────────────────────────────────────────
+const popoutWindows = {};
+
+ipcMain.handle('pop-out-panel', (_, panelId, bounds) => {
+  if (popoutWindows[panelId]) {
+    popoutWindows[panelId].focus();
+    return;
+  }
+
+  const popWin = new BrowserWindow({
+    width: bounds.w || 400,
+    height: bounds.h || 500,
+    x: bounds.screenX || undefined,
+    y: bounds.screenY || undefined,
+    frame: true,
+    transparent: false,
+    backgroundColor: '#0e0e13',
+    alwaysOnTop: false,
+    resizable: true,
+    movable: true,
+    title: 'Traders Vault \u2014 ' + panelId,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+      webSecurity: false,
+    },
+  });
+
+  popWin.loadFile('index.html', { query: { popout: panelId } });
+  popoutWindows[panelId] = popWin;
+
+  popWin.on('closed', () => {
+    delete popoutWindows[panelId];
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('panel-popped-in', panelId);
+    }
+  });
+
+  // Tell main renderer to hide the panel
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('panel-popped-out', panelId);
+  }
+});
 
 // ─── PERSISTENT FILE STORAGE ─────────────────────────────────
 const dataDir = path.join(app.getPath('userData'), 'vault-data');

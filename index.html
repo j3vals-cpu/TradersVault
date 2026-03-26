@@ -294,8 +294,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .win-title{font-size:11px;font-weight:800;color:var(--text);letter-spacing:.2px;}
 .win-cnt{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);background:var(--panel3);padding:1px 6px;border-radius:10px;}
 .win-gap{flex:1;}
-.win-hide{width:20px;height:20px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;line-height:1;}
-.win-hide:hover{background:var(--panel3);color:var(--text);}
+.win-hide,.win-pop{width:20px;height:20px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;line-height:1;}
+.win-hide:hover,.win-pop:hover{background:var(--panel3);color:var(--text);}
 
 /* Window resize handle */
 .win-resize{position:absolute;bottom:0;right:0;width:20px;height:20px;cursor:se-resize;z-index:10;opacity:.4;}
@@ -2023,6 +2023,7 @@ function createWindow(cfg){
     +'<div class="win-cnt" id="wcnt-'+cfg.id+'"></div>'
     +'<div class="win-gap"></div>'
     +(cfg.extraBtns||'')
+    +'<button class="win-pop" title="Pop Out" onclick="popOutPanel(\''+cfg.id+'\')" style="font-style:normal;font-size:11px;">&#10697;</button>'
     +'<button class="win-hide" title="Hide" onclick="toggleWin(\''+cfg.id+'\')" style="font-style:normal;font-size:11px;">&#8211;</button>';
   el.appendChild(bar);
 
@@ -3975,6 +3976,22 @@ function winMin(){if(window.electronAPI)window.electronAPI.minimize();}
 function winMax(){if(window.electronAPI)window.electronAPI.maximize();}
 function winClose(){if(window.electronAPI)window.electronAPI.close();}
 
+// ── Pop-out panels (multi-monitor) ──
+var poppedOutPanels = {};
+
+function popOutPanel(id) {
+  if (!window.electronAPI || !window.electronAPI.popOutPanel) return;
+  var win = document.getElementById('win-' + id);
+  if (!win) return;
+  var rect = win.getBoundingClientRect();
+  window.electronAPI.popOutPanel(id, {
+    w: Math.round(rect.width),
+    h: Math.round(rect.height),
+    screenX: Math.round(rect.left + window.screenX),
+    screenY: Math.round(rect.top + window.screenY)
+  });
+}
+
 function initElectron(){
   if(!window.electronAPI||!window.electronAPI.isElectron)return;
   // Single hit rect update on startup (event hooks handle the rest)
@@ -4001,7 +4018,38 @@ function initElectron(){
       btn.classList.toggle('active',active);
       btn.textContent=active?'\u26F4 Overlay ON':'\u26F4 Overlay';
     }
+    // In windowed mode, apply solid background; in overlay mode, go transparent
+    document.body.style.background=active?'transparent':'#0e0e13';
   });
+
+  // Listen for pop-out / pop-in events from main process
+  if(window.electronAPI.onPanelPoppedOut){
+    window.electronAPI.onPanelPoppedOut(function(id){
+      poppedOutPanels[id]=true;
+      var el=document.getElementById('win-'+id);
+      if(el) el.style.display='none';
+      // Hide from toggle bar
+      var togBtn=document.querySelector('.ptog[data-wid="'+id+'"]');
+      if(togBtn) togBtn.style.display='none';
+      scheduleHitRects();
+    });
+  }
+  if(window.electronAPI.onPanelPoppedIn){
+    window.electronAPI.onPanelPoppedIn(function(id){
+      delete poppedOutPanels[id];
+      var el=document.getElementById('win-'+id);
+      if(el){
+        el.style.display='';
+        // Restore visibility based on saved state
+        var ws=getWinState(id);
+        el.classList.toggle('hidden',!!ws.hidden);
+      }
+      // Show in toggle bar again
+      var togBtn=document.querySelector('.ptog[data-wid="'+id+'"]');
+      if(togBtn) togBtn.style.display='';
+      scheduleHitRects();
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -5805,6 +5853,70 @@ buildQuickColors();
 applyPromotions([]);
 applyWinTints();
 fetchNews(false);
+
+// ── Popout mode: if ?popout=<panelId>, show only that panel ──
+(function handlePopoutMode(){
+  var params = new URLSearchParams(window.location.search);
+  var popoutId = params.get('popout');
+  if (!popoutId) return;
+
+  // Hide topbar, topbar2, footer, dock
+  var hide = ['topbar','topbar2','footer-bar','dock-bar','dock-hover-zone'];
+  hide.forEach(function(cls){
+    document.querySelectorAll('.'+cls).forEach(function(el){ el.style.display='none'; });
+  });
+  // Also hide by ID
+  ['panelToggles','winControls'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display='none';
+  });
+
+  // Set solid background for popout window
+  document.body.style.background='#0e0e13';
+  document.documentElement.style.background='#0e0e13';
+
+  // Hide ALL panels, then show only the target
+  document.querySelectorAll('.win').forEach(function(w){
+    w.style.display='none';
+  });
+  var target = document.getElementById('win-'+popoutId);
+  if(target){
+    target.style.display='flex';
+    target.classList.remove('hidden');
+    // Make it fill the window
+    target.style.position='relative';
+    target.style.left='0';
+    target.style.top='0';
+    target.style.width='100%';
+    target.style.height='100vh';
+    target.style.zIndex='1';
+    target.style.borderRadius='0';
+    // Hide the pop-out button itself in the popped-out window
+    var popBtn = target.querySelector('.win-pop');
+    if(popBtn) popBtn.style.display='none';
+    // Hide the hide button too — closing the window handles that
+    var hideBtn = target.querySelector('.win-hide');
+    if(hideBtn) hideBtn.style.display='none';
+  }
+
+  // Make the canvas fill the viewport and enable pointer events
+  var canvas = document.getElementById('canvas');
+  if(canvas){
+    canvas.style.position='absolute';
+    canvas.style.inset='0';
+    canvas.style.margin='0';
+    canvas.style.overflow='hidden';
+    canvas.style.pointerEvents='auto';
+  }
+  // Override overlay pointer-events:none on chrome wrapper
+  var chrome = document.querySelector('.chrome');
+  if(chrome) chrome.style.pointerEvents='auto';
+
+  // Disable mouse poller / hit-rects since this isn't an overlay
+  if(window.electronAPI && window.electronAPI.setHitRects){
+    window.electronAPI.setHitRects([]);
+  }
+})();
+
 }); // end load().then
 </script>
 

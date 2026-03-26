@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveData: (key, value) => ipcRenderer.invoke('save-data', key, value),
   loadData: (key) => ipcRenderer.invoke('load-data', key),
   getDataPath: () => ipcRenderer.invoke('get-data-path'),
+  // Pop-out panels (multi-monitor)
+  popOutPanel: (panelId, bounds) => ipcRenderer.invoke('pop-out-panel', panelId, bounds),
+  onPanelPoppedOut: (cb) => ipcRenderer.on('panel-popped-out', (_, id) => cb(id)),
+  onPanelPoppedIn: (cb) => ipcRenderer.on('panel-popped-in', (_, id) => cb(id)),
   // Click-through hit rects
   setHitRects: (rects) => ipcRenderer.send('set-hit-rects', rects),
   // Screenshot (capture desktop behind overlay)
