@@ -6069,6 +6069,11 @@ applyPromotions([]);
 applyWinTints();
 fetchNews(false);
 
+// ── DXTrade: resume background sync if credentials exist ──
+if(cfg.dxtradeCredentials&&cfg.dxtradeCredentials.token){
+  startDXTradeSync();
+}
+
 // ── Popout mode: if ?popout=<panelId>, show only that panel ──
 (function handlePopoutMode(){
   var params = new URLSearchParams(window.location.search);
@@ -6631,24 +6636,165 @@ function dxSetStatus(msg,type){
   s.style.border='1px solid '+(borders[type]||borders.info);
   s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(52,211,153,.9)';
 }
-function dxtradeConnect(){
+var _dxSyncInterval=null;
+
+async function dxtradeConnect(){
   var env=(document.getElementById('dxEnv')||{}).value||'live';
-  var serverUrl=(document.getElementById('dxServerUrl')||{}).value||'';
-  var user=(document.getElementById('dxUser')||{}).value||'';
+  var serverUrl=(document.getElementById('dxServerUrl')||{}).value.trim()||'';
+  var user=(document.getElementById('dxUser')||{}).value.trim()||'';
   var pass=(document.getElementById('dxPass')||{}).value||'';
   if(!serverUrl||!user||!pass){dxSetStatus('&#9888; Server URL, Username, and Password are required.','error');return;}
+  serverUrl=serverUrl.replace(/\/+$/,'');
   dxSetStatus('&#8635; Connecting to DXTrade...','info');
   var btn=document.getElementById('dxConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
-  setTimeout(function(){
-    cfg.dxtradeCredentials={env:env,serverUrl:serverUrl,username:user,password:pass};saveCfg();
+  try{
+    // 1. Login
+    var loginRes=await fetch(serverUrl+'/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:user,domain:'default',password:pass})
+    });
+    if(!loginRes.ok){
+      dxSetStatus('&#9888; Login failed — check credentials (HTTP '+loginRes.status+')','error');
+      btn.disabled=false;btn.innerHTML='&#128202; Connect';return;
+    }
+    var loginData=await loginRes.json();
+    var token=loginData.sessionToken;
+    if(!token){
+      dxSetStatus('&#9888; No session token received','error');
+      btn.disabled=false;btn.innerHTML='&#128202; Connect';return;
+    }
+    // 2. Fetch accounts
+    var accRes=await fetch(serverUrl+'/api/accounts',{
+      headers:{'Authorization':'DXAPI '+token}
+    });
+    if(!accRes.ok){
+      dxSetStatus('&#9888; Failed to fetch accounts (HTTP '+accRes.status+')','error');
+      btn.disabled=false;btn.innerHTML='&#128202; Connect';return;
+    }
+    var accounts=await accRes.json();
+    // 3. Save credentials
+    cfg.dxtradeCredentials={env:env,serverUrl:serverUrl,username:user,password:pass,token:token};
+    saveCfg();
+    // 4. Import accounts into trading state
     state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
-    state.trading.accounts.push({id:'dx-'+Date.now(),firm:'DXTrade',name:user||'DXTrade Account',balance:0,status:'pending-sync'});
+    var imported=0;
+    if(Array.isArray(accounts)){
+      accounts.forEach(function(acc){
+        var accId='dxt-'+(acc.accountCode||acc.account||Date.now());
+        var existing=state.trading.accounts.find(function(a){return a.id===accId;});
+        if(!existing){
+          state.trading.accounts.push({
+            id:accId,firm:'DXTrade',
+            name:acc.accountCode||acc.account||'DXTrade Account',
+            balance:acc.balance||0,equity:acc.equity||0,
+            pnl:(acc.equity||0)-(acc.balance||0),
+            status:'active',platform:'dxtrade',
+            _serverUrl:serverUrl,_token:token,
+            _accountCode:acc.accountCode||acc.account||'',
+            _clearingCode:acc.clearingCode||''
+          });
+          imported++;
+        } else {
+          existing.balance=acc.balance||existing.balance;
+          existing.equity=acc.equity||existing.equity;
+          existing.pnl=(acc.equity||0)-(acc.balance||0);
+          existing.status='active';
+          existing._token=token;
+        }
+      });
+    }
     save();
-    dxSetStatus('&#10003; DXTrade account added!','success');
-    toast('DXTrade account added — live sync coming soon','success');
+    dxSetStatus('&#10003; Connected — '+(imported||accounts.length||0)+' account(s) imported','success');
+    toast('DXTrade connected — '+(imported||accounts.length||0)+' account(s) synced','success');
     btn.disabled=false;btn.innerHTML='&#128202; Connect';
+    if(typeof renderTrading==='function') renderTrading();
+    // 5. Start background sync
+    startDXTradeSync();
     setTimeout(closeDXTradeModal,1800);
-  },900);
+  }catch(e){
+    dxSetStatus('&#9888; Connection failed: '+e.message,'error');
+    btn.disabled=false;btn.innerHTML='&#128202; Connect';
+  }
+}
+
+function startDXTradeSync(){
+  if(_dxSyncInterval) clearInterval(_dxSyncInterval);
+  _dxSyncInterval=setInterval(syncDXTradeAccounts,30000);
+  syncDXTradeAccounts();
+}
+
+async function syncDXTradeAccounts(){
+  var creds=cfg.dxtradeCredentials;
+  if(!creds||!creds.token||!creds.serverUrl) return;
+  try{
+    // Ping to keep session alive
+    var pingRes=await fetch(creds.serverUrl+'/api/ping',{
+      method:'POST',
+      headers:{'Authorization':'DXAPI '+creds.token}
+    });
+    // If ping fails, try re-login before fetching accounts
+    if(!pingRes.ok){
+      var relogged=await dxtradeRelogin();
+      if(!relogged) return;
+    }
+    // Fetch accounts
+    var accRes=await fetch(creds.serverUrl+'/api/accounts',{
+      headers:{'Authorization':'DXAPI '+creds.token}
+    });
+    if(!accRes.ok){
+      // Token likely expired — attempt re-login and retry
+      var relogged2=await dxtradeRelogin();
+      if(!relogged2) return;
+      accRes=await fetch(creds.serverUrl+'/api/accounts',{
+        headers:{'Authorization':'DXAPI '+creds.token}
+      });
+      if(!accRes.ok) return;
+    }
+    var accounts=await accRes.json();
+    if(!Array.isArray(accounts)) return;
+    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
+    accounts.forEach(function(acc){
+      var accId='dxt-'+(acc.accountCode||acc.account||'');
+      var local=state.trading.accounts.find(function(a){return a.id===accId;});
+      if(local){
+        local.balance=acc.balance!=null?acc.balance:local.balance;
+        local.equity=acc.equity!=null?acc.equity:local.equity;
+        local.pnl=(acc.equity||0)-(acc.balance||0);
+        local.status='active';
+        local._token=creds.token;
+      }
+    });
+    save();
+    if(typeof renderTrading==='function') renderTrading();
+  }catch(e){
+    // Silent fail — will retry on next interval
+  }
+}
+
+async function dxtradeRelogin(){
+  var creds=cfg.dxtradeCredentials;
+  if(!creds||!creds.username||!creds.password||!creds.serverUrl) return false;
+  try{
+    var res=await fetch(creds.serverUrl+'/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:creds.username,domain:'default',password:creds.password})
+    });
+    if(!res.ok) return false;
+    var data=await res.json();
+    if(data.sessionToken){
+      creds.token=data.sessionToken;
+      cfg.dxtradeCredentials=creds;
+      saveCfg();
+      // Update token on all DXTrade accounts
+      (state.trading&&state.trading.accounts||[]).forEach(function(a){
+        if(a.platform==='dxtrade') a._token=creds.token;
+      });
+      return true;
+    }
+  }catch(e){}
+  return false;
 }
 
 </script>
