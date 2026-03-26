@@ -2541,7 +2541,7 @@ var _sessionMode = 'london'; // london, ny, asia, all
 
 function buildTradingWin(){
   var el=createWindow({id:'trading',title:'Trading',icon:'&#128200;',
-    extraBtns:'<button class="padd" onclick="openFirmModal()" style="margin-right:4px;">+ Firm</button><button class="padd sec" onclick="openTradovateModal()" style="margin-right:4px;">+ Account</button><button class="padd sec" onclick="openAmpModal()" style="margin-right:4px;background:linear-gradient(135deg,#ff6b35,#e05520);">&#128310; AMP</button><button class="padd sec" onclick="openProjectXModal()" style="margin-right:4px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#9881; ProjectX</button><button class="padd sec" onclick="openCTraderModal()" style="margin-right:4px;background:linear-gradient(135deg,#f59e0b,#d97706);">&#128200; CTrader</button><button class="padd sec" onclick="openMatchTraderModal()" style="margin-right:4px;background:linear-gradient(135deg,#6366f1,#4f46e5);">&#128279; Match</button><button class="padd sec" onclick="openRithmicModal()" style="margin-right:4px;background:linear-gradient(135deg,#e8b84b,#c99a30);">&#9889; Rithmic</button><button class="padd sec" onclick="openDXTradeModal()" style="margin-right:4px;background:linear-gradient(135deg,#10b981,#059669);">&#128202; DXTrade</button><button class="padd" onclick="openGainsCard()" style="margin-right:4px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(232,184,75,.1));border-color:var(--gold);color:var(--gold);">&#128247; Share</button>'
+    extraBtns:'<button class="padd" onclick="openFirmModal()" style="margin-right:4px;">+ Firm</button><div style="position:relative;display:inline-block;"><button class="padd sec" onclick="toggleConnectMenu()" id="connectMenuBtn" style="margin-right:4px;">&#128268; Connect Account &#9662;</button><div id="connectPlatformMenu" style="display:none;position:absolute;top:100%;left:0;z-index:999;background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:6px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);margin-top:4px;"><button class="padd sec" onclick="openTradovateModal();hideConnectMenu()" style="width:100%;margin-bottom:3px;text-align:left;">&#9875; Tradovate</button><button class="padd sec" onclick="openAmpModal();hideConnectMenu()" style="width:100%;margin-bottom:3px;text-align:left;background:linear-gradient(135deg,#ff6b35,#e05520);">&#128310; AMP (Tradovate)</button><button class="padd sec" onclick="openProjectXModal();hideConnectMenu()" style="width:100%;margin-bottom:3px;text-align:left;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#9881; Project X</button><button class="padd sec" onclick="openCTraderModal();hideConnectMenu()" style="width:100%;margin-bottom:3px;text-align:left;background:linear-gradient(135deg,#f59e0b,#d97706);">&#128200; CTrader</button><button class="padd sec" onclick="openMatchTraderModal();hideConnectMenu()" style="width:100%;margin-bottom:3px;text-align:left;background:linear-gradient(135deg,#6366f1,#4f46e5);">&#128279; MatchTrader</button><button class="padd sec" onclick="openRithmicModal();hideConnectMenu()" style="width:100%;margin-bottom:3px;text-align:left;background:linear-gradient(135deg,#e8b84b,#c99a30);">&#9889; Rithmic</button><button class="padd sec" onclick="openDXTradeModal();hideConnectMenu()" style="width:100%;text-align:left;background:linear-gradient(135deg,#10b981,#059669);">&#128202; DXTrade</button></div></div><button class="padd" onclick="openGainsCard()" style="margin-right:4px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(232,184,75,.1));border-color:var(--gold);color:var(--gold);">&#128247; Share</button>'
   });
   var body=document.getElementById('wbody-trading');
 
@@ -2596,6 +2596,9 @@ function setSessionMode(mode,btn){
   btn.classList.add('active');
 }
 
+function toggleConnectMenu(){var m=document.getElementById('connectPlatformMenu');m.style.display=m.style.display==='none'?'block':'none';}
+function hideConnectMenu(){var m=document.getElementById('connectPlatformMenu');if(m)m.style.display='none';}
+document.addEventListener('click',function(e){var m=document.getElementById('connectPlatformMenu');var b=document.getElementById('connectMenuBtn');if(m&&b&&!m.contains(e.target)&&!b.contains(e.target))m.style.display='none';});
 function openFirmModal(){firmColor=COLORS[2];buildCP('fmColorRow',firmColor);document.getElementById('fmName').value='';document.getElementById('firmModal').classList.add('open');setTimeout(function(){document.getElementById('fmName').focus();},80);}
 function closeFirmModal(){document.getElementById('firmModal').classList.remove('open');}
 function saveFirm(){
@@ -6530,11 +6533,12 @@ function ctraderConnect(){
   var btn=document.getElementById('ctConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
   setTimeout(function(){
     cfg.ctraderCredentials={env:env,ctid:ctid,token:token};saveCfg();
-    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
-    state.trading.accounts.push({id:'ct-'+Date.now(),firm:'CTrader',name:ctid||'CTrader Account',balance:0,status:'pending-sync'});
-    save();
+    var firmName='CTrader';var firm=state.firms.find(function(f){return f.name===firmName;});
+    if(!firm){firm={id:uid(),name:firmName,color:'#f59e0b'};state.firms.push(firm);}
+    state.accounts.push({id:uid(),firmId:firm.id,firmName:firmName,acType:env,label:ctid||'CTrader Account',startBalance:0,currentBalance:0,profitTarget:0,totalProfitNeeded:0,consistency:0,dailyLogs:[],color:firm.color,platform:'ctrader'});
+    save();renderFirmSelector();renderTrading();
     ctSetStatus('&#10003; CTrader account added!','success');
-    toast('CTrader account added — live sync coming soon','success');
+    toast('CTrader account linked — update balance via the account card','success');
     btn.disabled=false;btn.innerHTML='&#128200; Connect';
     setTimeout(closeCTraderModal,1800);
   },900);
@@ -6569,11 +6573,12 @@ function matchtraderConnect(){
   var btn=document.getElementById('mtConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
   setTimeout(function(){
     cfg.matchtraderCredentials={env:env,serverUrl:serverUrl,username:user,password:pass};saveCfg();
-    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
-    state.trading.accounts.push({id:'mt-'+Date.now(),firm:'MatchTrader',name:user||'MatchTrader Account',balance:0,status:'pending-sync'});
-    save();
+    var firmName='MatchTrader';var firm=state.firms.find(function(f){return f.name===firmName;});
+    if(!firm){firm={id:uid(),name:firmName,color:'#6366f1'};state.firms.push(firm);}
+    state.accounts.push({id:uid(),firmId:firm.id,firmName:firmName,acType:env,label:user||'MatchTrader Account',startBalance:0,currentBalance:0,profitTarget:0,totalProfitNeeded:0,consistency:0,dailyLogs:[],color:firm.color,platform:'matchtrader'});
+    save();renderFirmSelector();renderTrading();
     mtSetStatus('&#10003; MatchTrader account added!','success');
-    toast('MatchTrader account added — live sync coming soon','success');
+    toast('MatchTrader account linked — update balance via the account card','success');
     btn.disabled=false;btn.innerHTML='&#128279; Connect';
     setTimeout(closeMatchTraderModal,1800);
   },900);
@@ -6607,11 +6612,12 @@ function rithmicConnect(){
   var btn=document.getElementById('rtConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
   setTimeout(function(){
     cfg.rithmicCredentials={system:system,username:user,password:pass};saveCfg();
-    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
-    state.trading.accounts.push({id:'rt-'+Date.now(),firm:'Rithmic',name:user||'Rithmic Account',balance:0,status:'pending-sync'});
-    save();
+    var firmName='Rithmic ('+system+')';var firm=state.firms.find(function(f){return f.name===firmName;});
+    if(!firm){firm={id:uid(),name:firmName,color:'#e8b84b'};state.firms.push(firm);}
+    state.accounts.push({id:uid(),firmId:firm.id,firmName:firmName,acType:'live',label:user||'Rithmic Account',startBalance:0,currentBalance:0,profitTarget:0,totalProfitNeeded:0,consistency:0,dailyLogs:[],color:firm.color,platform:'rithmic'});
+    save();renderFirmSelector();renderTrading();
     rtSetStatus('&#10003; Rithmic account added!','success');
-    toast('Rithmic account added — live sync coming soon','success');
+    toast('Rithmic account linked — update balance via the account card','success');
     btn.disabled=false;btn.innerHTML='&#9889; Connect';
     setTimeout(closeRithmicModal,1800);
   },900);
@@ -6676,35 +6682,32 @@ async function dxtradeConnect(){
     // 3. Save credentials
     cfg.dxtradeCredentials={env:env,serverUrl:serverUrl,username:user,password:pass,token:token};
     saveCfg();
-    // 4. Import accounts into trading state
-    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
+    // 4. Import accounts into prop tracker
+    var firmName='DXTrade';var firm=state.firms.find(function(f){return f.name===firmName;});
+    if(!firm){firm={id:uid(),name:firmName,color:'#10b981'};state.firms.push(firm);}
     var imported=0;
     if(Array.isArray(accounts)){
       accounts.forEach(function(acc){
-        var accId='dxt-'+(acc.accountCode||acc.account||Date.now());
-        var existing=state.trading.accounts.find(function(a){return a.id===accId;});
+        var accCode=acc.accountCode||acc.account||'';
+        var existing=state.accounts.find(function(a){return a.platform==='dxtrade'&&a.label===accCode;});
+        var bal=acc.balance||0;
         if(!existing){
-          state.trading.accounts.push({
-            id:accId,firm:'DXTrade',
-            name:acc.accountCode||acc.account||'DXTrade Account',
-            balance:acc.balance||0,equity:acc.equity||0,
-            pnl:(acc.equity||0)-(acc.balance||0),
-            status:'active',platform:'dxtrade',
-            _serverUrl:serverUrl,_token:token,
-            _accountCode:acc.accountCode||acc.account||'',
-            _clearingCode:acc.clearingCode||''
+          state.accounts.push({
+            id:uid(),firmId:firm.id,firmName:firmName,acType:env,
+            label:accCode||'DXTrade Account',
+            startBalance:bal,currentBalance:bal,
+            profitTarget:0,totalProfitNeeded:0,consistency:0,
+            dailyLogs:[],color:firm.color,platform:'dxtrade',
+            _serverUrl:serverUrl,_token:token,_accountCode:accCode,_clearingCode:acc.clearingCode||''
           });
           imported++;
         } else {
-          existing.balance=acc.balance||existing.balance;
-          existing.equity=acc.equity||existing.equity;
-          existing.pnl=(acc.equity||0)-(acc.balance||0);
-          existing.status='active';
+          existing.currentBalance=bal;
           existing._token=token;
         }
       });
     }
-    save();
+    save();renderFirmSelector();renderTrading();
     dxSetStatus('&#10003; Connected — '+(imported||accounts.length||0)+' account(s) imported','success');
     toast('DXTrade connected — '+(imported||accounts.length||0)+' account(s) synced','success');
     btn.disabled=false;btn.innerHTML='&#128202; Connect';
@@ -6753,15 +6756,11 @@ async function syncDXTradeAccounts(){
     }
     var accounts=await accRes.json();
     if(!Array.isArray(accounts)) return;
-    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
     accounts.forEach(function(acc){
-      var accId='dxt-'+(acc.accountCode||acc.account||'');
-      var local=state.trading.accounts.find(function(a){return a.id===accId;});
+      var accCode=acc.accountCode||acc.account||'';
+      var local=state.accounts.find(function(a){return a.platform==='dxtrade'&&a.label===accCode;});
       if(local){
-        local.balance=acc.balance!=null?acc.balance:local.balance;
-        local.equity=acc.equity!=null?acc.equity:local.equity;
-        local.pnl=(acc.equity||0)-(acc.balance||0);
-        local.status='active';
+        local.currentBalance=acc.balance!=null?acc.balance:local.currentBalance;
         local._token=creds.token;
       }
     });
@@ -6788,7 +6787,7 @@ async function dxtradeRelogin(){
       cfg.dxtradeCredentials=creds;
       saveCfg();
       // Update token on all DXTrade accounts
-      (state.trading&&state.trading.accounts||[]).forEach(function(a){
+      state.accounts.forEach(function(a){
         if(a.platform==='dxtrade') a._token=creds.token;
       });
       return true;
