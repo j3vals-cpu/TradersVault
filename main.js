@@ -63,13 +63,14 @@ function getAllScreenBounds() {
 }
 
 function createWindow() {
-  const allBounds = getAllScreenBounds();
+  const primary = screen.getPrimaryDisplay();
+  const { width, height } = primary.bounds;
 
   mainWindow = new BrowserWindow({
-    x: allBounds.x,
-    y: allBounds.y,
-    width: allBounds.width,
-    height: allBounds.height,
+    x: 0,
+    y: 0,
+    width: width,
+    height: height,
     transparent: true,
     backgroundColor: '#00000000',
     hasShadow: false,
@@ -230,8 +231,9 @@ ipcMain.handle('window-maximize', () => {
   } else {
     // Switch back to overlay mode
     isOverlayMode = true;
-    const allBounds = getAllScreenBounds();
-    mainWindow.setBounds(allBounds);
+    const primary = screen.getPrimaryDisplay();
+    const { width, height } = primary.bounds;
+    mainWindow.setBounds({ x: 0, y: 0, width, height });
     mainWindow.setResizable(false);
     mainWindow.setMovable(false);
     mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
@@ -348,15 +350,17 @@ app.whenReady().then(() => {
   setupAutoLaunch();
   startMousePoller();
 
-  // Re-expand overlay when monitors change (plug in / unplug)
+  // Re-fit overlay to primary when monitors change
   screen.on('display-added', () => {
     if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setBounds(getAllScreenBounds());
+      const p = screen.getPrimaryDisplay();
+      mainWindow.setBounds({ x: 0, y: 0, width: p.bounds.width, height: p.bounds.height });
     }
   });
   screen.on('display-removed', () => {
     if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setBounds(getAllScreenBounds());
+      const p = screen.getPrimaryDisplay();
+      mainWindow.setBounds({ x: 0, y: 0, width: p.bounds.width, height: p.bounds.height });
     }
   });
 
