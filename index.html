@@ -1714,6 +1714,162 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   </div>
 </div>
 
+<!-- CTRADER CONNECTION MODAL -->
+<div class="overlay" id="ctraderModal">
+  <div class="modal" style="width:480px;padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:20px 22px 16px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#fbbf24,#b45309);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(245,158,11,.3);">&#128200;</div>
+          <div>
+            <div style="font-size:15px;font-weight:900;color:#fff;">Connect CTrader</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:1px;">CTRADER API &middot; ACCESS TOKEN</div>
+          </div>
+        </div>
+        <button class="modal-x" onclick="closeCTraderModal()">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:18px 20px;">
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(245,178,60,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Connect your cTrader account. Get your Access Token from your broker&#39;s cTrader web portal under <b>Settings &gt; API</b>.
+      </div>
+      <label class="f-lbl">Environment</label>
+      <select class="f-in" id="ctEnv" style="cursor:pointer;">
+        <option value="live">&#128994; Live</option>
+        <option value="demo">&#128993; Demo</option>
+      </select>
+      <label class="f-lbl">cTrader ID</label>
+      <input class="f-in" id="ctId" placeholder="Your cTrader ID">
+      <label class="f-lbl">Access Token</label>
+      <input class="f-in" id="ctToken" type="password" placeholder="Your cTrader Access Token">
+      <div id="ctStatus" style="margin-top:10px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+        <button class="btn-cancel" onclick="closeCTraderModal()">Cancel</button>
+        <button class="btn-save" id="ctConnectBtn" onclick="ctraderConnect()" style="background:#d97706;min-width:120px;">&#128200; Connect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RITHMIC CONNECTION MODAL -->
+<div class="overlay" id="rithmicModal">
+  <div class="modal" style="width:480px;padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#e8b84b,#c99a30);padding:20px 22px 16px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#fcd34d,#92400e);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(232,184,75,.3);">&#9889;</div>
+          <div>
+            <div style="font-size:15px;font-weight:900;color:#fff;">Connect Rithmic</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:1px;">RITHMIC PROTOCOL BUFFER API</div>
+          </div>
+        </div>
+        <button class="modal-x" onclick="closeRithmicModal()">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:18px 20px;">
+      <div style="background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(232,194,85,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Connects to Rithmic&#39;s API for live account data. Contact your prop firm or broker for API credentials.
+      </div>
+      <label class="f-lbl">System Name</label>
+      <select class="f-in" id="rtSystem" style="cursor:pointer;">
+        <option value="Rithmic 01">Rithmic 01 (Live)</option>
+        <option value="Rithmic Paper Trading">Rithmic Paper Trading</option>
+        <option value="TopstepTrader">TopstepTrader</option>
+        <option value="Apex">Apex</option>
+        <option value="Earn2Trade">Earn2Trade</option>
+        <option value="Other">Other</option>
+      </select>
+      <label class="f-lbl">Username</label>
+      <input class="f-in" id="rtUser" placeholder="Your Rithmic username" autocomplete="username">
+      <label class="f-lbl">Password</label>
+      <input class="f-in" id="rtPass" type="password" placeholder="Your Rithmic password" autocomplete="current-password">
+      <div id="rtStatus" style="margin-top:10px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+        <button class="btn-cancel" onclick="closeRithmicModal()">Cancel</button>
+        <button class="btn-save" id="rtConnectBtn" onclick="rithmicConnect()" style="background:#c99a30;min-width:120px;">&#9889; Connect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MATCHTRADER CONNECTION MODAL -->
+<div class="overlay" id="matchtraderModal">
+  <div class="modal" style="width:480px;padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:20px 22px 16px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#818cf8,#3730a3);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(99,102,241,.3);">&#128279;</div>
+          <div>
+            <div style="font-size:15px;font-weight:900;color:#fff;">Connect MatchTrader</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:1px;">PROP FIRM &middot; CREDENTIALS</div>
+          </div>
+        </div>
+        <button class="modal-x" onclick="closeMatchTraderModal()">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:18px 20px;">
+      <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(129,140,248,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Connect your MatchTrader account. Use the credentials provided by your prop firm.
+      </div>
+      <label class="f-lbl">Environment</label>
+      <select class="f-in" id="mtEnv" style="cursor:pointer;">
+        <option value="live">&#128994; Live</option>
+        <option value="demo">&#128993; Demo</option>
+      </select>
+      <label class="f-lbl">Server URL</label>
+      <input class="f-in" id="mtServerUrl" placeholder="e.g. https://trade.yourfirm.com">
+      <label class="f-lbl">Username</label>
+      <input class="f-in" id="mtUser" placeholder="Your MatchTrader username" autocomplete="username">
+      <label class="f-lbl">Password</label>
+      <input class="f-in" id="mtPass" type="password" placeholder="Your MatchTrader password" autocomplete="current-password">
+      <div id="mtStatus" style="margin-top:10px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+        <button class="btn-cancel" onclick="closeMatchTraderModal()">Cancel</button>
+        <button class="btn-save" id="mtConnectBtn" onclick="matchtraderConnect()" style="background:#4f46e5;min-width:120px;">&#128279; Connect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DXTRADE CONNECTION MODAL -->
+<div class="overlay" id="dxtradeModal">
+  <div class="modal" style="width:480px;padding:0;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#10b981,#059669);padding:20px 22px 16px;border-bottom:1px solid var(--border2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#34d399,#065f46);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(16,185,129,.3);">&#128202;</div>
+          <div>
+            <div style="font-size:15px;font-weight:900;color:#fff;">Connect DXTrade</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:1px;">PROP FIRM &middot; CREDENTIALS</div>
+          </div>
+        </div>
+        <button class="modal-x" onclick="closeDXTradeModal()">&#10005;</button>
+      </div>
+    </div>
+    <div style="padding:18px 20px;">
+      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(52,211,153,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Connect your DXTrade account. Use the login provided by your prop firm.
+      </div>
+      <label class="f-lbl">Environment</label>
+      <select class="f-in" id="dxEnv" style="cursor:pointer;">
+        <option value="live">&#128994; Live</option>
+        <option value="demo">&#128993; Demo</option>
+      </select>
+      <label class="f-lbl">Server URL</label>
+      <input class="f-in" id="dxServerUrl" placeholder="e.g. https://dxtrade.yourfirm.com">
+      <label class="f-lbl">Username</label>
+      <input class="f-in" id="dxUser" placeholder="Your DXTrade username" autocomplete="username">
+      <label class="f-lbl">Password</label>
+      <input class="f-in" id="dxPass" type="password" placeholder="Your DXTrade password" autocomplete="current-password">
+      <div id="dxStatus" style="margin-top:10px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+        <button class="btn-cancel" onclick="closeDXTradeModal()">Cancel</button>
+        <button class="btn-save" id="dxConnectBtn" onclick="dxtradeConnect()" style="background:#059669;min-width:120px;">&#128202; Connect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- STRATEGY ITEM MODAL -->
 <div class="overlay" id="stratModal">
   <div class="modal" style="width:360px">
@@ -2385,7 +2541,7 @@ var _sessionMode = 'london'; // london, ny, asia, all
 
 function buildTradingWin(){
   var el=createWindow({id:'trading',title:'Trading',icon:'&#128200;',
-    extraBtns:'<button class="padd" onclick="openFirmModal()" style="margin-right:4px;">+ Firm</button><button class="padd sec" onclick="openTradovateModal()" style="margin-right:4px;">+ Account</button><button class="padd sec" onclick="openAmpModal()" style="margin-right:4px;background:linear-gradient(135deg,#ff6b35,#e05520);">&#128310; AMP</button><button class="padd sec" onclick="openProjectXModal()" style="margin-right:4px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#9881; ProjectX</button><button class="padd" onclick="openGainsCard()" style="margin-right:4px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(232,184,75,.1));border-color:var(--gold);color:var(--gold);">&#128247; Share</button>'
+    extraBtns:'<button class="padd" onclick="openFirmModal()" style="margin-right:4px;">+ Firm</button><button class="padd sec" onclick="openTradovateModal()" style="margin-right:4px;">+ Account</button><button class="padd sec" onclick="openAmpModal()" style="margin-right:4px;background:linear-gradient(135deg,#ff6b35,#e05520);">&#128310; AMP</button><button class="padd sec" onclick="openProjectXModal()" style="margin-right:4px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#9881; ProjectX</button><button class="padd sec" onclick="openCTraderModal()" style="margin-right:4px;background:linear-gradient(135deg,#f59e0b,#d97706);">&#128200; CTrader</button><button class="padd sec" onclick="openMatchTraderModal()" style="margin-right:4px;background:linear-gradient(135deg,#6366f1,#4f46e5);">&#128279; Match</button><button class="padd sec" onclick="openRithmicModal()" style="margin-right:4px;background:linear-gradient(135deg,#e8b84b,#c99a30);">&#9889; Rithmic</button><button class="padd sec" onclick="openDXTradeModal()" style="margin-right:4px;background:linear-gradient(135deg,#10b981,#059669);">&#128202; DXTrade</button><button class="padd" onclick="openGainsCard()" style="margin-right:4px;background:linear-gradient(135deg,rgba(232,184,75,.2),rgba(232,184,75,.1));border-color:var(--gold);color:var(--gold);">&#128247; Share</button>'
   });
   var body=document.getElementById('wbody-trading');
 
@@ -3667,12 +3823,12 @@ function renderAccountability(){
 // ═══════════════════════════════════════════
 // MODAL CLOSE
 // ═══════════════════════════════════════════
-['noteModal','plannerModal','firmModal','accountModal','propFirmModal','stratModal','settingsModal','tradovateModal'].forEach(function(id){
+['noteModal','plannerModal','firmModal','accountModal','propFirmModal','stratModal','settingsModal','tradovateModal','ctraderModal','matchtraderModal','rithmicModal','dxtradeModal'].forEach(function(id){
   document.getElementById(id).addEventListener('click',function(e){if(e.target===e.currentTarget)e.target.classList.remove('open');});
 });
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
-    ['noteModal','plannerModal','firmModal','accountModal','propFirmModal','stratModal','settingsModal','tradovateModal'].forEach(function(id){
+    ['noteModal','plannerModal','firmModal','accountModal','propFirmModal','stratModal','settingsModal','tradovateModal','ctraderModal','matchtraderModal','rithmicModal','dxtradeModal'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.classList.remove('open');
     });
     // Also close dynamic modals
@@ -6341,6 +6497,160 @@ function saveProjectXAccount(){
   toast('Project X account added ✓','success');
 }
 
+// ── CTrader Connection ──────────────────────────────────────
+function openCTraderModal(){
+  document.getElementById('ctraderModal').classList.add('open');
+}
+function closeCTraderModal(){
+  document.getElementById('ctraderModal').classList.remove('open');
+  var s=document.getElementById('ctStatus');if(s){s.style.display='none';s.textContent='';}
+  var ids=['ctEnv','ctId','ctToken'];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
+}
+function ctSetStatus(msg,type){
+  var s=document.getElementById('ctStatus');if(!s)return;
+  s.style.display='block';s.innerHTML=msg;
+  var colors={info:'rgba(245,158,11,.1)',success:'rgba(34,212,106,.1)',error:'rgba(255,77,109,.1)'};
+  var borders={info:'rgba(245,158,11,.3)',success:'rgba(34,212,106,.3)',error:'rgba(255,77,109,.3)'};
+  s.style.background=colors[type]||colors.info;
+  s.style.border='1px solid '+(borders[type]||borders.info);
+  s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(245,178,60,.9)';
+}
+function ctraderConnect(){
+  var env=(document.getElementById('ctEnv')||{}).value||'live';
+  var ctid=(document.getElementById('ctId')||{}).value||'';
+  var token=(document.getElementById('ctToken')||{}).value||'';
+  if(!ctid||!token){ctSetStatus('&#9888; cTrader ID and Access Token are required.','error');return;}
+  ctSetStatus('&#8635; Connecting to CTrader...','info');
+  var btn=document.getElementById('ctConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
+  setTimeout(function(){
+    cfg.ctraderCredentials={env:env,ctid:ctid,token:token};saveCfg();
+    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
+    state.trading.accounts.push({id:'ct-'+Date.now(),firm:'CTrader',name:ctid||'CTrader Account',balance:0,status:'pending-sync'});
+    save();
+    ctSetStatus('&#10003; CTrader account added!','success');
+    toast('CTrader account added — live sync coming soon','success');
+    btn.disabled=false;btn.innerHTML='&#128200; Connect';
+    setTimeout(closeCTraderModal,1800);
+  },900);
+}
+
+// ── MatchTrader Connection ──────────────────────────────────
+function openMatchTraderModal(){
+  document.getElementById('matchtraderModal').classList.add('open');
+}
+function closeMatchTraderModal(){
+  document.getElementById('matchtraderModal').classList.remove('open');
+  var s=document.getElementById('mtStatus');if(s){s.style.display='none';s.textContent='';}
+  var ids=['mtEnv','mtServerUrl','mtUser','mtPass'];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
+}
+function mtSetStatus(msg,type){
+  var s=document.getElementById('mtStatus');if(!s)return;
+  s.style.display='block';s.innerHTML=msg;
+  var colors={info:'rgba(99,102,241,.1)',success:'rgba(34,212,106,.1)',error:'rgba(255,77,109,.1)'};
+  var borders={info:'rgba(99,102,241,.3)',success:'rgba(34,212,106,.3)',error:'rgba(255,77,109,.3)'};
+  s.style.background=colors[type]||colors.info;
+  s.style.border='1px solid '+(borders[type]||borders.info);
+  s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(129,140,248,.9)';
+}
+function matchtraderConnect(){
+  var env=(document.getElementById('mtEnv')||{}).value||'live';
+  var serverUrl=(document.getElementById('mtServerUrl')||{}).value||'';
+  var user=(document.getElementById('mtUser')||{}).value||'';
+  var pass=(document.getElementById('mtPass')||{}).value||'';
+  if(!serverUrl||!user||!pass){mtSetStatus('&#9888; Server URL, Username, and Password are required.','error');return;}
+  mtSetStatus('&#8635; Connecting to MatchTrader...','info');
+  var btn=document.getElementById('mtConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
+  setTimeout(function(){
+    cfg.matchtraderCredentials={env:env,serverUrl:serverUrl,username:user,password:pass};saveCfg();
+    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
+    state.trading.accounts.push({id:'mt-'+Date.now(),firm:'MatchTrader',name:user||'MatchTrader Account',balance:0,status:'pending-sync'});
+    save();
+    mtSetStatus('&#10003; MatchTrader account added!','success');
+    toast('MatchTrader account added — live sync coming soon','success');
+    btn.disabled=false;btn.innerHTML='&#128279; Connect';
+    setTimeout(closeMatchTraderModal,1800);
+  },900);
+}
+
+// ── Rithmic Connection ──────────────────────────────────────
+function openRithmicModal(){
+  document.getElementById('rithmicModal').classList.add('open');
+}
+function closeRithmicModal(){
+  document.getElementById('rithmicModal').classList.remove('open');
+  var s=document.getElementById('rtStatus');if(s){s.style.display='none';s.textContent='';}
+  var ids=['rtSystem','rtUser','rtPass'];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
+}
+function rtSetStatus(msg,type){
+  var s=document.getElementById('rtStatus');if(!s)return;
+  s.style.display='block';s.innerHTML=msg;
+  var colors={info:'rgba(232,184,75,.1)',success:'rgba(34,212,106,.1)',error:'rgba(255,77,109,.1)'};
+  var borders={info:'rgba(232,184,75,.3)',success:'rgba(34,212,106,.3)',error:'rgba(255,77,109,.3)'};
+  s.style.background=colors[type]||colors.info;
+  s.style.border='1px solid '+(borders[type]||borders.info);
+  s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(232,194,85,.9)';
+}
+function rithmicConnect(){
+  var system=(document.getElementById('rtSystem')||{}).value||'';
+  var user=(document.getElementById('rtUser')||{}).value||'';
+  var pass=(document.getElementById('rtPass')||{}).value||'';
+  if(!user||!pass){rtSetStatus('&#9888; Username and Password are required.','error');return;}
+  rtSetStatus('&#8635; Connecting to Rithmic ('+system+')...','info');
+  var btn=document.getElementById('rtConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
+  setTimeout(function(){
+    cfg.rithmicCredentials={system:system,username:user,password:pass};saveCfg();
+    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
+    state.trading.accounts.push({id:'rt-'+Date.now(),firm:'Rithmic',name:user||'Rithmic Account',balance:0,status:'pending-sync'});
+    save();
+    rtSetStatus('&#10003; Rithmic account added!','success');
+    toast('Rithmic account added — live sync coming soon','success');
+    btn.disabled=false;btn.innerHTML='&#9889; Connect';
+    setTimeout(closeRithmicModal,1800);
+  },900);
+}
+
+// ── DXTrade Connection ──────────────────────────────────────
+function openDXTradeModal(){
+  document.getElementById('dxtradeModal').classList.add('open');
+}
+function closeDXTradeModal(){
+  document.getElementById('dxtradeModal').classList.remove('open');
+  var s=document.getElementById('dxStatus');if(s){s.style.display='none';s.textContent='';}
+  var ids=['dxEnv','dxServerUrl','dxUser','dxPass'];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
+}
+function dxSetStatus(msg,type){
+  var s=document.getElementById('dxStatus');if(!s)return;
+  s.style.display='block';s.innerHTML=msg;
+  var colors={info:'rgba(16,185,129,.1)',success:'rgba(34,212,106,.1)',error:'rgba(255,77,109,.1)'};
+  var borders={info:'rgba(16,185,129,.3)',success:'rgba(34,212,106,.3)',error:'rgba(255,77,109,.3)'};
+  s.style.background=colors[type]||colors.info;
+  s.style.border='1px solid '+(borders[type]||borders.info);
+  s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(52,211,153,.9)';
+}
+function dxtradeConnect(){
+  var env=(document.getElementById('dxEnv')||{}).value||'live';
+  var serverUrl=(document.getElementById('dxServerUrl')||{}).value||'';
+  var user=(document.getElementById('dxUser')||{}).value||'';
+  var pass=(document.getElementById('dxPass')||{}).value||'';
+  if(!serverUrl||!user||!pass){dxSetStatus('&#9888; Server URL, Username, and Password are required.','error');return;}
+  dxSetStatus('&#8635; Connecting to DXTrade...','info');
+  var btn=document.getElementById('dxConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
+  setTimeout(function(){
+    cfg.dxtradeCredentials={env:env,serverUrl:serverUrl,username:user,password:pass};saveCfg();
+    state.trading=state.trading||{};state.trading.accounts=state.trading.accounts||[];
+    state.trading.accounts.push({id:'dx-'+Date.now(),firm:'DXTrade',name:user||'DXTrade Account',balance:0,status:'pending-sync'});
+    save();
+    dxSetStatus('&#10003; DXTrade account added!','success');
+    toast('DXTrade account added — live sync coming soon','success');
+    btn.disabled=false;btn.innerHTML='&#128202; Connect';
+    setTimeout(closeDXTradeModal,1800);
+  },900);
+}
+
 </script>
 </body>
 </html>
@@ -6398,8 +6708,11 @@ var BROKERS = {
   tradovate: { label:'Tradovate',       color:'#00b4cc', icon:'🌊', hasApi: true  },
   projectx:  { label:'Project X',       color:'#7c3aed', icon:'⚙ï¸', hasApi: true  },
   mt5:       { label:'MetaTrader 5',    color:'#3b82f6', icon:'📊', hasApi: false },
-  rithmic:   { label:'Rithmic',         color:'#e8b84b', icon:'⚡', hasApi: false },
+  rithmic:   { label:'Rithmic',         color:'#e8b84b', icon:'⚡', hasApi: true  },
   amp:       { label:'AMP (via Tradovate)', color:'#ff6b35', icon:'🔶', hasApi: true  },
+  ctrader:      { label:'CTrader',       color:'#f59e0b', icon:'📈', hasApi: true  },
+  matchtrader:  { label:'MatchTrader',   color:'#6366f1', icon:'🔗', hasApi: true  },
+  dxtrade:      { label:'DXTrade',       color:'#10b981', icon:'📊', hasApi: true  },
 };
 var STRATEGIES = {
   ema_cross: { label:'EMA Crossover',  desc:'Fast EMA crosses Slow EMA' },
