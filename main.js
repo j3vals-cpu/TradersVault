@@ -229,11 +229,12 @@ ipcMain.handle('window-maximize', () => {
     mainWindow.setMovable(true);
     mainWindow.setSkipTaskbar(false);
   } else {
-    // Switch back to overlay mode
+    // Switch back to overlay mode on the display the window is currently on
     isOverlayMode = true;
-    const primary = screen.getPrimaryDisplay();
-    const { width, height } = primary.bounds;
-    mainWindow.setBounds({ x: 0, y: 0, width, height });
+    const winBounds = mainWindow.getBounds();
+    const centerPoint = { x: winBounds.x + Math.round(winBounds.width / 2), y: winBounds.y + Math.round(winBounds.height / 2) };
+    const targetDisplay = screen.getDisplayNearestPoint(centerPoint);
+    mainWindow.setBounds(targetDisplay.bounds);
     mainWindow.setResizable(false);
     mainWindow.setMovable(false);
     mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
