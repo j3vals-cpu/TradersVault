@@ -9179,6 +9179,29 @@ _appVersionReady.then(function(ver) {
 });
 
 // ── Update system (FORCED auto-update) ──────────────────────────
+
+// ── PRE-LOGIN update check (no auth needed) ─────────────────────
+_appVersionReady.then(function(currentVer) {
+  fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.stable&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(rows) {
+    if (!rows || !rows.length) return;
+    var latest = rows[0];
+    if (latest.version && isNewerVersion(latest.version, currentVer)) {
+      console.log('[Pre-login update] Current:', currentVer, 'Latest:', latest.version);
+      checkForUpdate({
+        latest_version: latest.version,
+        update_url: latest.download_url,
+        update_notes: latest.release_notes,
+        update_mandatory: latest.is_mandatory
+      });
+    }
+  })
+  .catch(function(e) { console.log('[Pre-login update] check failed:', e); });
+});
+
 var _forceUpdateRunning = false;
 
 function isNewerVersion(remote, local) {
