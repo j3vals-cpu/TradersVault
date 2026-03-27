@@ -8465,7 +8465,7 @@ function applyServerBranding(b) {
   if (b.appname) applyAppTitle(b.appname);
   // Sub-brand in topbar
   var sub = document.querySelector('.logo-sub');
-  if (sub && b.sub) sub.innerHTML = b.sub + ' &nbsp;<span style="opacity:.3;">|</span>&nbsp; '+_appVersion';
+  if (sub && b.sub) sub.innerHTML = b.sub + ' &nbsp;<span style="opacity:.3;">|</span>&nbsp; v' + _appVersion;
   // Login screen
   var loginSub = document.querySelector('#tvLoginScreen .logo-sub-brand');
   if (loginSub && b.sub) loginSub.textContent = b.sub;
@@ -8627,7 +8627,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.2.7';
+var _appVersion = '2.2.8';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
