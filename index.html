@@ -988,6 +988,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 </div>
 
 <script>
+// Disable click-through immediately so login screen is interactive
+if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
+
 (function() {
   var messages = ['INITIALISING...','LOADING PANELS...','CALIBRATING CHARTS...','READY'];
   var mi = 0;
@@ -8296,10 +8299,14 @@ function sendDiscordHeartbeat() {
 function showLoginScreen() {
   var el = document.getElementById('tvLoginScreen');
   if (el) { el.style.display = 'flex'; el.style.opacity = '0'; requestAnimationFrame(function(){ el.style.transition='opacity .4s'; el.style.opacity='1'; }); }
+  // Disable click-through so login buttons work
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
 }
 function hideLoginScreen() {
   var el = document.getElementById('tvLoginScreen');
   if (el) { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(function(){ el.style.display='none'; }, 400); }
+  // Re-enable click-through after login
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(true);
 }
 
 // ── Auth tab switching ──────────────────────────────────────────
@@ -8625,7 +8632,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.2.3';
+var _appVersion = '2.2.4';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
