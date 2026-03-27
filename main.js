@@ -151,8 +151,10 @@ function createWindow() {
     if (isMac) {
       mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     }
-    mainWindow.setIgnoreMouseEvents(true, { forward: true });
-    isIgnoringMouse = true;
+    // Start with click-through OFF so login screen is interactive
+    // The renderer will enable it after login via 'set-click-through' IPC
+    mainWindow.setIgnoreMouseEvents(false);
+    isIgnoringMouse = false;
   });
 
   mainWindow.on('close', (e) => {
@@ -213,8 +215,10 @@ ipcMain.on('set-click-through', (event, enable) => {
     clickThroughLocked = false;
     mainWindow.setIgnoreMouseEvents(true, { forward: true });
     isIgnoringMouse = true;
+    // Start mouse poller if not already running
+    if (!mousePoller) startMousePoller();
   } else {
-    // Disable click-through — walkthrough needs all clicks
+    // Disable click-through — login/walkthrough needs all clicks
     clickThroughLocked = true;
     mainWindow.setIgnoreMouseEvents(false);
     isIgnoringMouse = false;
@@ -444,7 +448,8 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   setupAutoLaunch();
-  startMousePoller();
+  // DON'T start mouse poller here — wait for login to complete
+  // The renderer sends 'set-click-through' true after login, which starts the poller
 
   // Re-fit overlay to primary when monitors change & clamp all popouts
   function onDisplayChange() {

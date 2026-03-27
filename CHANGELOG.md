@@ -1,4 +1,5 @@
-## v2.2.4
+## v2.2.5
 
-- Fix login screen buttons not clickable — disable click-through when login is visible
-- Click-through re-enables after successful login
+- Fix login screen completely unclickable — click-through OFF on startup
+- Mouse poller doesn't start until after login completes
+- All input fields and buttons work on login screen
