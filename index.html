@@ -1341,7 +1341,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 <!-- FOOTER -->
 <div class="footer-bar">
   <div class="footer-brand">Traders Vault &nbsp;<span style="opacity:.4;">·</span>&nbsp; <span>Vaulted Desk</span></div>
-  <div class="footer-ver">v2.5.0</div>
+  <div class="footer-ver">v2.5.1</div>
   <div class="footer-gap"></div>
   <div class="footer-social">
     <a class="footer-link" href="https://www.tiktok.com/@j3.trades" target="_blank">TikTok</a>
@@ -1861,6 +1861,40 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <label class="f-lbl">Category Name</label><input class="f-in" id="tcName" placeholder="e.g. Prop Firm Costs" maxlength="40">
     <label class="f-lbl">Colour</label><div class="color-row" id="tcColorRow"></div>
     <div class="modal-actions"><button class="btn-cancel" onclick="closeTrackerCatModal()">Cancel</button><button class="btn-save" onclick="saveTrackerCat()">Save</button></div>
+  </div>
+</div>
+
+<!-- TRACKER IMPORT MODAL -->
+<div class="overlay" id="trackerImportModal">
+  <div class="modal" style="width:620px;max-width:96vw;padding:0;overflow:hidden;">
+    <div class="modal-hd" style="padding:16px 20px 12px;">
+      <div class="modal-title">Import Expenses</div>
+      <button class="modal-x" onclick="closeTrackerImport()">&#10005;</button>
+    </div>
+    <div style="padding:0 20px 6px;">
+      <div style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:10px;">Upload an XLSX, CSV, or JSON file to import expenses. Max 5MB, 500 items.</div>
+      <label style="display:block;width:100%;padding:16px;background:var(--panel2);border:2px dashed var(--border2);border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)'">
+        <span style="font-size:20px;display:block;margin-bottom:4px;">&#128228;</span>
+        <span style="font-size:11px;font-weight:700;color:var(--text2);">Choose file (.xlsx, .csv, .json)</span>
+        <input type="file" accept=".xlsx,.csv,.json" onchange="handleTrackerImportFile(this)" style="display:none;" id="trackerImportFileInput">
+      </label>
+    </div>
+    <div id="trackerImportMappingSection" style="display:none;padding:0 20px;">
+      <div class="s-lbl">Column Mapping</div>
+      <div id="trackerImportMappingRows"></div>
+    </div>
+    <div id="trackerImportPreviewSection" style="display:none;padding:0 20px 12px;">
+      <div class="s-lbl">Preview</div>
+      <div class="import-stats" id="trackerImportStats"></div>
+      <div class="import-preview-wrap">
+        <table class="import-preview-table" id="trackerImportPreviewTable"></table>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;padding-bottom:16px;">
+        <button class="btn-cancel" onclick="closeTrackerImport()">Cancel</button>
+        <button class="btn-save" id="trackerImportConfirmBtn" onclick="confirmTrackerImport()">Import 0 Items</button>
+      </div>
+    </div>
+    <div id="trackerImportStatus" style="padding:0 20px 12px;font-family:'Geist Mono',monospace;font-size:9px;min-height:14px;"></div>
   </div>
 </div>
 
@@ -8893,7 +8927,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.5.0';
+var _appVersion = '2.5.1';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
@@ -9956,7 +9990,7 @@ var _editTrackerCatId=null;
 
 function buildTrackerWin(){
   var el=createWindow({id:'tracker',title:'Tracker',icon:'&#128202;',
-    extraBtns:'<button class="padd" onclick="openTrackerItemModal()" style="margin-right:4px;">+ Item</button><button class="padd sec" onclick="openTrackerCatModal()" style="margin-right:4px;">+ Category</button>'
+    extraBtns:'<button class="padd" onclick="openTrackerItemModal()" style="margin-right:4px;">+ Item</button><button class="padd sec" onclick="openTrackerCatModal()" style="margin-right:4px;">+ Category</button><button class="padd sec" onclick="openTrackerImport()" style="margin-right:4px;">&#128228; Upload</button>'
   });
   var body=document.getElementById('wbody-tracker');
   // Tabs
@@ -10118,6 +10152,207 @@ function deleteTrackerCat(id){
   // Move items to uncategorized
   state.tracker.items.forEach(function(it){if(it.categoryId===id)it.categoryId='';});
   save();renderTracker();
+}
+
+// ═══════════════════════════════════════════
+// FEATURE: TRACKER FILE IMPORT
+// ═══════════════════════════════════════════
+var _trackerImportData=[];
+var _trackerImportCols=[];
+var _trackerImportMap={};
+
+function openTrackerImport(){
+  _trackerImportData=[];_trackerImportCols=[];_trackerImportMap={};
+  document.getElementById('trackerImportMappingSection').style.display='none';
+  document.getElementById('trackerImportPreviewSection').style.display='none';
+  document.getElementById('trackerImportStatus').textContent='';
+  var fi=document.getElementById('trackerImportFileInput');if(fi)fi.value='';
+  document.getElementById('trackerImportModal').classList.add('open');
+}
+function closeTrackerImport(){document.getElementById('trackerImportModal').classList.remove('open');}
+
+function setTrackerImportStatus(msg,color){
+  var el=document.getElementById('trackerImportStatus');
+  if(el){el.textContent=msg;el.style.color=color||'var(--text3)';}
+}
+
+function handleTrackerImportFile(input){
+  var file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){setTrackerImportStatus('File too large (max 5MB)','var(--red)');return;}
+  var ext=file.name.split('.').pop().toLowerCase();
+  var reader=new FileReader();
+  if(ext==='xlsx'){
+    reader.onload=function(e){
+      try{
+        if(typeof XLSX==='undefined'){setTrackerImportStatus('SheetJS not loaded — check internet','var(--red)');return;}
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        processTrackerImportRows(rows);
+      }catch(err){setTrackerImportStatus('Error parsing XLSX: '+err.message,'var(--red)');}
+    };
+    reader.readAsArrayBuffer(file);
+  } else if(ext==='csv'){
+    reader.onload=function(e){
+      try{
+        var text=e.target.result;
+        var rows=text.split(/\r?\n/).filter(function(l){return l.trim();}).map(function(l){
+          var result=[];var cell='';var inQ=false;
+          for(var i=0;i<l.length;i++){
+            if(l[i]==='"'){inQ=!inQ;}
+            else if(l[i]===','&&!inQ){result.push(cell.trim());cell='';}
+            else{cell+=l[i];}
+          }
+          result.push(cell.trim());return result;
+        });
+        processTrackerImportRows(rows);
+      }catch(err){setTrackerImportStatus('Error parsing CSV: '+err.message,'var(--red)');}
+    };
+    reader.readAsText(file);
+  } else if(ext==='json'){
+    reader.onload=function(e){
+      try{
+        var d=JSON.parse(e.target.result);
+        var arr=Array.isArray(d)?d:(d.items||d.expenses||d.data||[]);
+        if(!Array.isArray(arr)||!arr.length){setTrackerImportStatus('No items found in JSON','var(--red)');return;}
+        var keys=Object.keys(arr[0]);
+        var rows=[keys];
+        arr.forEach(function(item){rows.push(keys.map(function(k){return item[k]!=null?item[k]:'';}));});
+        processTrackerImportRows(rows);
+      }catch(err){setTrackerImportStatus('Error parsing JSON: '+err.message,'var(--red)');}
+    };
+    reader.readAsText(file);
+  } else {
+    setTrackerImportStatus('Unsupported file type. Use .xlsx, .csv, or .json','var(--red)');
+  }
+}
+
+function processTrackerImportRows(rows){
+  if(!rows||rows.length<2){setTrackerImportStatus('File has no data rows','var(--red)');return;}
+  if(rows.length>501){setTrackerImportStatus('Max 500 items (found '+(rows.length-1)+')','var(--red)');return;}
+  _trackerImportCols=rows[0].map(function(c){return String(c||'').trim();});
+  _trackerImportData=rows.slice(1).filter(function(r){return r.some(function(c){return String(c||'').trim();});});
+  autoMapTrackerColumns();
+  showTrackerMappingUI();
+  showTrackerPreview();
+}
+
+function autoMapTrackerColumns(){
+  _trackerImportMap={};
+  var fields={
+    name:['name','description','item','expense','bill','title','label'],
+    amount:['amount','cost','price','total','value','sum'],
+    category:['category','group','type','class'],
+    date:['date','purchase date','transaction date','payment date','due date'],
+    frequency:['frequency','recurring','recurrence','interval','repeat'],
+    notes:['notes','comments','memo','remark','remarks','note','comment']
+  };
+  _trackerImportCols.forEach(function(col,i){
+    var cl=col.toLowerCase().trim();
+    Object.keys(fields).forEach(function(field){
+      if(_trackerImportMap[field]!==undefined)return;
+      if(fields[field].some(function(kw){return cl===kw||cl.indexOf(kw)!==-1;})){
+        _trackerImportMap[field]=i;
+      }
+    });
+  });
+}
+
+function showTrackerMappingUI(){
+  var section=document.getElementById('trackerImportMappingSection');
+  section.style.display='block';
+  var appFields=[
+    {key:'name',label:'Name'},
+    {key:'amount',label:'Amount'},
+    {key:'category',label:'Category'},
+    {key:'date',label:'Date'},
+    {key:'frequency',label:'Frequency'},
+    {key:'notes',label:'Notes'}
+  ];
+  var opts='<option value="-1">— skip —</option>'+_trackerImportCols.map(function(c,i){return '<option value="'+i+'">'+esc(c)+'</option>';}).join('');
+  document.getElementById('trackerImportMappingRows').innerHTML=appFields.map(function(f){
+    var sel=_trackerImportMap[f.key]!==undefined?_trackerImportMap[f.key]:-1;
+    return '<div class="import-map-row"><label>'+f.label+'</label><select onchange="updateTrackerImportMap(\''+f.key+'\',this.value)">'+opts.replace('value="'+sel+'"','value="'+sel+'" selected')+'</select></div>';
+  }).join('');
+}
+
+function updateTrackerImportMap(field,val){
+  var v=parseInt(val);
+  if(v<0)delete _trackerImportMap[field];
+  else _trackerImportMap[field]=v;
+  showTrackerPreview();
+}
+
+function showTrackerPreview(){
+  var section=document.getElementById('trackerImportPreviewSection');
+  section.style.display='block';
+  var tb=document.getElementById('trackerImportPreviewTable');
+  var head='<thead><tr><th><input type="checkbox" checked onchange="toggleAllTrackerImport(this.checked)"></th><th>Name</th><th>Amount</th><th>Category</th><th>Date</th><th>Freq</th></tr></thead>';
+  var rows=_trackerImportData.slice(0,100).map(function(row,i){
+    var name=_trackerImportMap.name!==undefined?sanitizeImportStr(row[_trackerImportMap.name]):'Item '+(i+1);
+    var amt=_trackerImportMap.amount!==undefined?sanitizeImportNum(row[_trackerImportMap.amount]):0;
+    var cat=_trackerImportMap.category!==undefined?sanitizeImportStr(row[_trackerImportMap.category]):'—';
+    var date=_trackerImportMap.date!==undefined?sanitizeImportStr(row[_trackerImportMap.date]):'—';
+    var freq=_trackerImportMap.frequency!==undefined?sanitizeImportStr(row[_trackerImportMap.frequency]):'—';
+    return '<tr><td><input type="checkbox" class="tracker-import-row-cb" data-idx="'+i+'" checked></td><td>'+esc(name)+'</td><td>$'+amt.toLocaleString('en-US',{minimumFractionDigits:2})+'</td><td>'+esc(cat)+'</td><td>'+esc(date)+'</td><td>'+esc(freq)+'</td></tr>';
+  }).join('');
+  tb.innerHTML=head+'<tbody>'+rows+'</tbody>';
+  var total=Math.min(_trackerImportData.length,500);
+  document.getElementById('trackerImportStats').innerHTML='<span>'+total+'</span> items found'+(_trackerImportData.length>100?' (showing first 100)':'');
+  document.getElementById('trackerImportConfirmBtn').textContent='Import '+total+' Items';
+}
+
+function toggleAllTrackerImport(checked){
+  document.querySelectorAll('.tracker-import-row-cb').forEach(function(cb){cb.checked=checked;});
+}
+
+function confirmTrackerImport(){
+  var checked=document.querySelectorAll('.tracker-import-row-cb:checked');
+  var indices=[];checked.forEach(function(cb){indices.push(parseInt(cb.dataset.idx));});
+  if(!indices.length){setTrackerImportStatus('No items selected','var(--red)');return;}
+
+  var imported=0;
+  indices.forEach(function(i){
+    if(i>=_trackerImportData.length)return;
+    var row=_trackerImportData[i];
+    var name=_trackerImportMap.name!==undefined?sanitizeImportStr(row[_trackerImportMap.name]):'Item '+(i+1);
+    var amount=_trackerImportMap.amount!==undefined?sanitizeImportNum(row[_trackerImportMap.amount]):0;
+    var catName=_trackerImportMap.category!==undefined?sanitizeImportStr(row[_trackerImportMap.category]):'';
+    var date=_trackerImportMap.date!==undefined?sanitizeImportStr(row[_trackerImportMap.date]):new Date().toISOString().slice(0,10);
+    var freqRaw=_trackerImportMap.frequency!==undefined?String(row[_trackerImportMap.frequency]||'').toLowerCase().trim():'';
+    var notes=_trackerImportMap.notes!==undefined?sanitizeImportStr(row[_trackerImportMap.notes]):'';
+
+    // Normalize frequency
+    var freq='one-time';
+    if(freqRaw.indexOf('month')!==-1||freqRaw==='mo')freq='monthly';
+    else if(freqRaw.indexOf('year')!==-1||freqRaw.indexOf('annual')!==-1||freqRaw==='yr')freq='yearly';
+
+    // Normalize date — try to parse into YYYY-MM-DD
+    if(date&&date!=='—'){
+      var pd=new Date(date);
+      if(!isNaN(pd.getTime()))date=pd.toISOString().slice(0,10);
+      else date=new Date().toISOString().slice(0,10);
+    }else{date=new Date().toISOString().slice(0,10);}
+
+    // Find or create category
+    var categoryId='';
+    if(catName){
+      var existing=state.tracker.categories.find(function(c){return c.name.toLowerCase()===catName.toLowerCase();});
+      if(existing){categoryId=existing.id;}
+      else{
+        var newCat={id:uid(),name:catName,color:COLORS[state.tracker.categories.length%COLORS.length]};
+        state.tracker.categories.push(newCat);
+        categoryId=newCat.id;
+      }
+    }
+
+    state.tracker.items.push({id:uid(),categoryId:categoryId,name:name,amount:amount,date:date,frequency:freq,notes:notes});
+    imported++;
+  });
+
+  save();renderTracker();
+  setTrackerImportStatus('Successfully imported '+imported+' items!','var(--green)');
+  setTimeout(closeTrackerImport,1200);
 }
 
 // ═══════════════════════════════════════════
