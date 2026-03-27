@@ -2088,7 +2088,7 @@ async function load(){
 }
 
 function uid(){return Math.random().toString(36).slice(2,9);}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function dayKey(d){return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();}
 function today(){return dayKey(new Date());}
 var TRADING_QUOTES=[
@@ -6779,7 +6779,7 @@ function addSelectedCTraderAccounts(){
     var bal=ac.balance/Math.pow(10,ac.moneyDigits||2);
     var isLive=ac.isLive!==false;
     var brokerName=ac.brokerName||'cTrader';
-    var accNum=ac.accountNumber||ac.ctidTraderAccountId||'';
+    var accNum=String(ac.accountNumber||ac.ctidTraderAccountId||'');
 
     // Find or create firm for broker
     var firm=state.firms.find(function(f){return f.name===brokerName;});
@@ -8628,7 +8628,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.3.9';
+var _appVersion = '2.4.0';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
