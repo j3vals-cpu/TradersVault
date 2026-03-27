@@ -1,5 +1,5 @@
-## v2.1.7
+## v2.1.8
 
-- Fix cTrader account import — accounts now properly appear in Trading panel
-- Fix field name mismatches between server and client
-- Improved handling for large account lists (46+ accounts)
+- Fix cTrader OAuth token handoff to Electron app
+- Server callback page now includes hidden token element for Electron extraction
+- Support both live and demo cTrader endpoints
