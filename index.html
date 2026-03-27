@@ -6106,16 +6106,7 @@ function renderCopierPanel() {
   if (!body) return;
   var ctAccounts = getCTraderAccounts();
 
-  if (ctAccounts.length < 2) {
-    body.innerHTML = '<div class="copier-empty">'
-      + '<div class="copier-empty-icon">&#128279;</div>'
-      + 'Connect at least 2 cTrader accounts to use Copy Trading.<br>'
-      + '<span style="font-size:9px;color:var(--text3);">Use the Trading panel → Connect Account → CTrader</span>'
-      + '</div>';
-    return;
-  }
-
-  // Master selector options
+  // Master selector options — always show the UI, dropdown is empty if no accounts yet
   var masterOpts = '<option value="">— Select Master —</option>';
   ctAccounts.forEach(function(a) {
     var sel = _copier.masterAccountId == a.ctidTraderAccountId ? ' selected' : '';
@@ -6189,13 +6180,18 @@ function renderCopierFollowers() {
   var cnt = document.getElementById('wcnt-copier');
   if (cnt) cnt.textContent = followers.length || '';
 
+  if (!ctAccounts.length) {
+    wrap.innerHTML = '<div class="copier-empty"><div class="copier-empty-icon">&#128279;</div>Connect cTrader accounts to start copy trading.<br><span style="font-size:9px;color:var(--text3);">Trading → Connect Account → CTrader</span></div>';
+    return;
+  }
+
   if (!_copier.masterAccountId) {
     wrap.innerHTML = '<div class="copier-empty"><div class="copier-empty-icon">&#9650;</div>Select a master account above</div>';
     return;
   }
 
   if (!followers.length) {
-    wrap.innerHTML = '<div class="copier-empty"><div class="copier-empty-icon">&#128101;</div>No follower accounts available</div>';
+    wrap.innerHTML = '<div class="copier-empty"><div class="copier-empty-icon">&#128101;</div>Connect more cTrader accounts to add followers</div>';
     return;
   }
 
