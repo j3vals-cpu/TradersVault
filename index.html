@@ -3091,6 +3091,7 @@ function renderTrading(){
       +'</div>';
   });
   al.innerHTML=html;
+  if(accounts.length>0){toast(accounts.length+" cards, html="+html.length+"chars","info");}
 }
 
 // ═══════════════════════════════════════════
@@ -8627,7 +8628,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.3.8';
+var _appVersion = '2.3.9';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
