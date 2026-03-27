@@ -678,56 +678,58 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     try { authWin.webContents.session.webRequest.onBeforeRequest(filter, null); } catch(e) {}
   }
 
-  // Intercept the callback request BEFORE it loads — the auth code is single-use
+  function showInAuthWin(html) {
+    if (!authWin.isDestroyed()) {
+      authWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+    }
+  }
+
   authWin.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
     if (resolved) { callback({ cancel: true }); return; }
-
     try {
       const u = new URL(details.url);
       if (u.pathname.includes('/api/auth/callback') && u.searchParams.get('code')) {
         const code = u.searchParams.get('code');
         resolved = true;
-        callback({ cancel: true }); // Block the page — we'll exchange the code ourselves
+        callback({ cancel: true });
         cleanup();
 
-        // Show a "please wait" page while exchanging
-        authWin.loadURL('data:text/html,' + encodeURIComponent('<html><body style="background:#07070a;color:#e8b84b;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;"><div style="text-align:center"><h2>Connecting...</h2><p style="color:#888">Exchanging tokens, please wait...</p></div></body></html>'));
+        showInAuthWin('<html><body style="background:#07070a;color:#e8b84b;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center"><h2>Connecting...</h2><p style="color:#888">Exchanging tokens with cTrader...</p></div></body></html>');
 
-        // Exchange the code for tokens
         const tokenUrl = `https://tradersvault.app/api/auth/callback?code=${encodeURIComponent(code)}&format=json`;
         https.get(tokenUrl, (res) => {
           let body = '';
           res.on('data', (chunk) => { body += chunk; });
           res.on('end', () => {
-            try {
-              const tokens = JSON.parse(body);
-              if (tokens.accessToken) {
-                restoreMainWindow();
-                if (mainWindow && !mainWindow.isDestroyed()) {
-                  mainWindow.webContents.send('ctrader-auth-success', tokens);
-                }
-                if (!authWin.isDestroyed()) authWin.close();
-                return;
+            let tokens;
+            try { tokens = JSON.parse(body); } catch(e) { tokens = null; }
+            
+            if (tokens && tokens.accessToken) {
+              // SUCCESS
+              restoreMainWindow();
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('ctrader-auth-success', tokens);
               }
-            } catch(e) {}
-            restoreMainWindow();
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send('ctrader-auth-failed', { error: 'Token exchange failed: ' + body.substring(0, 100) });
+              if (!authWin.isDestroyed()) authWin.close();
+            } else {
+              // SHOW ERROR IN THE AUTH WINDOW — don't close it
+              const errMsg = (tokens && tokens.error) || body.substring(0, 150) || 'Unknown error';
+              showInAuthWin('<html><body style="background:#07070a;color:#ff4d6d;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center;max-width:500px"><h2>Token Exchange Failed</h2><p style="color:#888;margin:12px 0">'+errMsg.replace(/</g,'&lt;')+'</p><p style="color:#555;font-size:12px">Close this window and try again</p></div></body></html>');
             }
-            if (!authWin.isDestroyed()) authWin.close();
           });
-        }).on('error', () => {
-          restoreMainWindow();
-          if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('ctrader-auth-failed', { error: 'Network error' });
-          }
-          if (!authWin.isDestroyed()) authWin.close();
+        }).on('error', (err) => {
+          showInAuthWin('<html><body style="background:#07070a;color:#ff4d6d;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center"><h2>Network Error</h2><p style="color:#888">'+err.message+'</p><p style="color:#555;font-size:12px">Close this window and try again</p></div></body></html>');
         });
-
         return;
       }
     } catch(e) {}
     callback({});
+  });
+
+  // Keep popups in the same window
+  authWin.webContents.setWindowOpenHandler(({ url }) => {
+    authWin.loadURL(url);
+    return { action: 'deny' };
   });
 
   authWin.loadURL(authUrl);
