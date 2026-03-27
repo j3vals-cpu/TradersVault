@@ -647,10 +647,11 @@ ipcMain.handle('dxtrade-browser-login', async (_, serverUrl) => {
   });
 });
 
-// ─── CTRADER OAUTH ──────────────────────────────────────────
+// ── CTRADER OAUTH (simplified) ──────────────────────────────────
 ipcMain.on('open-ctrader-oauth', (event) => {
   const authUrl = 'https://id.ctrader.com/my/settings/openapi/grantingaccess/?client_id=24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq&redirect_uri=https://tradersvault.app/api/auth/callback&scope=trading&product=web';
-  // Hide the main overlay so the auth window is visible and interactive
+
+  // Hide main overlay so auth window is accessible
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.setAlwaysOnTop(false);
     mainWindow.setIgnoreMouseEvents(false);
@@ -658,20 +659,12 @@ ipcMain.on('open-ctrader-oauth', (event) => {
   }
 
   const authWin = new BrowserWindow({
-    width: 800,
-    height: 700,
-    title: 'Connect cTrader',
-    autoHideMenuBar: true,
-    alwaysOnTop: true,
-    center: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
+    width: 800, height: 700, title: 'Connect cTrader',
+    autoHideMenuBar: true, center: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true },
   });
   authWin.loadURL(authUrl);
   authWin.focus();
-  authWin.setAlwaysOnTop(false); // Drop alwaysOnTop after focus so user can interact normally
 
   let resolved = false;
 
@@ -682,130 +675,36 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     }
   }
 
-  // Intercept the callback URL and extract the auth code directly from the URL
-  // Then exchange it for tokens via our server API — no page polling needed
-  function interceptCallback(url) {
+  function sendTokens(tokens) {
     if (resolved) return;
-    if (!url.includes('/api/auth/callback')) return;
-    
-    try {
-      const u = new URL(url);
-      const code = u.searchParams.get('code');
-      if (!code) return;
-      
-      resolved = true;
-      console.log('[cTrader OAuth] Got auth code, exchanging for tokens...');
-      
-      // Exchange the code for tokens via our server using Electron's net module
-      const { net } = require('electron');
-      const tokenUrl = `https://tradersvault.app/api/auth/callback?code=${encodeURIComponent(code)}&format=json`;
-      
-      const request = net.request(tokenUrl);
-      let responseData = '';
-      request.on('response', (response) => {
-        response.on('data', (chunk) => { responseData += chunk.toString(); });
-        response.on('end', () => {
-          console.log('[cTrader OAuth] Token response:', responseData.substring(0, 100));
-          try {
-            const tokens = JSON.parse(responseData);
-            if (tokens.accessToken) {
-              console.log('[cTrader OAuth] Got access token!');
-              restoreMainWindow();
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('ctrader-auth-success', tokens);
-              }
-              if (!authWin.isDestroyed()) authWin.close();
-              return;
-            }
-          } catch(e) {
-            console.log('[cTrader OAuth] Parse error:', e.message);
-          }
-          fallbackExtract();
-        });
-      });
-      request.on('error', (err) => {
-        console.log('[cTrader OAuth] Request error:', err.message);
-        fallbackExtract();
-      });
-      request.end();
-    } catch(e) {
-      console.log('[cTrader OAuth] interceptCallback error:', e.message);
-      fallbackExtract();
+    resolved = true;
+    restoreMainWindow();
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('ctrader-auth-success', tokens);
     }
-  }
-  
-  function fallbackExtract() {
-    // Fallback: poll the page for the hidden tokens div
-    const pollForTokens = setInterval(() => {
-      if (authWin.isDestroyed()) { clearInterval(pollForTokens); return; }
-      authWin.webContents.executeJavaScript(`
-        (function() {
-          try {
-            var el = document.getElementById('ctrader-tokens');
-            if (el) return el.textContent;
-            return '';
-          } catch(e) { return ''; }
-        })()
-      `).then(data => {
-        if (!data) return;
-        try {
-          const tokens = JSON.parse(data);
-          if (tokens.accessToken) {
-            clearInterval(pollForTokens);
-            restoreMainWindow();
-            if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send('ctrader-auth-success', tokens);
-            }
-            if (!authWin.isDestroyed()) authWin.close();
-          }
-        } catch(e) {}
-      }).catch(() => {});
-    }, 500);
-    setTimeout(() => clearInterval(pollForTokens), 30000);
+    if (!authWin.isDestroyed()) authWin.close();
   }
 
-  // Watch ALL navigation events to catch the callback redirect
-  // Do NOT use preventDefault — let the page load normally as fallback
-  const checkUrl = (url) => {
-    if (url && url.includes('/api/auth/callback') && url.includes('code=')) {
-      interceptCallback(url);
-    }
-  };
-  authWin.webContents.on('will-navigate', (e, url) => checkUrl(url));
-  authWin.webContents.on('will-redirect', (e, url) => checkUrl(url));
-  authWin.webContents.on('did-navigate', (e, url) => checkUrl(url));
-  authWin.webContents.on('did-navigate-in-page', (e, url) => checkUrl(url));
-  authWin.webContents.on('did-redirect-navigation', (e, url) => checkUrl(url));
-  authWin.webContents.on('did-finish-load', () => {
-    if (resolved || authWin.isDestroyed()) return;
-    const currentUrl = authWin.webContents.getURL();
-    checkUrl(currentUrl);
-    // If callback page loaded, also try fallback extraction from page content
-    if (currentUrl.includes('/api/auth/callback') && !resolved) {
-      fallbackExtract();
-    }
-  });
-
-  // Safety: poll the current URL every 500ms in case events don't fire
-  const urlPoll = setInterval(() => {
-    if (resolved || authWin.isDestroyed()) { clearInterval(urlPoll); return; }
-    try {
-      const url = authWin.webContents.getURL();
-      // Log for debugging
-      if (url && !url.includes('id.ctrader.com') && !url.startsWith('about:')) {
-        console.log('[cTrader OAuth] Current URL:', url.substring(0, 120));
-      }
-      // Check for callback URL
-      if (url && url.includes('tradersvault.app')) {
-        checkUrl(url);
-        // Also try fallback if callback page loaded
-        if (url.includes('callback') && !resolved) fallbackExtract();
-      }
-    } catch(e) {}
+  // Simple approach: poll the page content every 500ms looking for #ctrader-tokens div
+  // The callback page at tradersvault.app/api/auth/callback renders this div with token JSON
+  const poll = setInterval(() => {
+    if (resolved || authWin.isDestroyed()) { clearInterval(poll); return; }
+    authWin.webContents.executeJavaScript(
+      `(function(){ try { var e=document.getElementById('ctrader-tokens'); return e?e.textContent:''; } catch(x){return '';} })()`
+    ).then(data => {
+      if (!data || resolved) return;
+      try {
+        const t = JSON.parse(data);
+        if (t.accessToken) { clearInterval(poll); sendTokens(t); }
+      } catch(e) {}
+    }).catch(() => {});
   }, 500);
 
+  // Cleanup after 2 minutes max
+  setTimeout(() => clearInterval(poll), 120000);
+
   authWin.on('closed', () => {
-    clearInterval(urlPoll);
+    clearInterval(poll);
     restoreMainWindow();
     if (!resolved && mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('ctrader-auth-failed', { error: 'Window closed' });
