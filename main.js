@@ -647,7 +647,7 @@ ipcMain.handle('dxtrade-browser-login', async (_, serverUrl) => {
   });
 });
 
-// ── CTRADER OAUTH (simplified) ──────────────────────────────────
+// ── CTRADER OAUTH (simplified v2) ──────────────────────────────────
 ipcMain.on('open-ctrader-oauth', (event) => {
   const authUrl = 'https://id.ctrader.com/my/settings/openapi/grantingaccess/?client_id=24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq&redirect_uri=https://tradersvault.app/api/auth/callback&scope=trading&product=web';
 
@@ -685,22 +685,67 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     if (!authWin.isDestroyed()) authWin.close();
   }
 
-  // Simple approach: poll the page content every 500ms looking for #ctrader-tokens div
-  // The callback page at tradersvault.app/api/auth/callback renders this div with token JSON
+  function handleCallbackUrl(url) {
+    if (resolved) return;
+    if (!url || !url.includes('/api/auth/callback') || !url.includes('code=')) return;
+    
+    try {
+      const u = new URL(url);
+      const code = u.searchParams.get('code');
+      if (!code) return;
+      resolved = true;
+
+      // Call our server to exchange the code for tokens (JSON response)
+      const { net } = require('electron');
+      const tokenUrl = `https://tradersvault.app/api/auth/callback?code=${encodeURIComponent(code)}&format=json`;
+      const req = net.request(tokenUrl);
+      let body = '';
+      req.on('response', (resp) => {
+        resp.on('data', (chunk) => { body += chunk.toString(); });
+        resp.on('end', () => {
+          try {
+            const tokens = JSON.parse(body);
+            if (tokens.accessToken) {
+              sendTokens(tokens);
+              return;
+            }
+          } catch(e) {}
+          // Failed — restore and report error
+          restoreMainWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('ctrader-auth-failed', { error: 'Token exchange failed' });
+          }
+          if (!authWin.isDestroyed()) authWin.close();
+        });
+      });
+      req.on('error', () => {
+        restoreMainWindow();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('ctrader-auth-failed', { error: 'Network error during token exchange' });
+        }
+        if (!authWin.isDestroyed()) authWin.close();
+      });
+      req.end();
+    } catch(e) {}
+  }
+
+  // Watch for navigation to the callback URL
+  authWin.webContents.on('will-navigate', (e, url) => handleCallbackUrl(url));
+  authWin.webContents.on('will-redirect', (e, url) => handleCallbackUrl(url));
+  authWin.webContents.on('did-navigate', (e, url) => handleCallbackUrl(url));
+  authWin.webContents.on('did-redirect-navigation', (e, url) => handleCallbackUrl(url));
+  authWin.webContents.on('did-finish-load', () => {
+    if (!resolved && !authWin.isDestroyed()) {
+      handleCallbackUrl(authWin.webContents.getURL());
+    }
+  });
+
+  // Also poll the URL every 500ms as safety net
   const poll = setInterval(() => {
     if (resolved || authWin.isDestroyed()) { clearInterval(poll); return; }
-    authWin.webContents.executeJavaScript(
-      `(function(){ try { var e=document.getElementById('ctrader-tokens'); return e?e.textContent:''; } catch(x){return '';} })()`
-    ).then(data => {
-      if (!data || resolved) return;
-      try {
-        const t = JSON.parse(data);
-        if (t.accessToken) { clearInterval(poll); sendTokens(t); }
-      } catch(e) {}
-    }).catch(() => {});
+    try { handleCallbackUrl(authWin.webContents.getURL()); } catch(e) {}
   }, 500);
 
-  // Cleanup after 2 minutes max
   setTimeout(() => clearInterval(poll), 120000);
 
   authWin.on('closed', () => {
@@ -711,6 +756,7 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     }
   });
 });
+
 
 // macOS: hide dock icon since this is an overlay app
 if (isMac) {
