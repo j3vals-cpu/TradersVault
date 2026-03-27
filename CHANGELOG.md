@@ -1,6 +1,5 @@
-## v2.2.2
+## v2.2.3
 
-- Fix cTrader "Allow access" button not triggering token extraction
-- Remove preventDefault that was blocking the redirect
-- Add URL polling + did-finish-load fallback to catch all redirect types
-- Fallback page extraction if URL interception fails
+- Fix version display — all version tags now read from package.json dynamically
+- Login screen, topbar, loading screen, gains card footer all show correct version
+- No more hardcoded v2.0.4
