@@ -62,6 +62,56 @@ function getAllScreenBounds() {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
+// ─── WINDOW BOUNDS CLAMPING ─────────────────────────────────
+// Cache workArea to avoid expensive screen queries every poll tick
+let cachedWorkAreas = null;
+let workAreaCacheTime = 0;
+function getCachedWorkAreas() {
+  const now = Date.now();
+  if (!cachedWorkAreas || now - workAreaCacheTime > 2000) {
+    cachedWorkAreas = screen.getAllDisplays().map(d => d.workArea);
+    workAreaCacheTime = now;
+  }
+  return cachedWorkAreas;
+}
+function invalidateWorkAreaCache() {
+  cachedWorkAreas = null;
+  workAreaCacheTime = 0;
+}
+
+function clampBoundsToWorkArea(bounds) {
+  const areas = getCachedWorkAreas();
+  // Find which display the window center is nearest to
+  const cx = bounds.x + Math.round(bounds.width / 2);
+  const cy = bounds.y + Math.round(bounds.height / 2);
+  let best = areas[0] || screen.getPrimaryDisplay().workArea;
+  let bestDist = Infinity;
+  for (const wa of areas) {
+    const wcx = wa.x + wa.width / 2;
+    const wcy = wa.y + wa.height / 2;
+    const dist = (cx - wcx) ** 2 + (cy - wcy) ** 2;
+    if (dist < bestDist) { bestDist = dist; best = wa; }
+  }
+  // Clamp: ensure at least 100px of the window is visible in the workArea
+  const minVisible = 100;
+  let x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+  if (x + w < best.x + minVisible) x = best.x;
+  if (x > best.x + best.width - minVisible) x = best.x + best.width - minVisible;
+  if (y < best.y) y = best.y;
+  if (y + h > best.y + best.height) y = best.y + best.height - h;
+  if (y < best.y) y = best.y; // if window is taller than workArea
+  return { x, y, width: w, height: h };
+}
+
+function clampWindowToWorkArea(win) {
+  if (!win || win.isDestroyed() || win.isMinimized()) return;
+  const bounds = win.getBounds();
+  const clamped = clampBoundsToWorkArea(bounds);
+  if (clamped.x !== bounds.x || clamped.y !== bounds.y) {
+    win.setBounds(clamped);
+  }
+}
+
 function createWindow() {
   const primary = screen.getPrimaryDisplay();
   const { x: wx, y: wy, width, height } = primary.workArea;
@@ -173,22 +223,39 @@ ipcMain.on('set-click-through', (event, enable) => {
 
 function startMousePoller() {
   if (mousePoller) clearInterval(mousePoller);
+  // Cache bounds to avoid repeated IPC — updated only when window moves
+  let cachedBounds = mainWindow ? mainWindow.getBounds() : null;
+  let cachedScale = 1;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    const updateBoundsCache = () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        cachedBounds = mainWindow.getBounds();
+        const disp = screen.getDisplayNearestPoint({ x: cachedBounds.x, y: cachedBounds.y });
+        cachedScale = disp.scaleFactor || 1;
+      }
+    };
+    mainWindow.on('move', updateBoundsCache);
+    mainWindow.on('resize', updateBoundsCache);
+    updateBoundsCache();
+  }
+
   mousePoller = setInterval(() => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
-    if (clickThroughLocked) return;  // walkthrough active — don't touch click-through
+    if (clickThroughLocked) return;
+    if (!cachedBounds) return;
 
     const cursor = screen.getCursorScreenPoint();
-    const bounds = mainWindow.getBounds();
-    const disp = screen.getDisplayNearestPoint(cursor);
-    const scale = disp.scaleFactor || 1;
+    const lx = (cursor.x - cachedBounds.x) / cachedScale;
+    const ly = (cursor.y - cachedBounds.y) / cachedScale;
 
-    const lx = (cursor.x - bounds.x) / scale;
-    const ly = (cursor.y - bounds.y) / scale;
-
-    const over = hitRects.some(r =>
-      lx >= r.x && lx <= r.x + r.w &&
-      ly >= r.y && ly <= r.y + r.h
-    );
+    let over = false;
+    for (let i = 0, len = hitRects.length; i < len; i++) {
+      const r = hitRects[i];
+      if (lx >= r.x && lx <= r.x + r.w && ly >= r.y && ly <= r.y + r.h) {
+        over = true;
+        break;
+      }
+    }
 
     if (over && isIgnoringMouse) {
       mainWindow.setIgnoreMouseEvents(false);
@@ -197,7 +264,7 @@ function startMousePoller() {
       mainWindow.setIgnoreMouseEvents(true, { forward: true });
       isIgnoringMouse = true;
     }
-  }, 16);
+  }, 50);
 }
 
 // ─── IPC ─────────────────────────────────────────────────────
@@ -230,11 +297,10 @@ ipcMain.handle('window-maximize', () => {
     mainWindow.setIgnoreMouseEvents(false);
     isIgnoringMouse = false;
     if (mousePoller) { clearInterval(mousePoller); mousePoller = null; }
-    // Use the display the cursor is on, not primary
+    // Use the display the cursor is on, not primary — use workArea not bounds
     const cursor = screen.getCursorScreenPoint();
     const currentDisplay = screen.getDisplayNearestPoint(cursor);
-    const { x: dx, y: dy } = currentDisplay.bounds;
-    const { width, height } = currentDisplay.workAreaSize;
+    const { x: dx, y: dy, width, height } = currentDisplay.workArea;
     const w = Math.round(width * 0.8);
     const h = Math.round(height * 0.8);
     mainWindow.setBounds({
@@ -287,11 +353,19 @@ ipcMain.handle('pop-out-panel', (_, panelId, bounds) => {
     return;
   }
 
-  const popWin = new BrowserWindow({
+  // Clamp initial pop-out position to workArea
+  const initBounds = clampBoundsToWorkArea({
+    x: bounds.screenX || 100,
+    y: bounds.screenY || 100,
     width: bounds.w || 400,
     height: bounds.h || 500,
-    x: bounds.screenX || undefined,
-    y: bounds.screenY || undefined,
+  });
+
+  const popWin = new BrowserWindow({
+    width: initBounds.width,
+    height: initBounds.height,
+    x: initBounds.x,
+    y: initBounds.y,
     frame: true,
     transparent: false,
     backgroundColor: '#0e0e13',
@@ -307,6 +381,9 @@ ipcMain.handle('pop-out-panel', (_, panelId, bounds) => {
       webSecurity: false,
     },
   });
+
+  // Clamp pop-out window after move/resize
+  popWin.on('moved', () => clampWindowToWorkArea(popWin));
 
   popWin.loadFile('index.html', { query: { popout: panelId } });
   popoutWindows[panelId] = popWin;
@@ -369,19 +446,28 @@ app.whenReady().then(() => {
   setupAutoLaunch();
   startMousePoller();
 
-  // Re-fit overlay to primary when monitors change
-  screen.on('display-added', () => {
+  // Re-fit overlay to primary when monitors change & clamp all popouts
+  function onDisplayChange() {
+    invalidateWorkAreaCache();
     if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
       const p = screen.getPrimaryDisplay();
       mainWindow.setBounds(p.workArea);
     }
-  });
-  screen.on('display-removed', () => {
-    if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
-      const p = screen.getPrimaryDisplay();
-      mainWindow.setBounds(p.workArea);
+    // Clamp all pop-out windows
+    Object.values(popoutWindows).forEach(w => clampWindowToWorkArea(w));
+  }
+  screen.on('display-added', onDisplayChange);
+  screen.on('display-removed', onDisplayChange);
+  screen.on('display-metrics-changed', onDisplayChange);
+
+  // Safety interval — every 8 seconds, clamp any out-of-bounds pop-out windows
+  setInterval(() => {
+    Object.values(popoutWindows).forEach(w => clampWindowToWorkArea(w));
+    // Also re-fit overlay if needed
+    if (!isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
+      clampWindowToWorkArea(mainWindow);
     }
-  });
+  }, 8000);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
