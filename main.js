@@ -679,16 +679,52 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     }
   }
 
-  function tryExtractTokens(url) {
+  // Intercept the callback URL and extract the auth code directly from the URL
+  // Then exchange it for tokens via our server API — no page polling needed
+  function interceptCallback(url) {
     if (resolved) return;
     if (!url.includes('/api/auth/callback')) return;
-
-    // Poll the page for tokens injected by the callback page
+    
+    // Extract the ?code= parameter from the URL
+    try {
+      const u = new URL(url);
+      const code = u.searchParams.get('code');
+      if (!code) return;
+      
+      resolved = true;
+      
+      // Exchange the code for tokens via our server
+      const https = require('https');
+      const tokenUrl = `https://tradersvault.app/api/auth/callback?code=${encodeURIComponent(code)}&format=json`;
+      
+      https.get(tokenUrl, (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => {
+          try {
+            const tokens = JSON.parse(data);
+            if (tokens.accessToken) {
+              restoreMainWindow();
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('ctrader-auth-success', tokens);
+              }
+              if (!authWin.isDestroyed()) authWin.close();
+              return;
+            }
+          } catch(e) {}
+          // If JSON parse failed, try extracting from the HTML page
+          fallbackExtract();
+        });
+      }).on('error', () => fallbackExtract());
+    } catch(e) {
+      fallbackExtract();
+    }
+  }
+  
+  function fallbackExtract() {
+    // Fallback: poll the page for the hidden tokens div
     const pollForTokens = setInterval(() => {
-      if (resolved || authWin.isDestroyed()) {
-        clearInterval(pollForTokens);
-        return;
-      }
+      if (authWin.isDestroyed()) { clearInterval(pollForTokens); return; }
       authWin.webContents.executeJavaScript(`
         (function() {
           try {
@@ -698,11 +734,10 @@ ipcMain.on('open-ctrader-oauth', (event) => {
           } catch(e) { return ''; }
         })()
       `).then(data => {
-        if (!data || resolved) return;
+        if (!data) return;
         try {
           const tokens = JSON.parse(data);
           if (tokens.accessToken) {
-            resolved = true;
             clearInterval(pollForTokens);
             restoreMainWindow();
             if (mainWindow && !mainWindow.isDestroyed()) {
@@ -712,15 +747,25 @@ ipcMain.on('open-ctrader-oauth', (event) => {
           }
         } catch(e) {}
       }).catch(() => {});
-    }, 1000);
-
-    // Safety timeout for polling
-    setTimeout(() => clearInterval(pollForTokens), 120000);
+    }, 500);
+    setTimeout(() => clearInterval(pollForTokens), 30000);
   }
 
-  authWin.webContents.on('will-redirect', (e, url) => tryExtractTokens(url));
-  authWin.webContents.on('did-navigate', (e, url) => tryExtractTokens(url));
-  authWin.webContents.on('did-navigate-in-page', (e, url) => tryExtractTokens(url));
+  // Intercept navigation to catch the callback redirect
+  authWin.webContents.on('will-navigate', (e, url) => {
+    if (url.includes('/api/auth/callback') && url.includes('code=')) {
+      e.preventDefault(); // Stop the navigation — we'll handle it ourselves
+      interceptCallback(url);
+    }
+  });
+  authWin.webContents.on('will-redirect', (e, url) => {
+    if (url.includes('/api/auth/callback') && url.includes('code=')) {
+      e.preventDefault();
+      interceptCallback(url);
+    }
+  });
+  authWin.webContents.on('did-navigate', (e, url) => interceptCallback(url));
+  authWin.webContents.on('did-navigate-in-page', (e, url) => interceptCallback(url));
 
   authWin.on('closed', () => {
     restoreMainWindow();
