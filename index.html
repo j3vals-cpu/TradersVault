@@ -297,11 +297,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .win-hide,.win-pop{width:20px;height:20px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;line-height:1;}
 .win-hide:hover,.win-pop:hover{background:var(--panel3);color:var(--text);}
 
-/* Window resize handle */
-.win-resize{position:absolute;bottom:0;right:0;width:20px;height:20px;cursor:se-resize;z-index:10;opacity:.4;}
-.win-resize::after{content:'';position:absolute;bottom:4px;right:4px;width:8px;height:8px;border-right:2.5px solid var(--text3);border-bottom:2.5px solid var(--text3);}
-.win-resize::before{content:'';position:absolute;bottom:4px;right:10px;width:0;height:5px;border-right:2px solid var(--text3);opacity:.4;}
-.win:hover .win-resize{opacity:.9;}
+/* Window resize handle — see enhanced styles below */
 
 /* Win body */
 .win-body{flex:1;overflow-y:auto;padding:10px 12px 12px;min-height:0;}
@@ -702,6 +698,43 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 @keyframes syncPulseBtn{0%,100%{opacity:.7;}50%{opacity:1;}}
 @keyframes syncPulseCloud{0%,100%{opacity:.4;transform:scale(1);}50%{opacity:1;transform:scale(1.15);}}
 .sync-status{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);min-height:14px;margin-top:4px;}
+
+/* ───── WALKTHROUGH TOUR ───── */
+.wt-overlay{position:fixed;inset:0;z-index:99990;pointer-events:auto;transition:opacity .3s;}
+.wt-spotlight{position:fixed;z-index:99991;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.82),0 0 24px 4px var(--gold-glow);pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.wt-card{position:fixed;z-index:99992;background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(232,184,75,.25);border-radius:14px;padding:22px 24px 18px;min-width:300px;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.6),0 0 24px var(--gold-glow);pointer-events:auto;transition:all .35s cubic-bezier(.4,0,.2,1);opacity:0;transform:translateY(10px);}
+.wt-card.show{opacity:1;transform:translateY(0);}
+.wt-card-title{font-size:14px;font-weight:900;color:var(--gold);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.wt-card-title .wt-icon{font-size:18px;}
+.wt-card-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;}
+.wt-card-step{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:12px;}
+.wt-btns{display:flex;gap:8px;align-items:center;}
+.wt-btn{height:32px;padding:0 16px;border-radius:8px;font-family:'Cabinet Grotesk',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .18s;border:none;display:flex;align-items:center;gap:4px;}
+.wt-btn-next{background:var(--gold);color:#07070a;}.wt-btn-next:hover{background:#f0c45a;transform:translateY(-1px);box-shadow:0 4px 14px var(--gold-glow);}
+.wt-btn-back{background:var(--panel3);color:var(--text2);border:1px solid var(--border2);}.wt-btn-back:hover{border-color:var(--gold);color:var(--gold);}
+.wt-btn-skip{background:transparent;color:var(--text3);border:none;margin-left:auto;font-size:10px;}.wt-btn-skip:hover{color:var(--text);}
+.wt-progress{display:flex;gap:4px;margin-top:14px;}
+.wt-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all .2s;}
+.wt-dot.active{background:var(--gold);box-shadow:0 0 6px var(--gold-glow);}
+.wt-dot.done{background:var(--gold-soft);opacity:.5;}
+.wt-welcome{position:fixed;inset:0;z-index:99995;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);pointer-events:auto;}
+.wt-welcome-card{background:var(--panel);border:1px solid rgba(232,184,75,.25);border-radius:18px;padding:40px 44px;text-align:center;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,.7),0 0 40px var(--gold-glow);}
+.wt-welcome-title{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:8px;}
+.wt-welcome-sub{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:24px;}
+
+/* ───── BRIGHTER RESIZE HANDLE (Task 4) ───── */
+.win-resize{position:absolute;bottom:0;right:0;width:28px;height:28px;cursor:se-resize;z-index:10;opacity:.6;transition:opacity .2s, filter .2s;}
+.win-resize::after{content:'';position:absolute;bottom:5px;right:5px;width:10px;height:10px;border-right:2.5px solid var(--gold);border-bottom:2.5px solid var(--gold);}
+.win-resize::before{content:'';position:absolute;bottom:5px;right:12px;width:0;height:7px;border-right:2px solid var(--gold);opacity:.5;}
+.win:hover .win-resize{opacity:1;filter:drop-shadow(0 0 6px var(--gold-glow));}
+
+/* ───── TIMEZONE DISPLAY (Task 5) ───── */
+.topbar-tz{font-family:'Geist Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;background:var(--panel2);border-radius:7px;border:1px solid var(--border2);cursor:default;transition:all .2s;flex-shrink:0;white-space:nowrap;letter-spacing:.3px;-webkit-app-region:no-drag;}
+.topbar-tz:hover{color:var(--gold);border-color:var(--gold);background:var(--gold-dim);}
+
+/* ───── POP OUT BUTTON (Task 3) ───── */
+.win-pop{width:24px !important;height:24px !important;font-size:15px !important;color:var(--gold) !important;border:1px solid var(--border2) !important;background:var(--panel3) !important;border-radius:5px !important;transition:all .18s !important;}
+.win-pop:hover{background:var(--gold-dim) !important;border-color:var(--gold) !important;color:var(--gold) !important;box-shadow:0 0 10px var(--gold-glow) !important;transform:scale(1.1) !important;}
 </style>
 <script src="html2canvas.min.js"></script>
 </head>
@@ -1009,6 +1042,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
     <div class="session-dot closed" id="sessionDot"></div>
     <span class="session-lbl" id="sessionLbl">CLOSED</span>
   </div>
+  <div class="topbar-tz" id="topbarTz" title="Your local timezone">--:-- ---</div>
   <div class="tb-div"></div>
   <div class="pomo-wrap" id="pomoWrap" onclick="togglePomo()" title="Click to start · Right-click to reset">
     <span class="pomo-lbl" id="pomoLbl">FOCUS</span>
@@ -1552,6 +1586,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
     <!-- DATA TAB -->
     <div class="settings-panel" id="stab-data">
+      <div class="s-lbl" style="margin-top:0;">Walkthrough</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Re-run the onboarding tour to learn about each panel.</div>
+      <button onclick="closeSettings();setTimeout(startWalkthrough,300);" style="width:100%;padding:10px;background:var(--gold-dim);border:1px solid rgba(232,184,75,.3);border-radius:8px;color:var(--gold);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-bottom:14px;transition:all .2s;" onmouseover="this.style.background='rgba(232,184,75,.18)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='var(--gold-dim)';this.style.borderColor='rgba(232,184,75,.3)'">&#127891; Restart Tour</button>
       <div class="s-lbl" style="margin-top:0;">Cloud Sync</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Sync your Traders Vault data to the cloud so it persists across devices. Pull your latest data or push local changes.</div>
       <div class="sync-wrap">
@@ -2202,7 +2239,7 @@ function createWindow(cfg){
     +'<div class="win-cnt" id="wcnt-'+cfg.id+'"></div>'
     +'<div class="win-gap"></div>'
     +(cfg.extraBtns||'')
-    +'<button class="win-pop" title="Pop Out" onclick="popOutPanel(\''+cfg.id+'\')" style="font-style:normal;font-size:11px;">&#10697;</button>'
+    +'<button class="win-pop" title="Pop Out to Desktop" onclick="popOutPanel(\''+cfg.id+'\')" style="font-style:normal;">&#10697;</button>'
     +'<button class="win-hide" title="Hide" onclick="toggleWin(\''+cfg.id+'\')" style="font-style:normal;font-size:11px;">&#8211;</button>';
   el.appendChild(bar);
 
@@ -8970,4 +9007,213 @@ function copyGainsCard() {
     });
   });
 }
+
+// ═══════════════════════════════════════════
+// TIMEZONE DISPLAY (Task 5)
+// ═══════════════════════════════════════════
+function updateTopbarTimezone() {
+  var el = document.getElementById('topbarTz');
+  if (!el) return;
+  var now = new Date();
+  var timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+  var tzAbbr = '';
+  try {
+    var parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(now);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'timeZoneName') { tzAbbr = parts[i].value; break; }
+    }
+  } catch(e) {
+    // Fallback: extract from toString
+    var match = now.toString().match(/\(([^)]+)\)/);
+    if (match) {
+      tzAbbr = match[1].replace(/[a-z ]/g, '');
+    }
+  }
+  el.textContent = timeStr + ' ' + tzAbbr;
+  el.title = 'Your local timezone: ' + tzAbbr;
+}
+updateTopbarTimezone();
+setInterval(updateTopbarTimezone, 60000);
+
+// ═══════════════════════════════════════════
+// WALKTHROUGH TOUR (Task 1)
+// ═══════════════════════════════════════════
+var WT_STEPS = [
+  { target: function(){ return document.querySelector('.ptog[data-wid="trading"]'); }, icon: '&#128200;', title: 'Trading Panel', desc: 'Live TradingView overlay — connect your broker accounts and trade directly from your desktop.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="prop"]'); }, icon: '&#128176;', title: 'Prop Tracker', desc: 'Track your prop firm challenges, funded accounts, and payout progress all in one place.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="calcs"]'); }, icon: '&#128208;', title: 'Position Sizer', desc: 'Calculate position sizes based on risk percentage, stop loss, and account balance.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="bot"]'); }, icon: '&#129302;', title: 'Bot Engine', desc: 'Set up automated trading strategies that run in the background.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="strategy"]'); }, icon: '&#9745;', title: 'Strategy & News', desc: 'View trading strategies and a live market news feed to stay informed.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="acc"]'); }, icon: '&#128293;', title: 'Journal', desc: 'Accountability journal for tracking your trading mindset and daily reflections.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="planner"]'); }, icon: '&#128197;', title: 'Planner', desc: 'Weekly session planner — schedule your trading sessions and stay disciplined.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="quote"]'); }, icon: '&#128161;', title: 'Gains Card', desc: 'Generate shareable P&L cards to showcase your trading results.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="notes"]'); }, icon: '&#128221;', title: 'Studio', desc: 'Creative tools for notes, content creation, and organising your ideas.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="copier"]'); }, icon: '&#128279;', title: 'Copier', desc: 'Copy-trade system to mirror trades across accounts (coming soon).' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="signal"]'); }, icon: '&#128225;', title: 'Signal Bot', desc: 'Send trade signals directly to your Discord server with charts and analysis.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="todo"]'); }, icon: '&#9989;', title: 'ROI Tracker', desc: 'Track return on investment across all your trading accounts.' },
+  { target: function(){ return document.getElementById('settingsBtn'); }, icon: '&#9881;', title: 'Settings', desc: 'Customise your experience — themes, panels, profile, Discord integration, and more.' }
+];
+
+var _wtStep = 0;
+var _wtOverlay = null;
+var _wtSpotlight = null;
+var _wtCard = null;
+
+function startWalkthrough() {
+  // Remove completed flag so tour can restart
+  localStorage.removeItem('walkthrough_completed');
+  _wtStep = 0;
+  showWelcomeScreen();
+}
+
+function showWelcomeScreen() {
+  // Create welcome overlay
+  var wel = document.createElement('div');
+  wel.className = 'wt-welcome';
+  wel.id = 'wtWelcome';
+  wel.innerHTML = '<div class="wt-welcome-card">'
+    + '<div style="font-size:36px;margin-bottom:12px;">&#128274;</div>'
+    + '<div class="wt-welcome-title">Welcome to Traders Vault</div>'
+    + '<div class="wt-welcome-sub">Let us give you a quick tour of all the tools at your disposal. It only takes a minute.</div>'
+    + '<div style="display:flex;gap:10px;justify-content:center;">'
+    + '<button class="wt-btn wt-btn-next" onclick="closeWelcome();beginTourSteps()">Start Tour</button>'
+    + '<button class="wt-btn wt-btn-back" onclick="closeWelcome();skipWalkthrough()">Skip</button>'
+    + '</div></div>';
+  document.body.appendChild(wel);
+}
+
+function closeWelcome() {
+  var w = document.getElementById('wtWelcome');
+  if (w) w.remove();
+}
+
+function skipWalkthrough() {
+  localStorage.setItem('walkthrough_completed', '1');
+  cleanupWalkthrough();
+}
+
+function beginTourSteps() {
+  // Create overlay elements
+  _wtOverlay = document.createElement('div');
+  _wtOverlay.className = 'wt-overlay';
+  _wtOverlay.id = 'wtOverlay';
+  _wtOverlay.onclick = function(){};  // block clicks behind
+
+  _wtSpotlight = document.createElement('div');
+  _wtSpotlight.className = 'wt-spotlight';
+  _wtSpotlight.id = 'wtSpotlight';
+
+  _wtCard = document.createElement('div');
+  _wtCard.className = 'wt-card';
+  _wtCard.id = 'wtCard';
+
+  document.body.appendChild(_wtOverlay);
+  document.body.appendChild(_wtSpotlight);
+  document.body.appendChild(_wtCard);
+
+  _wtStep = 0;
+  showWtStep();
+}
+
+function showWtStep() {
+  if (_wtStep < 0 || _wtStep >= WT_STEPS.length) {
+    finishWalkthrough();
+    return;
+  }
+  var step = WT_STEPS[_wtStep];
+  var target = step.target();
+
+  // Position spotlight on target
+  if (target) {
+    var r = target.getBoundingClientRect();
+    var pad = 6;
+    _wtSpotlight.style.left = (r.left - pad) + 'px';
+    _wtSpotlight.style.top = (r.top - pad) + 'px';
+    _wtSpotlight.style.width = (r.width + pad * 2) + 'px';
+    _wtSpotlight.style.height = (r.height + pad * 2) + 'px';
+    _wtSpotlight.style.display = 'block';
+  } else {
+    _wtSpotlight.style.display = 'none';
+  }
+
+  // Build card content
+  var dots = '';
+  for (var i = 0; i < WT_STEPS.length; i++) {
+    dots += '<div class="wt-dot' + (i < _wtStep ? ' done' : '') + (i === _wtStep ? ' active' : '') + '"></div>';
+  }
+
+  _wtCard.innerHTML = '<div class="wt-card-step">STEP ' + (_wtStep + 1) + ' OF ' + WT_STEPS.length + '</div>'
+    + '<div class="wt-card-title"><span class="wt-icon">' + step.icon + '</span> ' + step.title + '</div>'
+    + '<div class="wt-card-desc">' + step.desc + '</div>'
+    + '<div class="wt-btns">'
+    + (_wtStep > 0 ? '<button class="wt-btn wt-btn-back" onclick="wtBack()">&#8592; Back</button>' : '')
+    + '<button class="wt-btn wt-btn-next" onclick="wtNext()">' + (_wtStep === WT_STEPS.length - 1 ? 'Finish &#10003;' : 'Next &#8594;') + '</button>'
+    + '<button class="wt-btn wt-btn-skip" onclick="skipWalkthrough()">Skip tour</button>'
+    + '</div>'
+    + '<div class="wt-progress">' + dots + '</div>';
+
+  // Position card near target
+  if (target) {
+    var r = target.getBoundingClientRect();
+    var cardW = 340;
+    var cardLeft = Math.max(12, Math.min(r.left, window.innerWidth - cardW - 20));
+    var cardTop = r.bottom + 14;
+    // If too close to bottom, put above
+    if (cardTop + 220 > window.innerHeight) {
+      cardTop = Math.max(12, r.top - 220);
+    }
+    _wtCard.style.left = cardLeft + 'px';
+    _wtCard.style.top = cardTop + 'px';
+  } else {
+    _wtCard.style.left = '50%';
+    _wtCard.style.top = '50%';
+    _wtCard.style.transform = 'translate(-50%,-50%)';
+  }
+
+  // Animate in
+  _wtCard.classList.remove('show');
+  setTimeout(function(){ _wtCard.classList.add('show'); }, 50);
+}
+
+function wtNext() {
+  _wtStep++;
+  if (_wtStep >= WT_STEPS.length) {
+    finishWalkthrough();
+  } else {
+    showWtStep();
+  }
+}
+
+function wtBack() {
+  if (_wtStep > 0) {
+    _wtStep--;
+    showWtStep();
+  }
+}
+
+function finishWalkthrough() {
+  localStorage.setItem('walkthrough_completed', '1');
+  cleanupWalkthrough();
+}
+
+function cleanupWalkthrough() {
+  var ids = ['wtOverlay', 'wtSpotlight', 'wtCard', 'wtWelcome'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.remove();
+  });
+  _wtOverlay = null;
+  _wtSpotlight = null;
+  _wtCard = null;
+}
+
+// Auto-trigger on first launch
+(function(){
+  if (!localStorage.getItem('walkthrough_completed')) {
+    // Wait for app to fully render
+    setTimeout(function() {
+      startWalkthrough();
+    }, 1500);
+  }
+})();
 </script>

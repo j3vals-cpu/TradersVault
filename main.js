@@ -64,11 +64,11 @@ function getAllScreenBounds() {
 
 function createWindow() {
   const primary = screen.getPrimaryDisplay();
-  const { width, height } = primary.bounds;
+  const { x: wx, y: wy, width, height } = primary.workArea;
 
   mainWindow = new BrowserWindow({
-    x: 0,
-    y: 0,
+    x: wx,
+    y: wy,
     width: width,
     height: height,
     transparent: true,
@@ -234,7 +234,7 @@ ipcMain.handle('window-maximize', () => {
     const winBounds = mainWindow.getBounds();
     const centerPoint = { x: winBounds.x + Math.round(winBounds.width / 2), y: winBounds.y + Math.round(winBounds.height / 2) };
     const targetDisplay = screen.getDisplayNearestPoint(centerPoint);
-    mainWindow.setBounds(targetDisplay.bounds);
+    mainWindow.setBounds(targetDisplay.workArea);
     mainWindow.setResizable(false);
     mainWindow.setMovable(false);
     mainWindow.setAlwaysOnTop(true, isMac ? 'floating' : 'screen-saver');
@@ -355,13 +355,13 @@ app.whenReady().then(() => {
   screen.on('display-added', () => {
     if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
       const p = screen.getPrimaryDisplay();
-      mainWindow.setBounds({ x: 0, y: 0, width: p.bounds.width, height: p.bounds.height });
+      mainWindow.setBounds(p.workArea);
     }
   });
   screen.on('display-removed', () => {
     if (isOverlayMode && mainWindow && !mainWindow.isDestroyed()) {
       const p = screen.getPrimaryDisplay();
-      mainWindow.setBounds({ x: 0, y: 0, width: p.bounds.width, height: p.bounds.height });
+      mainWindow.setBounds(p.workArea);
     }
   });
 
