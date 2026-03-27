@@ -647,19 +647,37 @@ ipcMain.handle('dxtrade-browser-login', async (_, serverUrl) => {
 // ─── CTRADER OAUTH ──────────────────────────────────────────
 ipcMain.on('open-ctrader-oauth', (event) => {
   const authUrl = 'https://id.ctrader.com/my/settings/openapi/grantingaccess/?client_id=24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq&redirect_uri=https://tradersvault.app/api/auth/callback&scope=trading&product=web';
+  // Hide the main overlay so the auth window is visible and interactive
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setAlwaysOnTop(false);
+    mainWindow.setIgnoreMouseEvents(false);
+    mainWindow.hide();
+  }
+
   const authWin = new BrowserWindow({
     width: 800,
     height: 700,
     title: 'Connect cTrader',
     autoHideMenuBar: true,
+    alwaysOnTop: true,
+    center: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
   authWin.loadURL(authUrl);
+  authWin.focus();
+  authWin.setAlwaysOnTop(false); // Drop alwaysOnTop after focus so user can interact normally
 
   let resolved = false;
+
+  function restoreMainWindow() {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    }
+  }
 
   function tryExtractTokens(url) {
     if (resolved) return;
@@ -686,6 +704,7 @@ ipcMain.on('open-ctrader-oauth', (event) => {
           if (tokens.accessToken) {
             resolved = true;
             clearInterval(pollForTokens);
+            restoreMainWindow();
             if (mainWindow && !mainWindow.isDestroyed()) {
               mainWindow.webContents.send('ctrader-auth-success', tokens);
             }
@@ -704,6 +723,7 @@ ipcMain.on('open-ctrader-oauth', (event) => {
   authWin.webContents.on('did-navigate-in-page', (e, url) => tryExtractTokens(url));
 
   authWin.on('closed', () => {
+    restoreMainWindow();
     if (!resolved && mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('ctrader-auth-failed', { error: 'Window closed' });
     }

@@ -1,4 +1,5 @@
-## v2.1.9
+## v2.2.0
 
-- Debug toasts for cTrader connection flow
-- Shows status at each step: tokens received, accounts fetched, accounts added
+- Fix cTrader OAuth window opening behind the overlay
+- Main overlay hides during cTrader login so the auth window is fully visible
+- Overlay restores automatically after auth completes or window closes
