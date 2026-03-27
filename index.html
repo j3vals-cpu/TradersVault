@@ -855,7 +855,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   --text:#1a1a1a;--text2:#555555;--text3:#888888;
   --gold:#c49a2a;--gold-dim:rgba(196,154,42,.12);--gold-glow:rgba(196,154,42,.2);--gold-soft:#a07c1a;
 }
-[data-theme="light"] body{background:#f5f5f5;color:#1a1a1a;}
+[data-theme="light"] body{background:transparent;color:#1a1a1a;}
 [data-theme="light"] .topbar{background:rgba(255,255,255,.92);border-bottom:1px solid rgba(0,0,0,.08);}
 [data-theme="light"] .topbar2{background:rgba(245,245,245,.92);border-bottom:1px solid rgba(0,0,0,.06);}
 [data-theme="light"] .footer-bar{background:rgba(245,245,245,.92);border-top:1px solid rgba(0,0,0,.06);}
@@ -864,7 +864,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 [data-theme="light"] .overlay .modal{background:#fff;border:1px solid rgba(0,0,0,.12);box-shadow:0 20px 60px rgba(0,0,0,.15);}
 [data-theme="light"] body::after{opacity:.04;}
 [data-theme="light"] .dock-bar{background:rgba(255,255,255,.95);border-bottom:1px solid rgba(0,0,0,.08);}
-[data-theme="light"] #tvLoginScreen{background:#f5f5f5;}
+[data-theme="light"] #tvLoginScreen{background:#f5f5f5 !important;}
 [data-theme="light"] #tvLoginScreen > div{background:rgba(255,255,255,.98);border-color:rgba(0,0,0,.1);}
 
 [data-theme="midnight"]{
@@ -8927,7 +8927,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.5.1';
+var _appVersion = '2.5.2';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
