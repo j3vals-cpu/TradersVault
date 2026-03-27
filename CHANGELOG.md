@@ -1,17 +1,7 @@
-Traders Vault v1.8.2
+## v2.1.4
 
-## New
-- Prop Firm Promotions — admin pushes promo banners (firm, referral link, discount code)
-- Streamers can set their own promo in Settings > Identity
-- Promo banner rotates in-app, clicking opens referral link
-- Invite-only login — admin must issue accounts or approve signups
-- Admin: Create User, Approve pending users
-- Display name shown on both PnL cards (Gains + Prop Tracker)
-- Mac resize handle bigger and more visible
-
-## Removed
-- App Title setting (locked to admin branding only)
-- Sign Up tab removed from login screen
-
----
-by J3 | Traders Vault
+- Walkthrough tour — guided onboarding for new users showing all panels
+- Dock fix — windows no longer get stuck under taskbar
+- Pop Out to Desktop button — more visible panel pop-out control
+- Brighter resize handle — gold grip with glow on hover
+- Timezone display in topbar — shows current time + timezone
