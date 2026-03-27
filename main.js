@@ -688,25 +688,28 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     if (resolved) return;
     if (!url.includes('/api/auth/callback')) return;
     
-    // Extract the ?code= parameter from the URL
     try {
       const u = new URL(url);
       const code = u.searchParams.get('code');
       if (!code) return;
       
       resolved = true;
+      console.log('[cTrader OAuth] Got auth code, exchanging for tokens...');
       
-      // Exchange the code for tokens via our server
-      const https = require('https');
+      // Exchange the code for tokens via our server using Electron's net module
+      const { net } = require('electron');
       const tokenUrl = `https://tradersvault.app/api/auth/callback?code=${encodeURIComponent(code)}&format=json`;
       
-      https.get(tokenUrl, (res) => {
-        let data = '';
-        res.on('data', (chunk) => data += chunk);
-        res.on('end', () => {
+      const request = net.request(tokenUrl);
+      let responseData = '';
+      request.on('response', (response) => {
+        response.on('data', (chunk) => { responseData += chunk.toString(); });
+        response.on('end', () => {
+          console.log('[cTrader OAuth] Token response:', responseData.substring(0, 100));
           try {
-            const tokens = JSON.parse(data);
+            const tokens = JSON.parse(responseData);
             if (tokens.accessToken) {
+              console.log('[cTrader OAuth] Got access token!');
               restoreMainWindow();
               if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.send('ctrader-auth-success', tokens);
@@ -714,12 +717,19 @@ ipcMain.on('open-ctrader-oauth', (event) => {
               if (!authWin.isDestroyed()) authWin.close();
               return;
             }
-          } catch(e) {}
-          // If JSON parse failed, try extracting from the HTML page
+          } catch(e) {
+            console.log('[cTrader OAuth] Parse error:', e.message);
+          }
           fallbackExtract();
         });
-      }).on('error', () => fallbackExtract());
+      });
+      request.on('error', (err) => {
+        console.log('[cTrader OAuth] Request error:', err.message);
+        fallbackExtract();
+      });
+      request.end();
     } catch(e) {
+      console.log('[cTrader OAuth] interceptCallback error:', e.message);
       fallbackExtract();
     }
   }
@@ -776,11 +786,23 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     }
   });
 
-  // Safety: poll the current URL every second in case events don't fire
+  // Safety: poll the current URL every 500ms in case events don't fire
   const urlPoll = setInterval(() => {
     if (resolved || authWin.isDestroyed()) { clearInterval(urlPoll); return; }
-    try { checkUrl(authWin.webContents.getURL()); } catch(e) {}
-  }, 1000);
+    try {
+      const url = authWin.webContents.getURL();
+      // Log for debugging
+      if (url && !url.includes('id.ctrader.com') && !url.startsWith('about:')) {
+        console.log('[cTrader OAuth] Current URL:', url.substring(0, 120));
+      }
+      // Check for callback URL
+      if (url && url.includes('tradersvault.app')) {
+        checkUrl(url);
+        // Also try fallback if callback page loaded
+        if (url.includes('callback') && !resolved) fallbackExtract();
+      }
+    } catch(e) {}
+  }, 500);
 
   authWin.on('closed', () => {
     clearInterval(urlPoll);
