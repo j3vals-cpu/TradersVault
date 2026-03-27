@@ -151,11 +151,9 @@ function createWindow() {
     if (isMac) {
       mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     }
-    // Only enable click-through if not already locked by login screen
-    if (!clickThroughLocked) {
-      mainWindow.setIgnoreMouseEvents(true, { forward: true });
-      isIgnoringMouse = true;
-    }
+    // Do NOT enable click-through here — the login screen needs to be interactive first.
+    // The mouse poller + hit rects will handle click-through once login is complete.
+    // setIgnoreMouseEvents stays false until the renderer explicitly enables it.
   });
 
   mainWindow.on('close', (e) => {
@@ -449,7 +447,7 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   setupAutoLaunch();
-  startMousePoller();
+  // Mouse poller starts when renderer sends first set-click-through(true) after login
 
   // Re-fit overlay to primary when monitors change & clamp all popouts
   function onDisplayChange() {
