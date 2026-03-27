@@ -623,16 +623,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
 /* ───── COPIER PANEL ───── */
 .copier-body{padding:0 !important;display:flex;flex-direction:column;overflow:hidden;position:relative;}
-.copier-conn{padding:10px 12px;border-bottom:1px solid var(--border2);flex-shrink:0;}
-.copier-conn-row{display:flex;gap:5px;margin-bottom:6px;align-items:center;}
-.copier-conn-row:last-child{margin-bottom:0;}
-.copier-input{flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:6px 9px;font-size:11px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-weight:500;outline:none;transition:all .18s;}
-.copier-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-dim);}
-.copier-input::placeholder{color:var(--text3);}
-.copier-conn-btn{height:28px;padding:0 10px;border-radius:6px;border:1px solid var(--border2);background:var(--panel3);color:var(--text2);font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.copier-conn-btn:hover{border-color:var(--gold);color:var(--gold);}
-.copier-conn-btn.connected{border-color:var(--green);color:var(--green);background:var(--green-dim);}
-.copier-status{display:flex;align-items:center;gap:5px;font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);}
+.copier-master{padding:10px 12px;border-bottom:1px solid var(--border2);flex-shrink:0;}
+.copier-master-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+.copier-master-row:last-child{margin-bottom:0;}
+.copier-master-label{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;min-width:55px;}
+.copier-select{flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-weight:600;outline:none;cursor:pointer;transition:all .18s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f5f78'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.copier-select:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-dim);}
+.copier-select option{background:var(--panel);color:var(--text);}
+.copier-mult-input{width:60px;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--gold);font-family:'Geist Mono',monospace;font-weight:700;outline:none;text-align:center;transition:all .18s;}
+.copier-mult-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-dim);}
+.copier-status{display:flex;align-items:center;gap:5px;font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);padding:0 12px;}
 .copier-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--text3);}
 .copier-status-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green);}
 .copier-status-dot.err{background:var(--red);box-shadow:0 0 6px var(--red);}
@@ -643,47 +643,43 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .copier-bulk-btn.danger{border-color:var(--red);color:var(--red);}
 .copier-bulk-btn.danger:hover{background:var(--red-dim);}
 .copier-bulk-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim);}
-.copier-lockout-btn{height:24px;padding:0 9px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'Cabinet Grotesk',sans-serif;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap;margin-left:auto;}
-.copier-lockout-btn:hover{border-color:var(--red);color:var(--red);}
-.copier-lockout-btn.locked{border-color:var(--red);color:#07070a;background:var(--red);font-weight:900;}
-.copier-accounts{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;}
-.copier-accounts::-webkit-scrollbar{width:3px;}
-.copier-accounts::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-.copier-acct{background:var(--panel2);border:1px solid var(--border2);border-radius:9px;padding:9px 10px;position:relative;overflow:hidden;transition:border-color .2s;}
-.copier-acct:hover{border-color:var(--border3);}
-.copier-acct::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:9px 0 0 9px;}
-.copier-acct.enabled::before{background:var(--green);}
-.copier-acct.disabled::before{background:var(--text3);}
-.copier-acct.locked::before{background:var(--red);}
-.copier-acct-top{display:flex;align-items:center;gap:5px;margin-bottom:5px;}
-.copier-acct-name{font-size:11px;font-weight:800;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.copier-acct-badge{font-family:'Geist Mono',monospace;font-size:7px;padding:2px 5px;border-radius:3px;}
-.copier-acct-badge.on{background:var(--green-dim);color:var(--green);}
-.copier-acct-badge.off{background:var(--red-dim);color:var(--red);}
-.copier-acct-badge.lock{background:var(--red-dim);color:var(--red);font-weight:800;}
-.copier-acct-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px;}
-.copier-acct-stat{display:flex;flex-direction:column;gap:1px;}
-.copier-acct-stat-lbl{font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
-.copier-acct-stat-val{font-size:11px;font-weight:800;color:var(--text);}
-.copier-acct-stat-val.pos{color:var(--green);}
-.copier-acct-stat-val.neg{color:var(--red);}
-.copier-acct-actions{display:flex;gap:4px;}
-.copier-acct-btn{height:22px;padding:0 7px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'Cabinet Grotesk',sans-serif;font-size:8px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.copier-acct-btn:hover{border-color:var(--gold);color:var(--gold);}
-.copier-acct-btn.flat:hover{border-color:var(--red);color:var(--red);}
-.copier-empty{text-align:center;padding:30px 12px;color:var(--text3);font-size:11px;line-height:1.8;}
-.copier-empty-icon{font-size:28px;opacity:.3;margin-bottom:6px;}
-.copier-footer{padding:4px 12px;border-top:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;gap:6px;}
-.copier-footer-btn{height:22px;padding:0 8px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'Cabinet Grotesk',sans-serif;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.copier-footer-btn:hover{border-color:var(--gold);color:var(--gold);}
-.copier-footer-lbl{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);flex:1;text-align:right;}
-/* Scaling modal */
-.copier-scaling-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.copier-start-btn{height:28px;padding:0 14px;border-radius:6px;border:none;background:var(--green);color:#07070a;font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:900;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.3px;}
+.copier-start-btn:hover{filter:brightness(1.1);}
+.copier-start-btn.stop{background:var(--red);color:#fff;}
+.copier-flatten-btn{height:28px;padding:0 14px;border-radius:6px;border:2px solid var(--red);background:transparent;color:var(--red);font-family:'Cabinet Grotesk',sans-serif;font-size:10px;font-weight:900;cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.3px;margin-left:auto;}
+.copier-flatten-btn:hover{background:var(--red);color:#fff;}
+.copier-followers{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;}
+.copier-followers::-webkit-scrollbar{width:3px;}
+.copier-followers::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.copier-foll{background:var(--panel2);border:1px solid var(--border2);border-radius:9px;padding:9px 10px;position:relative;overflow:hidden;transition:border-color .2s;}
+.copier-foll:hover{border-color:var(--border3);}
+.copier-foll.disabled{opacity:.5;}
+.copier-foll-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.copier-foll-name{font-family:'Cabinet Grotesk',sans-serif;font-size:12px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.copier-foll-badge{font-family:'Geist Mono',monospace;font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.5px;}
+.copier-foll-badge.on{background:rgba(34,212,106,.1);color:var(--green);}
+.copier-foll-badge.off{background:rgba(255,255,255,.05);color:var(--text3);}
+.copier-foll-badge.err{background:rgba(255,77,109,.1);color:var(--red);}
+.copier-foll-stats{display:flex;gap:12px;margin-bottom:6px;}
+.copier-foll-stat{display:flex;flex-direction:column;gap:1px;}
+.copier-foll-stat-lbl{font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;}
+.copier-foll-stat-val{font-family:'Geist Mono',monospace;font-size:11px;font-weight:700;color:var(--text);}
+.copier-foll-stat-val.pos{color:var(--green);}
+.copier-foll-stat-val.neg{color:var(--red);}
+.copier-foll-actions{display:flex;gap:4px;}
+.copier-foll-btn{height:22px;padding:0 8px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'Cabinet Grotesk',sans-serif;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;}
+.copier-foll-btn:hover{border-color:var(--gold);color:var(--gold);}
+.copier-foll-btn.flat:hover{border-color:var(--red);color:var(--red);}
+.copier-log{max-height:80px;overflow-y:auto;padding:6px 12px;border-top:1px solid var(--border2);flex-shrink:0;}
+.copier-log::-webkit-scrollbar{width:3px;}
+.copier-log::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.copier-log-entry{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.copier-log-entry .ok{color:var(--green);}
+.copier-log-entry .err{color:var(--red);}
+.copier-log-entry .time{color:var(--text3);opacity:.6;}
+.copier-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:11px;line-height:1.8;}
+.copier-empty-icon{font-size:28px;margin-bottom:8px;opacity:.4;}
 
-/* ───── COPIER COMING SOON OVERLAY ───── */
-.copier-coming-soon{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,7,10,0.85);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border:1px solid rgba(232,184,75,0.12);border-top:none;pointer-events:auto;user-select:none;}
-.copier-coming-soon-title{font-family:'Cabinet Grotesk',sans-serif;font-size:26px;font-weight:900;color:var(--gold);letter-spacing:2px;text-shadow:0 0 24px var(--gold-glow),0 0 6px rgba(232,184,75,0.3);margin-bottom:8px;}
-.copier-coming-soon-sub{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:1px;text-align:center;}
 
 /* ───── CLOUD SYNC ───── */
 .sync-wrap{display:flex;align-items:center;gap:10px;margin-top:18px;margin-bottom:8px;}
@@ -2221,29 +2217,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 </div>
 
 <!-- Copier Scaling Modal -->
-<div class="overlay" id="copierScalingModal">
-  <div class="modal" style="width:400px">
-    <div class="modal-hd"><div class="modal-title">Contract Scaling</div><button class="modal-x" onclick="closeCopierScaling()">&#10005;</button></div>
-    <div style="font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:12px;line-height:1.6;">
-      Scale contracts based on account balance.<br>Base balance maps to 1 contract, then scales linearly.
-    </div>
-    <div class="copier-scaling-grid">
-      <div>
-        <label class="f-lbl">Base Balance ($)</label>
-        <input class="f-in" id="copierScaleBase" type="number" placeholder="50000" value="50000" style="margin-bottom:0;">
-      </div>
-      <div>
-        <label class="f-lbl">Contracts per Base</label>
-        <input class="f-in" id="copierScaleMult" type="number" placeholder="1" value="1" style="margin-bottom:0;">
-      </div>
-    </div>
-    <div style="font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);margin-bottom:12px;padding:8px;background:var(--panel2);border-radius:6px;border:1px solid var(--border2);">
-      <div style="margin-bottom:4px;color:var(--text2);font-weight:700;">PREVIEW</div>
-      <div id="copierScalePreview">$50k → 1 ct · $100k → 2 ct · $150k → 3 ct</div>
-    </div>
-    <div class="modal-actions"><button class="btn-cancel" onclick="closeCopierScaling()">Cancel</button><button class="btn-save" onclick="saveCopierScaling()">Save</button></div>
-  </div>
-</div>
 
 <script>
 // Logo stored once, applied to all .app-logo-img elements
@@ -6086,355 +6059,622 @@ function fxCalc(){
 
 
 // ═══════════════════════════════════════════
-// COPIER PANEL — Copy Trade API
+// COPIER PANEL — cTrader Native Copy Trading
 // ═══════════════════════════════════════════
-var _copierState = {
-  connected: false,
-  apiUrl: '',
-  apiKey: '',
-  accounts: [],
-  lockout: false,
-  polling: null,
-  scaleBase: 50000,
-  scaleMult: 1,
-  allEnabled: true,
+
+var _copier = {
+  active: false,
+  masterAccountId: null,  // ctidTraderAccountId of master
+  multiplier: 1.0,
+  followers: {},          // { ctidTraderAccountId: { enabled:true, positions:{} } }
+  positionMap: {},        // masterPosId -> { followerAcctId: followerPosId }
+  ws: null,
+  wsReady: false,
+  authedAccounts: {},     // ctidTraderAccountId -> true
+  log: [],               // [{time,msg,type}]
+  reconnectTimer: null,
 };
 
+function copierLog(msg, type) {
+  type = type || 'info';
+  _copier.log.unshift({ time: new Date(), msg: msg, type: type });
+  if (_copier.log.length > 50) _copier.log.length = 50;
+  renderCopierLog();
+}
+
+function getCTraderAccounts() {
+  return (state.accounts || []).filter(function(a) { return a.platform === 'ctrader' && a.ctidTraderAccountId; });
+}
+
 function buildCopierWin() {
-  var el = createWindow({id:'copier', title:'Copier', icon:'&#128279;',
-    extraBtns:'<button class="copier-footer-btn" onclick="openCopierScaling()" style="margin-right:4px;">&#9881; Scaling</button>'
-  });
+  var el = createWindow({ id: 'copier', title: 'Copy Trader', icon: '&#128279;' });
   var body = document.getElementById('wbody-copier');
   if (!body) return;
   body.className = 'win-body copier-body';
 
-  // Load saved copier cfg
-  _copierState.apiUrl = cfg.copierApiUrl || '';
-  _copierState.apiKey = cfg.copierApiKey || '';
-  _copierState.lockout = cfg.copierLockout || false;
-  _copierState.scaleBase = cfg.copierScaleBase || 50000;
-  _copierState.scaleMult = cfg.copierScaleMult || 1;
-  _copierState.allEnabled = cfg.copierAllEnabled !== false;
+  // Restore saved config
+  _copier.masterAccountId = cfg.copierMaster || null;
+  _copier.multiplier = cfg.copierMultiplier || 1.0;
+  var savedFollowers = cfg.copierFollowers || {};
+  _copier.followers = savedFollowers;
 
-  body.innerHTML =
-    // Connection section
-    '<div class="copier-conn">'
-    + '<div class="copier-conn-row">'
-    +   '<input class="copier-input" id="copierApiUrl" placeholder="API URL (e.g. http://localhost:3000)" value="' + esc(_copierState.apiUrl) + '">'
-    + '</div>'
-    + '<div class="copier-conn-row">'
-    +   '<input class="copier-input" id="copierApiKey" type="password" placeholder="API Key" value="' + esc(_copierState.apiKey) + '" style="flex:1;">'
-    +   '<button class="copier-conn-btn" id="copierConnBtn" onclick="copierToggleConnect()">' + (_copierState.connected ? 'Disconnect' : 'Connect') + '</button>'
-    + '</div>'
-    + '<div class="copier-status" id="copierStatus">'
-    +   '<div class="copier-status-dot" id="copierDot"></div>'
-    +   '<span id="copierStatusText">Not connected</span>'
-    + '</div>'
-    + '</div>'
-    // Bulk actions
-    + '<div class="copier-bulk">'
-    +   '<button class="copier-bulk-btn danger" onclick="copierCancelAll()" title="Cancel all open orders">Cancel All</button>'
-    +   '<button class="copier-bulk-btn' + (_copierState.allEnabled ? ' active' : '') + '" id="copierEnableAll" onclick="copierToggleAll()">' + (_copierState.allEnabled ? 'Disable All' : 'Enable All') + '</button>'
-    +   '<button class="copier-bulk-btn danger" onclick="copierFlattenAll()" title="Flatten all positions">Flatten All</button>'
-    +   '<button class="copier-lockout-btn' + (_copierState.lockout ? ' locked' : '') + '" id="copierLockBtn" onclick="copierToggleLockout()">' + (_copierState.lockout ? '&#128274; LOCKED' : '&#128275; Lockout') + '</button>'
-    + '</div>'
-    // Accounts list
-    + '<div class="copier-accounts" id="copierAccounts"></div>'
-    // Footer
-    + '<div class="copier-footer">'
-    +   '<span class="copier-footer-lbl" id="copierPollLbl">Polling: off</span>'
-    + '</div>';
-
-  // Coming Soon overlay
-  var overlay = document.createElement('div');
-  overlay.className = 'copier-coming-soon';
-  overlay.innerHTML = '<div class="copier-coming-soon-title">COMING SOON</div>'
-    + '<div class="copier-coming-soon-sub">Copy trading integration is on the way</div>';
-  body.appendChild(overlay);
-
-  renderCopierAccounts();
+  renderCopierPanel();
 }
 
-function copierToggleConnect() {
-  var urlIn = document.getElementById('copierApiUrl');
-  var keyIn = document.getElementById('copierApiKey');
-  if (!urlIn || !keyIn) return;
+function renderCopierPanel() {
+  var body = document.getElementById('wbody-copier');
+  if (!body) return;
+  var ctAccounts = getCTraderAccounts();
 
-  if (_copierState.connected) {
-    // Disconnect
-    _copierState.connected = false;
-    if (_copierState.polling) { clearInterval(_copierState.polling); _copierState.polling = null; }
-    _copierState.accounts = [];
-    copierUpdateStatus('warn', 'Disconnected');
-    var btn = document.getElementById('copierConnBtn');
-    if (btn) { btn.textContent = 'Connect'; btn.classList.remove('connected'); }
-    var pollLbl = document.getElementById('copierPollLbl');
-    if (pollLbl) pollLbl.textContent = 'Polling: off';
-    renderCopierAccounts();
-    return;
-  }
-
-  var url = urlIn.value.trim();
-  var key = keyIn.value.trim();
-  if (!url) { copierUpdateStatus('err', 'Enter an API URL'); return; }
-
-  // Save settings
-  _copierState.apiUrl = url;
-  _copierState.apiKey = key;
-  cfg.copierApiUrl = url;
-  cfg.copierApiKey = key;
-  saveCfg();
-
-  copierUpdateStatus('warn', 'Connecting...');
-  copierFetchAccounts(function(ok) {
-    if (ok) {
-      _copierState.connected = true;
-      copierUpdateStatus('ok', 'Connected · ' + _copierState.accounts.length + ' accounts');
-      var btn = document.getElementById('copierConnBtn');
-      if (btn) { btn.textContent = 'Disconnect'; btn.classList.add('connected'); }
-      // Start heartbeat polling every 5s
-      if (_copierState.polling) clearInterval(_copierState.polling);
-      _copierState.polling = setInterval(function() { copierFetchAccounts(); }, 5000);
-      var pollLbl = document.getElementById('copierPollLbl');
-      if (pollLbl) pollLbl.textContent = 'Polling: 5s';
-    } else {
-      copierUpdateStatus('err', 'Connection failed');
-    }
-    renderCopierAccounts();
-  });
-}
-
-function copierFetchAccounts(cb) {
-  var url = _copierState.apiUrl;
-  if (!url) { if (cb) cb(false); return; }
-  // Normalize URL
-  if (url.endsWith('/')) url = url.slice(0, -1);
-  var headers = {};
-  if (_copierState.apiKey) headers['Authorization'] = 'Bearer ' + _copierState.apiKey;
-  headers['Content-Type'] = 'application/json';
-
-  fetch(url + '/accounts', { method: 'GET', headers: headers })
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function(data) {
-      var accounts = Array.isArray(data) ? data : (data.accounts || data.data || []);
-      _copierState.accounts = accounts.map(function(a) {
-        return {
-          id: a.id || a.accountId || a.name || uid(),
-          name: a.name || a.accountName || a.id || 'Account',
-          balance: parseFloat(a.balance || a.accountBalance || 0),
-          pnl: parseFloat(a.pnl || a.floatingPnl || a.unrealizedPnl || 0),
-          positions: parseInt(a.positions || a.openPositions || 0),
-          orders: parseInt(a.orders || a.openOrders || 0),
-          enabled: a.enabled !== false,
-        };
-      });
-      renderCopierAccounts();
-      if (cb) cb(true);
-    })
-    .catch(function(e) {
-      if (_copierState.connected) {
-        copierUpdateStatus('err', 'Poll error: ' + e.message);
-      }
-      if (cb) cb(false);
-    });
-}
-
-function copierUpdateStatus(level, msg) {
-  var dot = document.getElementById('copierDot');
-  var txt = document.getElementById('copierStatusText');
-  if (dot) { dot.className = 'copier-status-dot' + (level ? ' ' + level : ''); }
-  if (txt) txt.textContent = msg || '';
-}
-
-function renderCopierAccounts() {
-  var wrap = document.getElementById('copierAccounts');
-  if (!wrap) return;
-
-  var cnt = document.getElementById('wcnt-copier');
-  if (cnt) cnt.textContent = _copierState.accounts.length || '';
-
-  if (!_copierState.connected || !_copierState.accounts.length) {
-    wrap.innerHTML = '<div class="copier-empty">'
+  if (ctAccounts.length < 2) {
+    body.innerHTML = '<div class="copier-empty">'
       + '<div class="copier-empty-icon">&#128279;</div>'
-      + (!_copierState.connected
-        ? 'Connect to a Copy Trade API to see accounts.<br><span style="font-size:9px;color:var(--text3);">Enter your API URL and key above.</span>'
-        : 'No accounts found on this API.')
+      + 'Connect at least 2 cTrader accounts to use Copy Trading.<br>'
+      + '<span style="font-size:9px;color:var(--text3);">Use the Trading panel → Connect Account → CTrader</span>'
       + '</div>';
     return;
   }
 
-  var html = '';
-  _copierState.accounts.forEach(function(acct) {
-    var isLocked = _copierState.lockout;
-    var isEnabled = acct.enabled && _copierState.allEnabled && !isLocked;
-    var statusCls = isLocked ? 'locked' : (isEnabled ? 'enabled' : 'disabled');
-    var badgeCls = isLocked ? 'lock' : (isEnabled ? 'on' : 'off');
-    var badgeTxt = isLocked ? 'LOCKED' : (isEnabled ? 'ACTIVE' : 'OFF');
-    var pnlCls = acct.pnl > 0 ? 'pos' : (acct.pnl < 0 ? 'neg' : '');
-    var pnlStr = (acct.pnl >= 0 ? '+' : '') + '$' + acct.pnl.toFixed(2);
-    var bal = '$' + acct.balance.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
-    var contracts = copierCalcContracts(acct.balance);
+  // Master selector options
+  var masterOpts = '<option value="">— Select Master —</option>';
+  ctAccounts.forEach(function(a) {
+    var sel = _copier.masterAccountId == a.ctidTraderAccountId ? ' selected' : '';
+    masterOpts += '<option value="' + a.ctidTraderAccountId + '"' + sel + '>' + esc(a.label || a.ctidTraderAccountId) + ' ($' + (a.currentBalance || 0).toLocaleString() + ')</option>';
+  });
 
-    html += '<div class="copier-acct ' + statusCls + '" data-id="' + esc(acct.id) + '">'
-      + '<div class="copier-acct-top">'
-      +   '<div class="copier-acct-name">' + esc(acct.name) + '</div>'
-      +   '<div class="copier-acct-badge ' + badgeCls + '">' + badgeTxt + '</div>'
+  body.innerHTML =
+    // Master config section
+    '<div class="copier-master">'
+    + '<div class="copier-master-row">'
+    +   '<span class="copier-master-label">Master</span>'
+    +   '<select class="copier-select" id="copierMasterSel" onchange="copierSetMaster(this.value)">' + masterOpts + '</select>'
+    + '</div>'
+    + '<div class="copier-master-row">'
+    +   '<span class="copier-master-label">Multi</span>'
+    +   '<input class="copier-mult-input" id="copierMultInput" type="number" step="0.1" min="0.1" max="100" value="' + _copier.multiplier + '" onchange="copierSetMultiplier(this.value)">'
+    +   '<span style="font-family:Geist Mono,monospace;font-size:9px;color:var(--text3);">×  lot size</span>'
+    +   '<button class="copier-start-btn' + (_copier.active ? ' stop' : '') + '" id="copierToggleBtn" onclick="copierToggle()">' + (_copier.active ? '&#9724; Stop' : '&#9654; Start') + '</button>'
+    + '</div>'
+    + '<div class="copier-status" id="copierStatus">'
+    +   '<div class="copier-status-dot' + (_copier.active ? ' ok' : '') + '" id="copierDot"></div>'
+    +   '<span id="copierStatusText">' + (_copier.active ? 'Copying active' : 'Idle') + '</span>'
+    + '</div>'
+    + '</div>'
+    // Action bar
+    + '<div class="copier-bulk">'
+    +   '<button class="copier-bulk-btn active" onclick="copierEnableAllFollowers()">Enable All</button>'
+    +   '<button class="copier-bulk-btn" onclick="copierDisableAllFollowers()">Disable All</button>'
+    +   '<button class="copier-flatten-btn" onclick="copierFlattenAll()">&#9888; FLATTEN ALL</button>'
+    + '</div>'
+    // Followers list
+    + '<div class="copier-followers" id="copierFollowers"></div>'
+    // Activity log
+    + '<div class="copier-log" id="copierLog"></div>';
+
+  renderCopierFollowers();
+  renderCopierLog();
+}
+
+function copierSetMaster(val) {
+  _copier.masterAccountId = val || null;
+  cfg.copierMaster = _copier.masterAccountId;
+  saveCfg();
+  if (_copier.active) {
+    copierStop();
+    copierLog('Master changed — copy trading stopped', 'err');
+  }
+  renderCopierFollowers();
+}
+
+function copierSetMultiplier(val) {
+  var m = parseFloat(val);
+  if (isNaN(m) || m < 0.1) m = 0.1;
+  if (m > 100) m = 100;
+  _copier.multiplier = Math.round(m * 10) / 10;
+  cfg.copierMultiplier = _copier.multiplier;
+  saveCfg();
+  var inp = document.getElementById('copierMultInput');
+  if (inp) inp.value = _copier.multiplier;
+  copierLog('Multiplier set to ' + _copier.multiplier + 'x', 'info');
+}
+
+function renderCopierFollowers() {
+  var wrap = document.getElementById('copierFollowers');
+  if (!wrap) return;
+  var ctAccounts = getCTraderAccounts();
+  var followers = ctAccounts.filter(function(a) {
+    return a.ctidTraderAccountId != _copier.masterAccountId;
+  });
+
+  var cnt = document.getElementById('wcnt-copier');
+  if (cnt) cnt.textContent = followers.length || '';
+
+  if (!_copier.masterAccountId) {
+    wrap.innerHTML = '<div class="copier-empty"><div class="copier-empty-icon">&#9650;</div>Select a master account above</div>';
+    return;
+  }
+
+  if (!followers.length) {
+    wrap.innerHTML = '<div class="copier-empty"><div class="copier-empty-icon">&#128101;</div>No follower accounts available</div>';
+    return;
+  }
+
+  var html = '';
+  followers.forEach(function(a) {
+    var fid = a.ctidTraderAccountId;
+    var fState = _copier.followers[fid] || { enabled: true };
+    if (!_copier.followers[fid]) _copier.followers[fid] = fState;
+    var isEnabled = fState.enabled !== false;
+    var badgeCls = isEnabled ? 'on' : 'off';
+    var badgeTxt = isEnabled ? 'ACTIVE' : 'OFF';
+    var bal = '$' + (a.currentBalance || 0).toLocaleString();
+
+    html += '<div class="copier-foll' + (isEnabled ? '' : ' disabled') + '" data-fid="' + fid + '">'
+      + '<div class="copier-foll-top">'
+      +   '<div class="copier-foll-name">' + esc(a.label || fid) + '</div>'
+      +   '<div class="copier-foll-badge ' + badgeCls + '">' + badgeTxt + '</div>'
       + '</div>'
-      + '<div class="copier-acct-stats">'
-      +   '<div class="copier-acct-stat"><div class="copier-acct-stat-lbl">BALANCE</div><div class="copier-acct-stat-val">' + bal + '</div></div>'
-      +   '<div class="copier-acct-stat"><div class="copier-acct-stat-lbl">FLOAT P&L</div><div class="copier-acct-stat-val ' + pnlCls + '">' + pnlStr + '</div></div>'
-      +   '<div class="copier-acct-stat"><div class="copier-acct-stat-lbl">CONTRACTS</div><div class="copier-acct-stat-val" style="color:var(--gold);">' + contracts + '</div></div>'
+      + '<div class="copier-foll-stats">'
+      +   '<div class="copier-foll-stat"><div class="copier-foll-stat-lbl">BALANCE</div><div class="copier-foll-stat-val">' + bal + '</div></div>'
+      +   '<div class="copier-foll-stat"><div class="copier-foll-stat-lbl">BROKER</div><div class="copier-foll-stat-val" style="color:var(--text2);">' + esc(a.firmName || 'cTrader') + '</div></div>'
+      +   '<div class="copier-foll-stat"><div class="copier-foll-stat-lbl">MULTI</div><div class="copier-foll-stat-val" style="color:var(--gold);">' + _copier.multiplier + 'x</div></div>'
       + '</div>'
-      + '<div class="copier-acct-actions">'
-      +   '<button class="copier-acct-btn" data-id="' + esc(acct.id) + '" onclick="copierToggleAccount(this.dataset.id)">' + (acct.enabled ? 'Disable' : 'Enable') + '</button>'
-      +   '<button class="copier-acct-btn flat" data-id="' + esc(acct.id) + '" onclick="copierFlattenAccount(this.dataset.id)">Flatten</button>'
+      + '<div class="copier-foll-actions">'
+      +   '<button class="copier-foll-btn" onclick="copierToggleFollower(\'' + fid + '\')">' + (isEnabled ? 'Disable' : 'Enable') + '</button>'
+      +   '<button class="copier-foll-btn flat" onclick="copierFlattenFollower(\'' + fid + '\')">Flatten</button>'
       + '</div>'
       + '</div>';
   });
   wrap.innerHTML = html;
 }
 
-function copierCalcContracts(balance) {
-  if (!balance || balance <= 0) return 0;
-  var base = _copierState.scaleBase || 50000;
-  var mult = _copierState.scaleMult || 1;
-  if (base <= 0) return mult;
-  return Math.max(1, Math.floor((balance / base) * mult));
+function renderCopierLog() {
+  var wrap = document.getElementById('copierLog');
+  if (!wrap) return;
+  if (!_copier.log.length) {
+    wrap.innerHTML = '<div class="copier-log-entry" style="opacity:.4;">No activity yet</div>';
+    return;
+  }
+  var html = '';
+  _copier.log.slice(0, 15).forEach(function(e) {
+    var t = e.time;
+    var ts = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0');
+    var cls = e.type === 'ok' ? 'ok' : (e.type === 'err' ? 'err' : '');
+    html += '<div class="copier-log-entry"><span class="time">' + ts + '</span> <span class="' + cls + '">' + esc(e.msg) + '</span></div>';
+  });
+  wrap.innerHTML = html;
 }
 
-function copierApiPost(endpoint, body, cb) {
-  var url = _copierState.apiUrl;
-  if (!url || !_copierState.connected) { if (cb) cb(false, 'Not connected'); return; }
-  if (url.endsWith('/')) url = url.slice(0, -1);
-  var headers = { 'Content-Type': 'application/json' };
-  if (_copierState.apiKey) headers['Authorization'] = 'Bearer ' + _copierState.apiKey;
-  fetch(url + endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body || {}) })
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json().catch(function() { return {}; });
-    })
-    .then(function(data) { if (cb) cb(true, data); })
-    .catch(function(e) { if (cb) cb(false, e.message); });
+function copierToggleFollower(fid) {
+  if (!_copier.followers[fid]) _copier.followers[fid] = { enabled: true };
+  _copier.followers[fid].enabled = !_copier.followers[fid].enabled;
+  cfg.copierFollowers = _copier.followers;
+  saveCfg();
+  renderCopierFollowers();
 }
 
-function copierCancelAll() {
-  if (!_copierState.connected) { copierUpdateStatus('err', 'Not connected'); return; }
-  copierUpdateStatus('warn', 'Cancelling all orders...');
-  copierApiPost('/cancel-all', {}, function(ok, msg) {
-    copierUpdateStatus(ok ? 'ok' : 'err', ok ? 'All orders cancelled' : 'Error: ' + msg);
-    if (ok) copierFetchAccounts();
+function copierEnableAllFollowers() {
+  Object.keys(_copier.followers).forEach(function(k) { _copier.followers[k].enabled = true; });
+  cfg.copierFollowers = _copier.followers;
+  saveCfg();
+  renderCopierFollowers();
+}
+
+function copierDisableAllFollowers() {
+  Object.keys(_copier.followers).forEach(function(k) { _copier.followers[k].enabled = false; });
+  cfg.copierFollowers = _copier.followers;
+  saveCfg();
+  renderCopierFollowers();
+}
+
+// ── WebSocket Connection ──────────────────────────────────────
+function copierConnectWS() {
+  if (_copier.ws && _copier.ws.readyState <= 1) return; // already open/connecting
+  var token = cfg.ctraderTokens && cfg.ctraderTokens.accessToken;
+  if (!token) {
+    copierLog('No cTrader token — connect cTrader first', 'err');
+    copierUpdateStatus('err', 'No cTrader token');
+    return;
+  }
+
+  copierLog('Connecting to cTrader...', 'info');
+  copierUpdateStatus('warn', 'Connecting...');
+
+  // Use live endpoint (accounts already fetched via server, this is direct WS for trading)
+  var wsUrl = 'wss://live.ctraderapi.com:5036';
+  _copier.ws = new WebSocket(wsUrl);
+  _copier.wsReady = false;
+  _copier.authedAccounts = {};
+
+  _copier.ws.onopen = function() {
+    copierLog('WebSocket connected, authenticating app...', 'info');
+    // Step 1: App auth
+    copierWsSend({
+      payloadType: 2100,
+      payload: {
+        clientId: '24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq',
+        clientSecret: 'nmtQB4jPhHqaRJlEbu2tUXxM68All0tJYYb6Xdjxe772bzXCK5'
+      }
+    });
+  };
+
+  _copier.ws.onmessage = function(evt) {
+    var msg;
+    try { msg = JSON.parse(evt.data); } catch(e) { return; }
+    copierHandleMessage(msg);
+  };
+
+  _copier.ws.onerror = function(err) {
+    copierLog('WebSocket error', 'err');
+    copierUpdateStatus('err', 'Connection error');
+  };
+
+  _copier.ws.onclose = function() {
+    _copier.wsReady = false;
+    _copier.authedAccounts = {};
+    copierLog('WebSocket closed', 'err');
+    if (_copier.active) {
+      copierUpdateStatus('warn', 'Reconnecting...');
+      clearTimeout(_copier.reconnectTimer);
+      _copier.reconnectTimer = setTimeout(copierConnectWS, 3000);
+    }
+  };
+}
+
+function copierWsSend(obj) {
+  if (_copier.ws && _copier.ws.readyState === 1) {
+    _copier.ws.send(JSON.stringify(obj));
+  }
+}
+
+function copierHandleMessage(msg) {
+  var pt = msg.payloadType;
+  var pl = msg.payload || msg;
+
+  // App auth response
+  if (pt === 2101) {
+    copierLog('App authenticated', 'ok');
+    _copier.wsReady = true;
+    // Auth all relevant accounts
+    copierAuthAllAccounts();
+    return;
+  }
+
+  // Account auth response
+  if (pt === 2103) {
+    var acctId = pl.ctidTraderAccountId;
+    _copier.authedAccounts[acctId] = true;
+    var total = Object.keys(_copier.authedAccounts).length;
+    copierLog('Account ' + acctId + ' authorized (' + total + ' total)', 'ok');
+    copierUpdateStatus('ok', 'Copying · ' + total + ' accounts');
+    return;
+  }
+
+  // Execution event — this is the core copy trigger
+  if (pt === 2126) {
+    copierHandleExecution(pl);
+    return;
+  }
+
+  // Order error
+  if (pt === 2132) {
+    copierLog('Order error: ' + (pl.errorCode || pl.description || 'unknown'), 'err');
+    return;
+  }
+
+  // Reconcile response (positions list)
+  if (pt === 2125) {
+    copierHandleReconcile(pl);
+    return;
+  }
+
+  // Error response
+  if (pt === 2142 || pt === 50) {
+    var errMsg = pl.errorCode || pl.description || 'API error';
+    copierLog('cTrader: ' + errMsg, 'err');
+    return;
+  }
+}
+
+function copierAuthAllAccounts() {
+  var token = cfg.ctraderTokens && cfg.ctraderTokens.accessToken;
+  if (!token) return;
+  var ctAccounts = getCTraderAccounts();
+  ctAccounts.forEach(function(a) {
+    copierWsSend({
+      payloadType: 2102,
+      payload: {
+        ctidTraderAccountId: a.ctidTraderAccountId,
+        accessToken: token
+      }
+    });
   });
 }
 
+// ── Core Copy Logic ──────────────────────────────────────────
+function copierHandleExecution(pl) {
+  if (!_copier.active) return;
+
+  var acctId = pl.ctidTraderAccountId;
+  var execType = pl.executionType;
+  var order = pl.order || {};
+  var position = pl.position || {};
+  var deal = pl.deal || {};
+
+  // Only react to events on the MASTER account
+  if (acctId != _copier.masterAccountId) return;
+
+  // ORDER_FILLED or SWAP or similar
+  if (execType === 'ORDER_FILLED' || execType === 2) {
+    var isClosing = order.closingOrder === true;
+    if (isClosing) {
+      // Master closed a position → close on followers
+      copierCloseOnFollowers(position.positionId, deal.volume || order.executedVolume || position.tradeData && position.tradeData.volume);
+    } else {
+      // Master opened a new position → open on followers
+      copierOpenOnFollowers(order, position, deal);
+    }
+    return;
+  }
+
+  // ORDER_ACCEPTED (new order submitted)
+  if (execType === 'ORDER_ACCEPTED' || execType === 1) {
+    // Could log, but actual copy happens on FILLED
+    return;
+  }
+
+  // ORDER_CANCELLED
+  if (execType === 'ORDER_CANCELLED' || execType === 5) {
+    copierLog('Master order cancelled: #' + order.orderId, 'info');
+    return;
+  }
+}
+
+function copierOpenOnFollowers(order, position, deal) {
+  var td = (position && position.tradeData) || (order && order.tradeData) || {};
+  var symbolId = td.symbolId || order.symbolId;
+  var tradeSide = td.tradeSide || order.tradeSide;
+  var masterVolume = deal.volume || order.executedVolume || td.volume || order.volume;
+  var sl = position.stopLoss || order.stopLoss;
+  var tp = position.takeProfit || order.takeProfit;
+  var masterPosId = position.positionId;
+
+  if (!symbolId || !tradeSide || !masterVolume) {
+    copierLog('Incomplete order data from master', 'err');
+    return;
+  }
+
+  var followerVolume = Math.round(masterVolume * _copier.multiplier);
+  if (followerVolume < 100) followerVolume = 100; // minimum 0.01 lot
+
+  var sideLabel = (tradeSide === 'BUY' || tradeSide === 1) ? 'BUY' : 'SELL';
+  copierLog('Master ' + sideLabel + ' filled — copying to followers (vol: ' + followerVolume + ')', 'ok');
+
+  // Track mapping
+  if (!_copier.positionMap[masterPosId]) _copier.positionMap[masterPosId] = {};
+
+  var followers = getCTraderAccounts().filter(function(a) {
+    return a.ctidTraderAccountId != _copier.masterAccountId
+      && _copier.followers[a.ctidTraderAccountId]
+      && _copier.followers[a.ctidTraderAccountId].enabled !== false
+      && _copier.authedAccounts[a.ctidTraderAccountId];
+  });
+
+  followers.forEach(function(f) {
+    var req = {
+      payloadType: 2106,
+      payload: {
+        ctidTraderAccountId: f.ctidTraderAccountId,
+        symbolId: symbolId,
+        orderType: 1, // MARKET
+        tradeSide: tradeSide,
+        volume: followerVolume,
+        comment: 'TV-Copy',
+        label: 'copy-' + masterPosId
+      }
+    };
+    if (sl) req.payload.stopLoss = sl;
+    if (tp) req.payload.takeProfit = tp;
+
+    copierWsSend(req);
+    copierLog('→ Sent ' + sideLabel + ' to ' + (f.label || f.ctidTraderAccountId), 'info');
+  });
+}
+
+function copierCloseOnFollowers(masterPosId, volume) {
+  if (!masterPosId) return;
+  copierLog('Master position #' + masterPosId + ' closed — closing followers', 'ok');
+
+  // We need to find matching positions on followers
+  // Use the label we set ('copy-XXXX') or the position map
+  var mapped = _copier.positionMap[masterPosId] || {};
+
+  var followers = getCTraderAccounts().filter(function(a) {
+    return a.ctidTraderAccountId != _copier.masterAccountId
+      && _copier.authedAccounts[a.ctidTraderAccountId];
+  });
+
+  // If we have mapped positions, close them directly
+  var hasMapping = Object.keys(mapped).length > 0;
+  if (hasMapping) {
+    Object.keys(mapped).forEach(function(follAcctId) {
+      var follPosId = mapped[follAcctId];
+      if (follPosId) {
+        copierWsSend({
+          payloadType: 2111, // ClosePositionReq
+          payload: {
+            ctidTraderAccountId: parseInt(follAcctId),
+            positionId: follPosId,
+            volume: Math.round((volume || 100000) * _copier.multiplier)
+          }
+        });
+        copierLog('→ Close #' + follPosId + ' on ' + follAcctId, 'info');
+      }
+    });
+  } else {
+    // No mapping — reconcile each follower to find matching positions by label
+    followers.forEach(function(f) {
+      copierWsSend({
+        payloadType: 2124, // ReconcileReq
+        payload: { ctidTraderAccountId: f.ctidTraderAccountId }
+      });
+    });
+    // Store the masterPosId we need to close after reconcile
+    _copier._pendingClose = masterPosId;
+    _copier._pendingCloseVol = volume;
+  }
+}
+
+function copierHandleReconcile(pl) {
+  var acctId = pl.ctidTraderAccountId;
+  var positions = pl.position || [];
+
+  // Check if we have a pending close
+  if (_copier._pendingClose) {
+    var label = 'copy-' + _copier._pendingClose;
+    positions.forEach(function(pos) {
+      if (pos.tradeData && pos.tradeData.label === label) {
+        copierWsSend({
+          payloadType: 2111,
+          payload: {
+            ctidTraderAccountId: acctId,
+            positionId: pos.positionId,
+            volume: pos.tradeData.volume
+          }
+        });
+        copierLog('→ Close matched #' + pos.positionId + ' on ' + acctId, 'ok');
+      }
+    });
+  }
+}
+
+// ── Start / Stop ──────────────────────────────────────────────
+function copierToggle() {
+  if (_copier.active) {
+    copierStop();
+  } else {
+    copierStart();
+  }
+}
+
+function copierStart() {
+  if (!_copier.masterAccountId) {
+    toast('Select a master account first', 'error');
+    return;
+  }
+  if (!cfg.ctraderTokens || !cfg.ctraderTokens.accessToken) {
+    toast('Connect cTrader first (Trading → Connect Account → CTrader)', 'error');
+    return;
+  }
+  var ctAccounts = getCTraderAccounts();
+  var followers = ctAccounts.filter(function(a) { return a.ctidTraderAccountId != _copier.masterAccountId; });
+  if (!followers.length) {
+    toast('No follower accounts available', 'error');
+    return;
+  }
+
+  _copier.active = true;
+  _copier.positionMap = {};
+  copierLog('Copy trading started — master: ' + _copier.masterAccountId + ', ' + followers.length + ' followers, ' + _copier.multiplier + 'x', 'ok');
+  copierUpdateStatus('ok', 'Starting...');
+  copierConnectWS();
+
+  var btn = document.getElementById('copierToggleBtn');
+  if (btn) { btn.textContent = '⏹ Stop'; btn.classList.add('stop'); }
+}
+
+function copierStop() {
+  _copier.active = false;
+  clearTimeout(_copier.reconnectTimer);
+  if (_copier.ws) { try { _copier.ws.close(); } catch(e) {} _copier.ws = null; }
+  _copier.wsReady = false;
+  _copier.authedAccounts = {};
+  copierLog('Copy trading stopped', 'err');
+  copierUpdateStatus('', 'Idle');
+
+  var btn = document.getElementById('copierToggleBtn');
+  if (btn) { btn.textContent = '▶ Start'; btn.classList.remove('stop'); }
+  var dot = document.getElementById('copierDot');
+  if (dot) dot.className = 'copier-status-dot';
+}
+
+function copierUpdateStatus(level, msg) {
+  var dot = document.getElementById('copierDot');
+  var txt = document.getElementById('copierStatusText');
+  if (dot) dot.className = 'copier-status-dot' + (level ? ' ' + level : '');
+  if (txt) txt.textContent = msg || '';
+}
+
+// ── Flatten All ──────────────────────────────────────────────
 function copierFlattenAll() {
-  if (!_copierState.connected) { copierUpdateStatus('err', 'Not connected'); return; }
-  copierUpdateStatus('warn', 'Flattening all positions...');
-  copierApiPost('/flatten-all', {}, function(ok, msg) {
-    copierUpdateStatus(ok ? 'ok' : 'err', ok ? 'All positions flattened' : 'Error: ' + msg);
-    if (ok) copierFetchAccounts();
+  if (!_copier.wsReady) {
+    toast('Copy trading not active — start it first', 'error');
+    return;
+  }
+  if (!confirm('FLATTEN ALL positions on master + all followers?\\nThis will close everything immediately.')) return;
+
+  copierLog('⚠ FLATTEN ALL triggered', 'err');
+  copierUpdateStatus('err', 'FLATTENING...');
+
+  // Reconcile all accounts to get positions, then close them
+  var ctAccounts = getCTraderAccounts();
+  _copier._flattenAll = true;
+  ctAccounts.forEach(function(a) {
+    if (_copier.authedAccounts[a.ctidTraderAccountId]) {
+      copierWsSend({
+        payloadType: 2124,
+        payload: { ctidTraderAccountId: a.ctidTraderAccountId }
+      });
+    }
   });
 }
 
-function copierToggleAll() {
-  _copierState.allEnabled = !_copierState.allEnabled;
-  cfg.copierAllEnabled = _copierState.allEnabled;
-  saveCfg();
-  var btn = document.getElementById('copierEnableAll');
-  if (btn) {
-    btn.textContent = _copierState.allEnabled ? 'Disable All' : 'Enable All';
-    btn.classList.toggle('active', _copierState.allEnabled);
+// Extend reconcile handler for flatten
+var _origCopierHandleReconcile = copierHandleReconcile;
+copierHandleReconcile = function(pl) {
+  if (_copier._flattenAll) {
+    var acctId = pl.ctidTraderAccountId;
+    var positions = pl.position || [];
+    var closed = 0;
+    positions.forEach(function(pos) {
+      if (pos.positionStatus === 'POSITION_STATUS_OPEN' || pos.positionStatus === 1) {
+        copierWsSend({
+          payloadType: 2111,
+          payload: {
+            ctidTraderAccountId: acctId,
+            positionId: pos.positionId,
+            volume: pos.tradeData ? pos.tradeData.volume : 100000
+          }
+        });
+        closed++;
+      }
+    });
+    if (closed > 0) copierLog('Closing ' + closed + ' positions on ' + acctId, 'ok');
+    // After all reconciles come back, clear the flag (rough — just set a timeout)
+    clearTimeout(_copier._flattenTimer);
+    _copier._flattenTimer = setTimeout(function() {
+      _copier._flattenAll = false;
+      copierUpdateStatus('ok', 'Flatten complete');
+      copierLog('Flatten complete', 'ok');
+    }, 2000);
+    return;
   }
-  if (_copierState.connected) {
-    copierApiPost('/toggle-all', { enabled: _copierState.allEnabled });
-  }
-  renderCopierAccounts();
-}
+  _origCopierHandleReconcile(pl);
+};
 
-function copierToggleLockout() {
-  _copierState.lockout = !_copierState.lockout;
-  cfg.copierLockout = _copierState.lockout;
-  saveCfg();
-  var btn = document.getElementById('copierLockBtn');
-  if (btn) {
-    btn.classList.toggle('locked', _copierState.lockout);
-    btn.innerHTML = _copierState.lockout ? '&#128274; LOCKED' : '&#128275; Lockout';
+function copierFlattenFollower(fid) {
+  if (!_copier.wsReady || !_copier.authedAccounts[fid]) {
+    toast('Account not connected — start copy trading first', 'error');
+    return;
   }
-  if (_copierState.connected && _copierState.lockout) {
-    copierApiPost('/lockout', { locked: true });
-    copierUpdateStatus('err', 'LOCKOUT ACTIVE — trading disabled');
-  } else if (_copierState.connected) {
-    copierApiPost('/lockout', { locked: false });
-    copierUpdateStatus('ok', 'Lockout released');
-  }
-  renderCopierAccounts();
-}
-
-function copierToggleAccount(id) {
-  var acct = _copierState.accounts.find(function(a) { return a.id === id; });
-  if (!acct) return;
-  acct.enabled = !acct.enabled;
-  if (_copierState.connected) {
-    copierApiPost('/account/' + encodeURIComponent(id) + '/toggle', { enabled: acct.enabled });
-  }
-  renderCopierAccounts();
-}
-
-function copierFlattenAccount(id) {
-  if (!_copierState.connected) { copierUpdateStatus('err', 'Not connected'); return; }
-  copierUpdateStatus('warn', 'Flattening ' + id + '...');
-  copierApiPost('/account/' + encodeURIComponent(id) + '/flatten', {}, function(ok, msg) {
-    copierUpdateStatus(ok ? 'ok' : 'err', ok ? 'Flattened ' + id : 'Error: ' + msg);
-    if (ok) copierFetchAccounts();
+  copierLog('Flattening follower ' + fid, 'err');
+  _copier._flattenSingle = fid;
+  copierWsSend({
+    payloadType: 2124,
+    payload: { ctidTraderAccountId: parseInt(fid) }
   });
 }
 
-// Scaling modal
-function openCopierScaling() {
-  var baseIn = document.getElementById('copierScaleBase');
-  var multIn = document.getElementById('copierScaleMult');
-  if (baseIn) baseIn.value = _copierState.scaleBase;
-  if (multIn) multIn.value = _copierState.scaleMult;
-  updateCopierScalePreview();
-  document.getElementById('copierScalingModal').classList.add('open');
-  // Live preview
-  if (baseIn) baseIn.oninput = updateCopierScalePreview;
-  if (multIn) multIn.oninput = updateCopierScalePreview;
-}
-
-function closeCopierScaling() {
-  document.getElementById('copierScalingModal').classList.remove('open');
-}
-
-function saveCopierScaling() {
-  var base = parseInt(document.getElementById('copierScaleBase').value) || 50000;
-  var mult = parseInt(document.getElementById('copierScaleMult').value) || 1;
-  _copierState.scaleBase = Math.max(1000, base);
-  _copierState.scaleMult = Math.max(1, mult);
-  cfg.copierScaleBase = _copierState.scaleBase;
-  cfg.copierScaleMult = _copierState.scaleMult;
-  saveCfg();
-  closeCopierScaling();
-  renderCopierAccounts();
-}
-
-function updateCopierScalePreview() {
-  var base = parseInt((document.getElementById('copierScaleBase') || {}).value) || 50000;
-  var mult = parseInt((document.getElementById('copierScaleMult') || {}).value) || 1;
-  if (base < 1000) base = 1000;
-  if (mult < 1) mult = 1;
-  var pre = document.getElementById('copierScalePreview');
-  if (!pre) return;
-  var examples = [];
-  for (var i = 1; i <= 4; i++) {
-    var bal = base * i;
-    var cts = Math.floor(i * mult);
-    examples.push('$' + (bal >= 1000 ? (bal / 1000) + 'k' : bal) + ' → ' + cts + ' ct');
-  }
-  pre.textContent = examples.join(' · ');
-}
 
 
 // INIT — all definitions above, calls below
