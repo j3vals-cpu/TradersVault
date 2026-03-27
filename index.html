@@ -6611,7 +6611,7 @@ function copierFlattenAll() {
     toast('Copy trading not active — start it first', 'error');
     return;
   }
-  if (!confirm('FLATTEN ALL positions on master + all followers?\\nThis will close everything immediately.')) return;
+  if (!confirm('FLATTEN ALL positions on master + all followers?\nThis will close everything immediately.')) return;
 
   copierLog('⚠ FLATTEN ALL triggered', 'err');
   copierUpdateStatus('err', 'FLATTENING...');
