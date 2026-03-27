@@ -6732,10 +6732,10 @@ function showCTraderAccountPicker(accounts){
   accounts.forEach(function(ac,i){
     var bal=ac.balance/Math.pow(10,ac.moneyDigits||2);
     var isLive=ac.isLive!==false;
-    var isActive=ac.status==='active'||ac.status==='ACTIVE'||!ac.status;
+    var isActive=(ac.accountStatus||ac.status||'ACTIVE')==='ACTIVE'||!(ac.accountStatus||ac.status);
     var badgeColor=isLive?'#22d46a':'#6366f1';
     var badgeLabel=isLive?'Live':'Demo';
-    var statusBadge=ac.status?'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:rgba(255,255,255,.06);color:var(--text3);">'+esc(ac.status)+'</span>':'';
+    var statusBadge=(ac.accountStatus||ac.status)?'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:rgba(255,255,255,.06);color:var(--text3);">'+esc(ac.accountStatus||ac.status||'')+'</span>':'';
     html+='<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border:1px solid var(--border2);border-radius:9px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor=\'rgba(245,158,11,.4)\'" onmouseout="this.style.borderColor=\'var(--border2)\'">'
       +'<input type="checkbox" class="ct-ac-check" data-idx="'+i+'" '+(isActive?'checked':'')+' onchange="updateCtSelectedCount()" style="accent-color:#d97706;width:16px;height:16px;cursor:pointer;">'
       +'<div style="flex:1;min-width:0;">'
