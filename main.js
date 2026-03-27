@@ -150,14 +150,32 @@ function createTray() {
 }
 
 // ─── CLICK-THROUGH POLLER ─────────────────────────────────────
+let clickThroughLocked = false;  // when true, click-through is forced OFF (walkthrough active)
+
 ipcMain.on('set-hit-rects', (event, rects) => {
   hitRects = rects || [];
+});
+
+ipcMain.on('set-click-through', (event, enable) => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (enable) {
+    // Re-enable normal click-through behavior
+    clickThroughLocked = false;
+    mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    isIgnoringMouse = true;
+  } else {
+    // Disable click-through — walkthrough needs all clicks
+    clickThroughLocked = true;
+    mainWindow.setIgnoreMouseEvents(false);
+    isIgnoringMouse = false;
+  }
 });
 
 function startMousePoller() {
   if (mousePoller) clearInterval(mousePoller);
   mousePoller = setInterval(() => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (clickThroughLocked) return;  // walkthrough active — don't touch click-through
 
     const cursor = screen.getCursorScreenPoint();
     const bounds = mainWindow.getBounds();

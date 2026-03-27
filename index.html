@@ -700,16 +700,17 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .sync-status{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);min-height:14px;margin-top:4px;}
 
 /* ───── WALKTHROUGH TOUR ───── */
-.wt-overlay{position:fixed;inset:0;z-index:99990;pointer-events:auto;transition:opacity .3s;}
-.wt-spotlight{position:fixed;z-index:99991;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.82),0 0 24px 4px var(--gold-glow);pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);}
-.wt-card{position:fixed;z-index:99992;background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(232,184,75,.25);border-radius:14px;padding:22px 24px 18px;min-width:300px;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.6),0 0 24px var(--gold-glow);pointer-events:auto;transition:all .35s cubic-bezier(.4,0,.2,1);opacity:0;transform:translateY(10px);}
+.wt-overlay{position:fixed;inset:0;z-index:99990;pointer-events:all !important;transition:opacity .3s;cursor:default;}
+.wt-spotlight{position:fixed;z-index:99991;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.82),0 0 24px 4px var(--gold-glow);pointer-events:none !important;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.wt-card{position:fixed;z-index:99992;background:var(--panel);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(232,184,75,.25);border-radius:14px;padding:22px 24px 18px;min-width:300px;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,.6),0 0 24px var(--gold-glow);pointer-events:all !important;transition:all .35s cubic-bezier(.4,0,.2,1);opacity:0;transform:translateY(10px);}
+.wt-card *{pointer-events:all !important;}
 .wt-card.show{opacity:1;transform:translateY(0);}
 .wt-card-title{font-size:14px;font-weight:900;color:var(--gold);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
 .wt-card-title .wt-icon{font-size:18px;}
 .wt-card-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px;}
 .wt-card-step{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-bottom:12px;}
 .wt-btns{display:flex;gap:8px;align-items:center;}
-.wt-btn{height:32px;padding:0 16px;border-radius:8px;font-family:'Cabinet Grotesk',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .18s;border:none;display:flex;align-items:center;gap:4px;}
+.wt-btn{height:32px;padding:0 16px;border-radius:8px;font-family:'Cabinet Grotesk',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .18s;border:none;display:flex;align-items:center;gap:4px;pointer-events:all !important;position:relative;z-index:99993;}
 .wt-btn-next{background:var(--gold);color:#07070a;}.wt-btn-next:hover{background:#f0c45a;transform:translateY(-1px);box-shadow:0 4px 14px var(--gold-glow);}
 .wt-btn-back{background:var(--panel3);color:var(--text2);border:1px solid var(--border2);}.wt-btn-back:hover{border-color:var(--gold);color:var(--gold);}
 .wt-btn-skip{background:transparent;color:var(--text3);border:none;margin-left:auto;font-size:10px;}.wt-btn-skip:hover{color:var(--text);}
@@ -717,7 +718,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .wt-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all .2s;}
 .wt-dot.active{background:var(--gold);box-shadow:0 0 6px var(--gold-glow);}
 .wt-dot.done{background:var(--gold-soft);opacity:.5;}
-.wt-welcome{position:fixed;inset:0;z-index:99995;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);pointer-events:auto;}
+.wt-welcome{position:fixed;inset:0;z-index:99995;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);pointer-events:all !important;}
+.wt-welcome *{pointer-events:all !important;}
 .wt-welcome-card{background:var(--panel);border:1px solid rgba(232,184,75,.25);border-radius:18px;padding:40px 44px;text-align:center;max-width:420px;box-shadow:0 24px 60px rgba(0,0,0,.7),0 0 40px var(--gold-glow);}
 .wt-welcome-title{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:8px;}
 .wt-welcome-sub{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:24px;}
@@ -9067,6 +9069,10 @@ function startWalkthrough() {
 }
 
 function showWelcomeScreen() {
+  // Disable click-through so walkthrough captures all clicks
+  if (window.electronAPI && window.electronAPI.setClickThrough) {
+    window.electronAPI.setClickThrough(false);
+  }
   // Create welcome overlay
   var wel = document.createElement('div');
   wel.className = 'wt-welcome';
@@ -9205,6 +9211,10 @@ function cleanupWalkthrough() {
   _wtOverlay = null;
   _wtSpotlight = null;
   _wtCard = null;
+  // Re-enable normal click-through overlay behavior
+  if (window.electronAPI && window.electronAPI.setClickThrough) {
+    window.electronAPI.setClickThrough(true);
+  }
 }
 
 // Auto-trigger on first launch

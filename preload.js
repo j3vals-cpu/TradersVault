@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onPanelPoppedIn: (cb) => ipcRenderer.on('panel-popped-in', (_, id) => cb(id)),
   // Click-through hit rects
   setHitRects: (rects) => ipcRenderer.send('set-hit-rects', rects),
+  // Toggle click-through (false = capture all clicks, true = normal overlay behavior)
+  setClickThrough: (enable) => ipcRenderer.send('set-click-through', enable),
   // Screenshot (capture desktop behind overlay)
   captureScreen: () => ipcRenderer.invoke('capture-screen'),
   // Update download
