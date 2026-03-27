@@ -659,7 +659,6 @@ ipcMain.on('open-ctrader-oauth', (event) => {
   }
 
   let resolved = false;
-  const filter = { urls: ['*://tradersvault.app/*'] };
 
   const authWin = new BrowserWindow({
     width: 800, height: 700, title: 'Connect cTrader',
@@ -674,56 +673,69 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     }
   }
 
-  function cleanup() {
-    try { authWin.webContents.session.webRequest.onBeforeRequest(filter, null); } catch(e) {}
-  }
-
-  function showInAuthWin(html) {
+  function showPage(html) {
     if (!authWin.isDestroyed()) {
       authWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
     }
   }
 
-  authWin.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
-    if (resolved) { callback({ cancel: true }); return; }
-    try {
-      const u = new URL(details.url);
-      if (u.pathname.includes('/api/auth/callback') && u.searchParams.get('code')) {
+  function exchangeCode(code) {
+    if (resolved) return;
+    resolved = true;
+
+    showPage('<html><body style="background:#07070a;color:#e8b84b;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center"><h2>Connecting...</h2><p style="color:#888">Exchanging tokens...</p></div></body></html>');
+
+    const tokenUrl = 'https://tradersvault.app/api/auth/callback?code=' + encodeURIComponent(code) + '&format=json';
+    https.get(tokenUrl, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => {
+        let tokens;
+        try { tokens = JSON.parse(body); } catch(e) { tokens = null; }
+        if (tokens && tokens.accessToken) {
+          restoreMainWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('ctrader-auth-success', tokens);
+          if (!authWin.isDestroyed()) authWin.close();
+        } else {
+          const err = (tokens && tokens.error) || body.substring(0, 200);
+          showPage('<html><body style="background:#07070a;color:#ff4d6d;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center;max-width:500px;padding:20px"><h2>Token Exchange Failed</h2><p style="color:#888;margin:12px 0;word-break:break-all">' + String(err).replace(/</g,'&lt;').substring(0,300) + '</p><p style="color:#555;font-size:12px">Close this window and try again</p></div></body></html>');
+        }
+      });
+    }).on('error', (err) => {
+      showPage('<html><body style="background:#07070a;color:#ff4d6d;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center"><h2>Network Error</h2><p style="color:#888">' + err.message + '</p></div></body></html>');
+    });
+  }
+
+  // Use webRequest.onBeforeRedirect to detect when cTrader sends the 302 to our callback
+  // This fires when the RESPONSE is a redirect, before the browser follows it
+  const filter = { urls: ['*://*.ctrader.com/*', '*://id.ctrader.com/*'] };
+  authWin.webContents.session.webRequest.onBeforeRedirect(filter, (details) => {
+    if (resolved) return;
+    const redirectUrl = details.redirectURL;
+    if (redirectUrl && redirectUrl.includes('tradersvault.app') && redirectUrl.includes('callback') && redirectUrl.includes('code=')) {
+      try {
+        const u = new URL(redirectUrl);
         const code = u.searchParams.get('code');
-        resolved = true;
-        callback({ cancel: true });
-        cleanup();
+        if (code) exchangeCode(code);
+      } catch(e) {}
+    }
+  });
 
-        showInAuthWin('<html><body style="background:#07070a;color:#e8b84b;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center"><h2>Connecting...</h2><p style="color:#888">Exchanging tokens with cTrader...</p></div></body></html>');
-
-        const tokenUrl = `https://tradersvault.app/api/auth/callback?code=${encodeURIComponent(code)}&format=json`;
-        https.get(tokenUrl, (res) => {
-          let body = '';
-          res.on('data', (chunk) => { body += chunk; });
-          res.on('end', () => {
-            let tokens;
-            try { tokens = JSON.parse(body); } catch(e) { tokens = null; }
-            
-            if (tokens && tokens.accessToken) {
-              // SUCCESS
-              restoreMainWindow();
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('ctrader-auth-success', tokens);
-              }
-              if (!authWin.isDestroyed()) authWin.close();
-            } else {
-              // SHOW ERROR IN THE AUTH WINDOW — don't close it
-              const errMsg = (tokens && tokens.error) || body.substring(0, 150) || 'Unknown error';
-              showInAuthWin('<html><body style="background:#07070a;color:#ff4d6d;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center;max-width:500px"><h2>Token Exchange Failed</h2><p style="color:#888;margin:12px 0">'+errMsg.replace(/</g,'&lt;')+'</p><p style="color:#555;font-size:12px">Close this window and try again</p></div></body></html>');
-            }
-          });
-        }).on('error', (err) => {
-          showInAuthWin('<html><body style="background:#07070a;color:#ff4d6d;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh"><div style="text-align:center"><h2>Network Error</h2><p style="color:#888">'+err.message+'</p><p style="color:#555;font-size:12px">Close this window and try again</p></div></body></html>');
-        });
-        return;
-      }
-    } catch(e) {}
-    callback({});
+  // Also use onBeforeRequest to block the actual request to our callback (backup)
+  const cbFilter = { urls: ['*://tradersvault.app/api/auth/callback*'] };
+  authWin.webContents.session.webRequest.onBeforeRequest(cbFilter, (details, callback) => {
+    if (!resolved) {
+      try {
+        const u = new URL(details.url);
+        const code = u.searchParams.get('code');
+        if (code) {
+          callback({ cancel: true });
+          exchangeCode(code);
+          return;
+        }
+      } catch(e) {}
+    }
+    callback({ cancel: resolved });
   });
 
   // Keep popups in the same window
@@ -736,7 +748,8 @@ ipcMain.on('open-ctrader-oauth', (event) => {
   authWin.focus();
 
   authWin.on('closed', () => {
-    cleanup();
+    try { authWin.webContents.session.webRequest.onBeforeRedirect(filter, null); } catch(e) {}
+    try { authWin.webContents.session.webRequest.onBeforeRequest(cbFilter, null); } catch(e) {}
     restoreMainWindow();
     if (!resolved && mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('ctrader-auth-failed', { error: 'Window closed' });
