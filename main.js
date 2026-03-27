@@ -712,7 +712,7 @@ ipcMain.on('open-ctrader-oauth', (event) => {
             } catch(e) {}
             restoreMainWindow();
             if (mainWindow && !mainWindow.isDestroyed()) {
-              mainWindow.webContents.send('ctrader-auth-failed', { error: 'Token exchange failed' });
+              mainWindow.webContents.send('ctrader-auth-failed', { error: 'Token exchange failed: ' + body.substring(0, 100) });
             }
             if (!authWin.isDestroyed()) authWin.close();
           });
