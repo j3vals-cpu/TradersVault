@@ -1,5 +1,6 @@
-## v2.2.1
+## v2.2.2
 
-- Fix cTrader auth flow — intercept callback URL directly instead of polling page
-- Overlay hides during cTrader login window
-- Exchange auth code server-side via JSON API
+- Fix cTrader "Allow access" button not triggering token extraction
+- Remove preventDefault that was blocking the redirect
+- Add URL polling + did-finish-load fallback to catch all redirect types
+- Fallback page extraction if URL interception fails

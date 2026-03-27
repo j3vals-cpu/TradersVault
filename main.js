@@ -751,23 +751,36 @@ ipcMain.on('open-ctrader-oauth', (event) => {
     setTimeout(() => clearInterval(pollForTokens), 30000);
   }
 
-  // Intercept navigation to catch the callback redirect
-  authWin.webContents.on('will-navigate', (e, url) => {
-    if (url.includes('/api/auth/callback') && url.includes('code=')) {
-      e.preventDefault(); // Stop the navigation — we'll handle it ourselves
+  // Watch ALL navigation events to catch the callback redirect
+  // Do NOT use preventDefault — let the page load normally as fallback
+  const checkUrl = (url) => {
+    if (url && url.includes('/api/auth/callback') && url.includes('code=')) {
       interceptCallback(url);
     }
-  });
-  authWin.webContents.on('will-redirect', (e, url) => {
-    if (url.includes('/api/auth/callback') && url.includes('code=')) {
-      e.preventDefault();
-      interceptCallback(url);
+  };
+  authWin.webContents.on('will-navigate', (e, url) => checkUrl(url));
+  authWin.webContents.on('will-redirect', (e, url) => checkUrl(url));
+  authWin.webContents.on('did-navigate', (e, url) => checkUrl(url));
+  authWin.webContents.on('did-navigate-in-page', (e, url) => checkUrl(url));
+  authWin.webContents.on('did-redirect-navigation', (e, url) => checkUrl(url));
+  authWin.webContents.on('did-finish-load', () => {
+    if (resolved || authWin.isDestroyed()) return;
+    const currentUrl = authWin.webContents.getURL();
+    checkUrl(currentUrl);
+    // If callback page loaded, also try fallback extraction from page content
+    if (currentUrl.includes('/api/auth/callback') && !resolved) {
+      fallbackExtract();
     }
   });
-  authWin.webContents.on('did-navigate', (e, url) => interceptCallback(url));
-  authWin.webContents.on('did-navigate-in-page', (e, url) => interceptCallback(url));
+
+  // Safety: poll the current URL every second in case events don't fire
+  const urlPoll = setInterval(() => {
+    if (resolved || authWin.isDestroyed()) { clearInterval(urlPoll); return; }
+    try { checkUrl(authWin.webContents.getURL()); } catch(e) {}
+  }, 1000);
 
   authWin.on('closed', () => {
+    clearInterval(urlPoll);
     restoreMainWindow();
     if (!resolved && mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('ctrader-auth-failed', { error: 'Window closed' });
