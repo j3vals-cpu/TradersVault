@@ -8627,7 +8627,7 @@ function applyLicenceBadge(v) {
 }
 
 // ── App version (read from Electron package.json, fallback for browser) ──
-var _appVersion = '2.2.9';
+var _appVersion = '2.3.0';
 var _appVersionReady = (window.electronAPI && window.electronAPI.getAppVersion)
   ? window.electronAPI.getAppVersion().then(function(v) { if (v) _appVersion = v; return _appVersion; })
   : Promise.resolve(_appVersion);
@@ -9469,13 +9469,10 @@ function cleanupWalkthrough() {
   }
 }
 
-// Auto-trigger on first launch
-(function(){
-  if (!localStorage.getItem('walkthrough_completed')) {
-    // Wait for app to fully render
-    setTimeout(function() {
-      startWalkthrough();
-    }, 1500);
-  }
-})();
+// Auto-trigger on first launch — only after login (not on login screen)
+// The walkthrough will be triggered from hideLoginScreen -> checkForUpdate flow instead
+// Mark as completed to prevent it from showing on reinstall
+if (!localStorage.getItem('walkthrough_completed')) {
+  localStorage.setItem('walkthrough_completed', '1');
+}
 </script>
