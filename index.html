@@ -1763,30 +1763,38 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:36px;height:36px;background:linear-gradient(135deg,#fbbf24,#b45309);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 16px rgba(245,158,11,.3);">&#128200;</div>
           <div>
-            <div style="font-size:15px;font-weight:900;color:#fff;">Connect CTrader</div>
-            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:1px;">CTRADER API &middot; ACCESS TOKEN</div>
+            <div style="font-size:15px;font-weight:900;color:#fff;" id="ctModalTitle">Connect cTrader</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.55);letter-spacing:1px;" id="ctModalSub">OAUTH2 &middot; SECURE LOGIN</div>
           </div>
         </div>
         <button class="modal-x" onclick="closeCTraderModal()">&#10005;</button>
       </div>
     </div>
-    <div style="padding:18px 20px;">
-      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:10px;color:rgba(245,178,60,.95);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
-        &#9432; Connect your cTrader account. Get your Access Token from your broker&#39;s cTrader web portal under <b>Settings &gt; API</b>.
+    <!-- State 1: Connect -->
+    <div id="ctConnectState" style="padding:24px 20px;text-align:center;">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6;font-family:'Cabinet Grotesk',sans-serif;">
+        Link your cTrader account to import trading accounts with real balances
       </div>
-      <label class="f-lbl">Environment</label>
-      <select class="f-in" id="ctEnv" style="cursor:pointer;">
-        <option value="live">&#128994; Live</option>
-        <option value="demo">&#128993; Demo</option>
-      </select>
-      <label class="f-lbl">cTrader ID</label>
-      <input class="f-in" id="ctId" placeholder="Your cTrader ID">
-      <label class="f-lbl">Access Token</label>
-      <input class="f-in" id="ctToken" type="password" placeholder="Your cTrader Access Token">
-      <div id="ctStatus" style="margin-top:10px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
-        <button class="btn-cancel" onclick="closeCTraderModal()">Cancel</button>
-        <button class="btn-save" id="ctConnectBtn" onclick="ctraderConnect()" style="background:#d97706;min-width:120px;">&#128200; Connect</button>
+      <button id="ctOAuthBtn" onclick="openCTraderOAuth()" style="width:100%;height:44px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:9px;color:#fff;font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;">
+        &#128279; Connect with cTrader
+      </button>
+      <div style="font-size:9px;color:var(--text3);margin-top:10px;font-family:'Cabinet Grotesk',sans-serif;">
+        You'll be redirected to cTrader to authorize access
+      </div>
+      <div id="ctStatus" style="margin-top:12px;padding:8px 12px;border-radius:7px;font-size:10px;font-family:'Geist Mono',monospace;display:none;"></div>
+    </div>
+    <!-- State 2: Account Picker -->
+    <div id="ctPickerState" style="padding:18px 20px;display:none;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px;font-family:'Cabinet Grotesk',sans-serif;">
+        Choose which accounts to add to Traders Vault
+      </div>
+      <div id="ctAccountsList" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+        <span id="ctSelectedCount" style="font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);"></span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-cancel" onclick="closeCTraderModal()">Cancel</button>
+          <button class="btn-save" id="ctAddBtn" onclick="addSelectedCTraderAccounts()" style="background:#d97706;min-width:120px;">Add Selected</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3062,6 +3070,7 @@ function renderTrading(){
       +'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:var(--panel3);color:var(--text3);">'+size+'</span>'
       +(firm?'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:'+color+'22;color:'+color+';">'+esc(firm.name)+'</span>':'')
       +(a.tvId?'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:rgba(0,180,204,.15);color:#00b4cc;cursor:pointer;" onclick="tvSyncAccount(\''+a.id+'\')" title="Sync balance from Tradovate">&#9875; TV</span>':'')
+      +(a.platform==='ctrader'?'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:rgba(245,158,11,.12);color:#f59e0b;cursor:pointer;" onclick="refreshCTraderBalance(\''+a.id+'\')" title="Refresh balance from cTrader">&#8635; Refresh</span>':'')
       +'<button class="ac-del" data-id="'+a.id+'" onclick="delAccount(this.dataset.id)">&#10005;</button>'
       +'</div>'
       +'<div class="ac-stats">'
@@ -6624,15 +6633,23 @@ function saveProjectXAccount(){
   toast('Project X account added ✓','success');
 }
 
-// ── CTrader Connection ──────────────────────────────────────
+// ── CTrader Connection (OAuth2) ─────────────────────────────
+var _ctFetchedAccounts=[];
+
 function openCTraderModal(){
   document.getElementById('ctraderModal').classList.add('open');
+  // Reset to connect state
+  document.getElementById('ctConnectState').style.display='';
+  document.getElementById('ctPickerState').style.display='none';
+  document.getElementById('ctModalTitle').textContent='Connect cTrader';
+  document.getElementById('ctModalSub').innerHTML='OAUTH2 &middot; SECURE LOGIN';
+  var s=document.getElementById('ctStatus');if(s){s.style.display='none';s.textContent='';}
+  _ctFetchedAccounts=[];
 }
 function closeCTraderModal(){
   document.getElementById('ctraderModal').classList.remove('open');
   var s=document.getElementById('ctStatus');if(s){s.style.display='none';s.textContent='';}
-  var ids=['ctEnv','ctId','ctToken'];
-  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value=el.tagName==='SELECT'?el.options[0].value:'';});
+  _ctFetchedAccounts=[];
 }
 function ctSetStatus(msg,type){
   var s=document.getElementById('ctStatus');if(!s)return;
@@ -6643,24 +6660,182 @@ function ctSetStatus(msg,type){
   s.style.border='1px solid '+(borders[type]||borders.info);
   s.style.color=type==='error'?'var(--red)':type==='success'?'var(--green)':'rgba(245,178,60,.9)';
 }
-function ctraderConnect(){
-  var env=(document.getElementById('ctEnv')||{}).value||'live';
-  var ctid=(document.getElementById('ctId')||{}).value||'';
-  var token=(document.getElementById('ctToken')||{}).value||'';
-  if(!ctid||!token){ctSetStatus('&#9888; cTrader ID and Access Token are required.','error');return;}
-  ctSetStatus('&#8635; Connecting to CTrader...','info');
-  var btn=document.getElementById('ctConnectBtn');btn.disabled=true;btn.textContent='Connecting...';
-  setTimeout(function(){
-    cfg.ctraderCredentials={env:env,ctid:ctid,token:token};saveCfg();
-    var firmName='CTrader';var firm=state.firms.find(function(f){return f.name===firmName;});
-    if(!firm){firm={id:uid(),name:firmName,color:'#f59e0b'};state.firms.push(firm);}
-    state.accounts.push({id:uid(),firmId:firm.id,firmName:firmName,acType:env,label:ctid||'CTrader Account',startBalance:0,currentBalance:0,profitTarget:0,totalProfitNeeded:0,consistency:0,dailyLogs:[],color:firm.color,platform:'ctrader'});
-    save();renderFirmSelector();renderTrading();
-    ctSetStatus('&#10003; CTrader account added!','success');
-    toast('CTrader account linked — update balance via the account card','success');
-    btn.disabled=false;btn.innerHTML='&#128200; Connect';
-    setTimeout(closeCTraderModal,1800);
-  },900);
+
+function openCTraderOAuth(){
+  ctSetStatus('Opening cTrader login...','info');
+  var btn=document.getElementById('ctOAuthBtn');
+  if(btn){btn.disabled=true;btn.style.opacity='0.6';}
+  if(window.electronAPI&&window.electronAPI.openCTraderOAuth){
+    window.electronAPI.openCTraderOAuth();
+  } else {
+    window.open('https://id.ctrader.com/my/settings/openapi/grantingaccess/?client_id=24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq&redirect_uri=https://tradersvault.app/api/auth/callback&scope=trading&product=web');
+  }
+}
+
+// Listen for OAuth callback from main process
+if(window.electronAPI&&window.electronAPI.onCTraderAuth){
+  window.electronAPI.onCTraderAuth(function(tokens){
+    cfg.ctraderTokens={
+      accessToken:tokens.accessToken,
+      refreshToken:tokens.refreshToken||null,
+      expiresAt:tokens.expiresIn?Date.now()+(tokens.expiresIn*1000):null
+    };
+    saveCfg();
+    ctSetStatus('Authorized! Fetching accounts...','success');
+    fetchCTraderAccounts(tokens.accessToken);
+  });
+}
+if(window.electronAPI&&window.electronAPI.onCTraderAuthFailed){
+  window.electronAPI.onCTraderAuthFailed(function(data){
+    ctSetStatus('Authorization cancelled or failed.','error');
+    var btn=document.getElementById('ctOAuthBtn');
+    if(btn){btn.disabled=false;btn.style.opacity='1';}
+  });
+}
+
+function fetchCTraderAccounts(accessToken){
+  ctSetStatus('Fetching your trading accounts...','info');
+  fetch('https://tradersvault.app/api/auth/ctrader-accounts',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({accessToken:accessToken})
+  })
+  .then(function(res){return res.json();})
+  .then(function(data){
+    if(data.error) throw new Error(data.error);
+    var accounts=data.accounts||[];
+    if(!accounts.length){
+      ctSetStatus('No trading accounts found on this cTrader ID.','error');
+      var btn=document.getElementById('ctOAuthBtn');
+      if(btn){btn.disabled=false;btn.style.opacity='1';}
+      return;
+    }
+    showCTraderAccountPicker(accounts);
+  })
+  .catch(function(e){
+    ctSetStatus('Failed to fetch accounts: '+e.message,'error');
+    var btn=document.getElementById('ctOAuthBtn');
+    if(btn){btn.disabled=false;btn.style.opacity='1';}
+  });
+}
+
+function showCTraderAccountPicker(accounts){
+  _ctFetchedAccounts=accounts;
+  // Switch modal to picker state
+  document.getElementById('ctConnectState').style.display='none';
+  document.getElementById('ctPickerState').style.display='';
+  document.getElementById('ctModalTitle').textContent='Select Accounts';
+  document.getElementById('ctModalSub').innerHTML='IMPORT &middot; TRADING ACCOUNTS';
+
+  var list=document.getElementById('ctAccountsList');
+  var html='';
+  accounts.forEach(function(ac,i){
+    var bal=ac.balance/Math.pow(10,ac.moneyDigits||2);
+    var isLive=ac.isLive!==false;
+    var isActive=ac.status==='active'||ac.status==='ACTIVE'||!ac.status;
+    var badgeColor=isLive?'#22d46a':'#6366f1';
+    var badgeLabel=isLive?'Live':'Demo';
+    var statusBadge=ac.status?'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:rgba(255,255,255,.06);color:var(--text3);">'+esc(ac.status)+'</span>':'';
+    html+='<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border:1px solid var(--border2);border-radius:9px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor=\'rgba(245,158,11,.4)\'" onmouseout="this.style.borderColor=\'var(--border2)\'">'
+      +'<input type="checkbox" class="ct-ac-check" data-idx="'+i+'" '+(isActive?'checked':'')+' onchange="updateCtSelectedCount()" style="accent-color:#d97706;width:16px;height:16px;cursor:pointer;">'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">'
+      +'<span style="font-family:Geist Mono,monospace;font-size:11px;font-weight:700;color:var(--text);">'+(ac.accountNumber||ac.ctidTraderAccountId||'Account')+'</span>'
+      +'<span style="font-family:Geist Mono,monospace;font-size:7px;padding:2px 5px;border-radius:3px;background:'+badgeColor+'22;color:'+badgeColor+';font-weight:700;">'+badgeLabel+'</span>'
+      +statusBadge
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-family:Cabinet Grotesk,sans-serif;font-size:10px;color:var(--text2);">'+(ac.brokerName||'Broker')+'</span>'
+      +'<span style="font-family:Geist Mono,monospace;font-size:11px;font-weight:700;color:var(--gold);">$'+bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'
+      +'</div>'
+      +'</div>'
+      +'</label>';
+  });
+  list.innerHTML=html;
+  updateCtSelectedCount();
+}
+
+function updateCtSelectedCount(){
+  var checks=document.querySelectorAll('.ct-ac-check');
+  var total=checks.length,selected=0;
+  checks.forEach(function(c){if(c.checked)selected++;});
+  var el=document.getElementById('ctSelectedCount');
+  if(el) el.textContent=selected+' of '+total+' selected';
+}
+
+function addSelectedCTraderAccounts(){
+  var checks=document.querySelectorAll('.ct-ac-check');
+  var added=0;
+  checks.forEach(function(c){
+    if(!c.checked)return;
+    var idx=parseInt(c.dataset.idx);
+    var ac=_ctFetchedAccounts[idx];
+    if(!ac)return;
+    var bal=ac.balance/Math.pow(10,ac.moneyDigits||2);
+    var isLive=ac.isLive!==false;
+    var brokerName=ac.brokerName||'cTrader';
+    var accNum=ac.accountNumber||ac.ctidTraderAccountId||'';
+
+    // Find or create firm for broker
+    var firm=state.firms.find(function(f){return f.name===brokerName;});
+    if(!firm){firm={id:uid(),name:brokerName,color:'#f59e0b'};state.firms.push(firm);}
+
+    // Check for duplicate
+    var exists=state.accounts.find(function(a){return a.platform==='ctrader'&&a.ctidTraderAccountId===ac.ctidTraderAccountId;});
+    if(exists){
+      // Update balance on existing
+      exists.currentBalance=bal;
+      exists.startBalance=exists.startBalance||bal;
+    } else {
+      state.accounts.push({
+        id:uid(),
+        firmId:firm.id,
+        firmName:brokerName,
+        acType:isLive?'funded':'evaluation',
+        label:accNum,
+        startBalance:bal,
+        currentBalance:bal,
+        profitTarget:0,
+        totalProfitNeeded:0,
+        consistency:0,
+        dailyLogs:[],
+        color:firm.color,
+        platform:'ctrader',
+        ctidTraderAccountId:ac.ctidTraderAccountId,
+        moneyDigits:ac.moneyDigits||2
+      });
+      added++;
+    }
+  });
+  save();renderFirmSelector();renderTrading();
+  closeCTraderModal();
+  toast(added+' cTrader account'+(added!==1?'s':'')+' added with real balances','success');
+}
+
+function refreshCTraderBalance(accountId){
+  var a=state.accounts.find(function(x){return x.id===accountId;});
+  if(!a||a.platform!=='ctrader'){toast('Not a cTrader account','error');return;}
+  if(!cfg.ctraderTokens||!cfg.ctraderTokens.accessToken){toast('cTrader not connected — reconnect via + Account','error');return;}
+  toast('Refreshing balance...','info');
+  fetch('https://tradersvault.app/api/auth/ctrader-accounts',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({accessToken:cfg.ctraderTokens.accessToken})
+  })
+  .then(function(res){return res.json();})
+  .then(function(data){
+    if(data.error) throw new Error(data.error);
+    var accounts=data.accounts||[];
+    var remote=accounts.find(function(r){return r.ctidTraderAccountId===a.ctidTraderAccountId;});
+    if(!remote){toast('Account not found on cTrader','error');return;}
+    var newBal=remote.balance/Math.pow(10,remote.moneyDigits||a.moneyDigits||2);
+    a.currentBalance=newBal;
+    save();renderTrading();
+    toast('Balance updated: $'+newBal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),'success');
+  })
+  .catch(function(e){
+    toast('Refresh failed: '+e.message,'error');
+  });
 }
 
 // ── MatchTrader Connection ──────────────────────────────────

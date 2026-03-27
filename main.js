@@ -644,6 +644,72 @@ ipcMain.handle('dxtrade-browser-login', async (_, serverUrl) => {
   });
 });
 
+// ─── CTRADER OAUTH ──────────────────────────────────────────
+ipcMain.on('open-ctrader-oauth', (event) => {
+  const authUrl = 'https://id.ctrader.com/my/settings/openapi/grantingaccess/?client_id=24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq&redirect_uri=https://tradersvault.app/api/auth/callback&scope=trading&product=web';
+  const authWin = new BrowserWindow({
+    width: 800,
+    height: 700,
+    title: 'Connect cTrader',
+    autoHideMenuBar: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+  authWin.loadURL(authUrl);
+
+  let resolved = false;
+
+  function tryExtractTokens(url) {
+    if (resolved) return;
+    if (!url.includes('/api/auth/callback')) return;
+
+    // Poll the page for tokens injected by the callback page
+    const pollForTokens = setInterval(() => {
+      if (resolved || authWin.isDestroyed()) {
+        clearInterval(pollForTokens);
+        return;
+      }
+      authWin.webContents.executeJavaScript(`
+        (function() {
+          try {
+            var el = document.getElementById('ctrader-tokens');
+            if (el) return el.textContent;
+            return '';
+          } catch(e) { return ''; }
+        })()
+      `).then(data => {
+        if (!data || resolved) return;
+        try {
+          const tokens = JSON.parse(data);
+          if (tokens.accessToken) {
+            resolved = true;
+            clearInterval(pollForTokens);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('ctrader-auth-success', tokens);
+            }
+            if (!authWin.isDestroyed()) authWin.close();
+          }
+        } catch(e) {}
+      }).catch(() => {});
+    }, 1000);
+
+    // Safety timeout for polling
+    setTimeout(() => clearInterval(pollForTokens), 120000);
+  }
+
+  authWin.webContents.on('will-redirect', (e, url) => tryExtractTokens(url));
+  authWin.webContents.on('did-navigate', (e, url) => tryExtractTokens(url));
+  authWin.webContents.on('did-navigate-in-page', (e, url) => tryExtractTokens(url));
+
+  authWin.on('closed', () => {
+    if (!resolved && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('ctrader-auth-failed', { error: 'Window closed' });
+    }
+  });
+});
+
 // macOS: hide dock icon since this is an overlay app
 if (isMac) {
   app.dock?.hide();

@@ -31,6 +31,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   // DXTrade browser login
   dxtradeBrowserLogin: (serverUrl) => ipcRenderer.invoke('dxtrade-browser-login', serverUrl),
+  // cTrader OAuth
+  openCTraderOAuth: () => ipcRenderer.send('open-ctrader-oauth'),
+  onCTraderAuth: (callback) => ipcRenderer.on('ctrader-auth-success', (_, data) => callback(data)),
+  onCTraderAuthFailed: (callback) => ipcRenderer.on('ctrader-auth-failed', (_, data) => callback(data)),
   platform: process.platform,
   isElectron: true,
 });

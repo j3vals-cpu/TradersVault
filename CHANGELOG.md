@@ -1,3 +1,13 @@
+## v2.1.6
+
+- **Real cTrader OAuth2 integration** — replaced the fake cTrader connection (text inputs that created dummy $0 accounts) with a proper OAuth2 flow. "Connect with cTrader" button opens cTrader authorization in a new BrowserWindow, exchanges tokens server-side, and fetches real trading accounts with live balances.
+- **Account picker modal** — after OAuth, users see all their cTrader accounts (live + demo) with broker name, account number, balance, and Live/Demo badges. Checkboxes let them choose which accounts to import.
+- **Real balance import** — account balances are converted from cTrader's smallest-unit format using moneyDigits (e.g., balance 10000000 with moneyDigits 2 = $100,000.00).
+- **Refresh balance button** — cTrader account cards in the Trading panel now show a "Refresh" button that re-fetches the current balance from the cTrader API.
+- **Duplicate detection** — re-connecting cTrader updates existing account balances instead of creating duplicates.
+- **Secure token handling** — OAuth tokens stored in app config; Client Secret never leaves the server.
+- **IPC plumbing** — new `open-ctrader-oauth`, `ctrader-auth-success`, `ctrader-auth-failed` IPC channels in main.js and preload.js.
+
 ## v2.1.5
 
 - **Bounds clamping** — panels/windows can no longer get stuck under the taskbar or offscreen. All panel positions are clamped to the visible workArea on drag, resize, pop-out, dock toggle, display change, and viewport resize. Pop-out windows also clamp on move. Safety interval re-checks every 8 seconds.
