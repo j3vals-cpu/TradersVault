@@ -6675,6 +6675,7 @@ function openCTraderOAuth(){
 // Listen for OAuth callback from main process
 if(window.electronAPI&&window.electronAPI.onCTraderAuth){
   window.electronAPI.onCTraderAuth(function(tokens){
+    toast('cTrader tokens received!','success');
     cfg.ctraderTokens={
       accessToken:tokens.accessToken,
       refreshToken:tokens.refreshToken||null,
@@ -6710,9 +6711,11 @@ function fetchCTraderAccounts(accessToken){
       if(btn){btn.disabled=false;btn.style.opacity='1';}
       return;
     }
+    toast('Got '+accounts.length+' accounts from cTrader!','success');
     showCTraderAccountPicker(accounts);
   })
   .catch(function(e){
+    toast('cTrader fetch error: '+e.message,'error');
     ctSetStatus('Failed to fetch accounts: '+e.message,'error');
     var btn=document.getElementById('ctOAuthBtn');
     if(btn){btn.disabled=false;btn.style.opacity='1';}
@@ -6765,6 +6768,7 @@ function updateCtSelectedCount(){
 
 function addSelectedCTraderAccounts(){
   var checks=document.querySelectorAll('.ct-ac-check');
+  toast('Adding selected accounts... ('+_ctFetchedAccounts.length+' fetched)','info');
   var added=0;
   checks.forEach(function(c){
     if(!c.checked)return;

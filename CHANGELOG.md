@@ -1,5 +1,4 @@
-## v2.1.8
+## v2.1.9
 
-- Fix cTrader OAuth token handoff to Electron app
-- Server callback page now includes hidden token element for Electron extraction
-- Support both live and demo cTrader endpoints
+- Debug toasts for cTrader connection flow
+- Shows status at each step: tokens received, accounts fetched, accounts added
