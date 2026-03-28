@@ -945,6 +945,18 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <label style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:1px;display:block;margin-bottom:5px;">CONFIRM PASSWORD</label>
         <input id="signupPassConfirm" type="password" placeholder="Re-enter password" style="width:100%;height:38px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eee8;font-size:13px;padding:0 12px;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')doSignup()">
       </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="signupTerms" style="accent-color:#e8b84b;width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+          <span style="font-size:10px;color:#8a8a9c;line-height:1.5;">I agree to the <a href="https://tradersvault.app/terms" target="_blank" style="color:#e8b84b;text-decoration:underline;">Terms &amp; Conditions</a> and <a href="https://tradersvault.app/privacy" target="_blank" style="color:#e8b84b;text-decoration:underline;">Privacy Policy</a></span>
+        </label>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="signupMarketing" style="accent-color:#e8b84b;width:16px;height:16px;margin-top:2px;flex-shrink:0;">
+          <span style="font-size:10px;color:#8a8a9c;line-height:1.5;">Send me product updates and trading tips via email</span>
+        </label>
+      </div>
       <button onclick="doSignup()" style="width:100%;height:42px;background:#e8b84b;border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;">Create Account</button>
       <div style="text-align:center;margin-top:10px;">
         <span onclick="switchAuthTab('login')" style="font-size:11px;color:#5f5f78;cursor:pointer;text-decoration:underline;">Already have an account? Sign in</span>
@@ -8965,17 +8977,20 @@ async function doSignup() {
   var email = (document.getElementById('signupEmail')||{}).value||'';
   var pass  = (document.getElementById('signupPass')||{}).value||'';
   var passConfirm = (document.getElementById('signupPassConfirm')||{}).value||'';
+  var termsChecked = (document.getElementById('signupTerms')||{}).checked;
+  var marketingChecked = (document.getElementById('signupMarketing')||{}).checked;
   if (!name) { setAuthStatus('Please enter your name', '#ff4d6d'); return; }
   if (!email || !pass) { setAuthStatus('Email and password required', '#ff4d6d'); return; }
   if (pass.length < 8)  { setAuthStatus('Password must be 8+ characters', '#ff4d6d'); return; }
   if (pass !== passConfirm) { setAuthStatus('Passwords do not match', '#ff4d6d'); return; }
+  if (!termsChecked) { setAuthStatus('You must agree to the Terms & Conditions', '#ff4d6d'); return; }
   setAuthStatus('Creating account...', '#5f5f78');
 
   try {
     var r = await fetch(SUPABASE_URL + '/auth/v1/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
-      body: JSON.stringify({ email, password: pass, data: { full_name: name } })
+      body: JSON.stringify({ email, password: pass, data: { full_name: name, marketing_consent: marketingChecked, terms_accepted: true } })
     });
     var d = await r.json();
     if (d.error) { setAuthStatus(d.error_description || d.error, '#ff4d6d'); return; }

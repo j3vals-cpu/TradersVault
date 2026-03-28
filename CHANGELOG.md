@@ -1,6 +1,5 @@
-## v2.6.6
+## v2.6.7
 
-- Signal Bot: custom bias buttons — add your own labels (Scalp, Swing, TP Hit, etc.)
-- Custom buttons show alongside Long/Short/Neutral
-- Custom labels appear in Discord signals with purple embed color
-- Max 10 custom buttons, saved to config, removable with × 
+- Signup now requires accepting Terms & Conditions
+- Marketing email opt-in checkbox on signup
+- Consent saved to your profile for GDPR compliance
