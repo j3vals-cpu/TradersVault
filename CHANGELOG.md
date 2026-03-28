@@ -1,3 +1,6 @@
-## v2.6.5
+## v2.6.6
 
-- Fixed INVALID_REQUEST errors — copier now routes each request to the correct WebSocket endpoint (live vs demo) based on which endpoint authorized that account
+- Signal Bot: custom bias buttons — add your own labels (Scalp, Swing, TP Hit, etc.)
+- Custom buttons show alongside Long/Short/Neutral
+- Custom labels appear in Discord signals with purple embed color
+- Max 10 custom buttons, saved to config, removable with × 

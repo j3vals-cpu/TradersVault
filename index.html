@@ -3783,6 +3783,11 @@ function buildSignalWin() {
     +   '<button class="signal-bias-btn" id="sigShort" onclick="setSignalBias(\'short\')">\ud83d\udd34 SHORT</button>'
     +   '<button class="signal-bias-btn" id="sigNeutral" onclick="setSignalBias(\'neutral\')">\ud83d\udfe1 NEUTRAL</button>'
     + '</div>'
+    + '<div id="sigCustomBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>'
+    + '<div style="display:flex;gap:4px;margin-top:4px;">'
+    +   '<input class="signal-caption" id="sigNewCustom" placeholder="Add custom button..." maxlength="30" style="flex:1;font-size:10px;">'
+    +   '<button class="signal-bias-btn" onclick="addCustomSignalBtn()" style="font-size:9px;padding:3px 8px;">+ Add</button>'
+    + '</div>'
     + '<input class="signal-caption" id="sigCaption" placeholder="Add a note... (optional)" maxlength="200">'
     + '<button class="signal-fire-btn" id="sigFireBtn" onclick="fireSignal()">\ud83d\udce1 Send Trade Idea</button>'
     + '<div id="sigStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:var(--text3);min-height:14px;text-align:center;"></div>'
@@ -3791,6 +3796,7 @@ function buildSignalWin() {
     + '<div style="padding:0 12px 4px;"><div style="font-family:Geist Mono,monospace;font-size:8px;color:var(--text3);letter-spacing:1px;">RECENT SIGNALS</div></div>'
     + '<div class="signal-log" id="sigLog"></div>';
   renderSignalLog();
+  renderCustomSignalBtns();
 }
 
 function setSignalBias(bias) {
@@ -3799,6 +3805,7 @@ function setSignalBias(bias) {
     var btn = document.getElementById('sig' + b.charAt(0).toUpperCase() + b.slice(1));
     if (btn) btn.className = 'signal-bias-btn' + (b === bias ? ' ' + bias : '');
   });
+  renderCustomSignalBtns();
 }
 
 function toggleSigDiscordInput() {
@@ -3840,8 +3847,11 @@ async function fireSignal() {
   if (btn) btn.textContent = '\u23f3 Sending to Discord...';
 
   var caption = (document.getElementById('sigCaption') || {}).value || '';
-  var biasLabel = _signalBias === 'long' ? '\ud83d\udfe2 LONG' : _signalBias === 'short' ? '\ud83d\udd34 SHORT' : '\ud83d\udfe1 NEUTRAL';
-  var biasColor = _signalBias === 'long' ? 0x22d46a : _signalBias === 'short' ? 0xff4d6d : 0xe8b84b;
+  var biasLabel, biasColor;
+  if (_signalBias === 'long') { biasLabel = '\ud83d\udfe2 LONG'; biasColor = 0x22d46a; }
+  else if (_signalBias === 'short') { biasLabel = '\ud83d\udd34 SHORT'; biasColor = 0xff4d6d; }
+  else if (_signalBias && _signalBias.startsWith('custom:')) { biasLabel = '\ud83d\udfe3 ' + _signalBias.slice(7).toUpperCase(); biasColor = 0x7c3aed; }
+  else { biasLabel = '\ud83d\udfe1 NEUTRAL'; biasColor = 0xe8b84b; }
   var userName = cfg.userName || 'Trader';
   var roleId = cfg.dcSignalRole || '';
   var roleMention = roleId ? '<@&' + roleId + '> ' : '';
@@ -3921,11 +3931,55 @@ function renderSignalLog() {
   if (!_signalLog.length) { el.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text3);font-size:10px;">No signals sent yet</div>'; return; }
   el.innerHTML = _signalLog.map(function(s) {
     var t = new Date(s.time).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
-    var bCol = s.bias === 'long' ? 'var(--green)' : s.bias === 'short' ? 'var(--red)' : 'var(--gold)';
-    var bBg = s.bias === 'long' ? 'var(--green-dim)' : s.bias === 'short' ? 'var(--red-dim)' : 'var(--gold-dim)';
-    var bLabel = s.bias.toUpperCase();
+    var isCustom = s.bias && s.bias.startsWith('custom:');
+    var bCol = s.bias === 'long' ? 'var(--green)' : s.bias === 'short' ? 'var(--red)' : isCustom ? '#7c3aed' : 'var(--gold)';
+    var bBg = s.bias === 'long' ? 'var(--green-dim)' : s.bias === 'short' ? 'var(--red-dim)' : isCustom ? 'rgba(124,58,237,.12)' : 'var(--gold-dim)';
+    var bLabel = isCustom ? s.bias.slice(7).toUpperCase() : s.bias.toUpperCase();
     return '<div class="signal-log-item"><span class="sl-time">' + t + '</span><span class="sl-bias" style="color:' + bCol + ';background:' + bBg + ';">' + bLabel + '</span><span class="sl-msg">' + (s.caption || 'Trade idea') + '</span></div>';
   }).join('');
+}
+
+
+
+// ── Custom Signal Buttons ──────────────────────────────────
+function getCustomSignalBtns() {
+  return cfg.customSignalBtns || [];
+}
+
+function renderCustomSignalBtns() {
+  var wrap = document.getElementById('sigCustomBtns');
+  if (!wrap) return;
+  var btns = getCustomSignalBtns();
+  if (!btns.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = btns.map(function(b, i) {
+    var isActive = _signalBias === 'custom:' + b;
+    return '<button class="signal-bias-btn' + (isActive ? ' long' : '') + '" onclick="setSignalBias(\'custom:' + esc(b).replace(/'/g, "\\'") + '\')" style="font-size:9px;position:relative;padding-right:18px;">'
+      + esc(b)
+      + '<span onclick="event.stopPropagation();removeCustomSignalBtn(' + i + ')" style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:8px;opacity:.5;cursor:pointer;" title="Remove">&times;</span>'
+      + '</button>';
+  }).join('');
+}
+
+function addCustomSignalBtn() {
+  var input = document.getElementById('sigNewCustom');
+  if (!input) return;
+  var label = input.value.trim();
+  if (!label) return;
+  if (!cfg.customSignalBtns) cfg.customSignalBtns = [];
+  if (cfg.customSignalBtns.length >= 10) { toast('Max 10 custom buttons', 'error'); return; }
+  if (cfg.customSignalBtns.indexOf(label) !== -1) { toast('Already exists', 'error'); return; }
+  cfg.customSignalBtns.push(label);
+  saveCfg();
+  input.value = '';
+  renderCustomSignalBtns();
+}
+
+function removeCustomSignalBtn(idx) {
+  if (!cfg.customSignalBtns) return;
+  cfg.customSignalBtns.splice(idx, 1);
+  saveCfg();
+  if (_signalBias && _signalBias.startsWith('custom:')) _signalBias = 'neutral';
+  renderCustomSignalBtns();
 }
 
 // ═══════════════════════════════════════════
