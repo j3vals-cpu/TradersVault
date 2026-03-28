@@ -1,5 +1,3 @@
-## v2.6.4
+## v2.6.5
 
-- Copier connects to BOTH live and demo cTrader endpoints
-- Demo accounts now authorize and copy trade properly
-- Sends to both WebSocket connections simultaneously
+- Fixed INVALID_REQUEST errors — copier now routes each request to the correct WebSocket endpoint (live vs demo) based on which endpoint authorized that account

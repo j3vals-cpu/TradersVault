@@ -6070,7 +6070,7 @@ var _copier = {
   positionMap: {},        // masterPosId -> { followerAcctId: followerPosId }
   ws: null,
   wsReady: false,
-  authedAccounts: {},     // ctidTraderAccountId -> true
+  authedAccounts: {},     // ctidTraderAccountId -> ws reference
   log: [],               // [{time,msg,type}]
   reconnectTimer: null,
 };
@@ -6326,9 +6326,15 @@ function copierConnectEndpoint(wsUrl, label) {
   };
 }
 
-function copierWsSend(obj, targetAcctId) {
-  // Send to the right endpoint for this account, or both if unknown
+function copierWsSend(obj) {
   var data = JSON.stringify(obj);
+  // Route to the correct endpoint based on the account ID in the payload
+  var acctId = obj.payload && obj.payload.ctidTraderAccountId;
+  if (acctId && _copier.authedAccounts[acctId]) {
+    var ws = _copier.authedAccounts[acctId];
+    if (ws && ws.readyState === 1) { ws.send(data); return true; }
+  }
+  // Fallback: send to both
   var sent = false;
   if (_copier.wsLive && _copier.wsLive.readyState === 1) { _copier.wsLive.send(data); sent = true; }
   if (_copier.wsDemo && _copier.wsDemo.readyState === 1) { _copier.wsDemo.send(data); sent = true; }
@@ -6352,7 +6358,7 @@ function copierHandleMessage(msg, ws) {
   // Account auth response
   if (pt === 2103) {
     var acctId = pl.ctidTraderAccountId;
-    _copier.authedAccounts[acctId] = true;
+    _copier.authedAccounts[acctId] = ws;
     var total = Object.keys(_copier.authedAccounts).length;
     copierLog('Account ' + acctId + ' authorized (' + total + ' total)', 'ok');
     copierUpdateStatus('ok', 'Copying · ' + total + ' accounts');
