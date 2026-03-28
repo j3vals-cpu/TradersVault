@@ -6265,7 +6265,7 @@ function copierDisableAllFollowers() {
 
 // ── WebSocket Connection ──────────────────────────────────────
 function copierConnectWS() {
-  if (_copier.ws && _copier.ws.readyState <= 1) return; // already open/connecting
+  if (_copier.wsLive && _copier.wsLive.readyState <= 1 && _copier.wsDemo && _copier.wsDemo.readyState <= 1) return; // already open/connecting
   var token = cfg.ctraderTokens && cfg.ctraderTokens.accessToken;
   if (!token) {
     copierLog('No cTrader token — connect cTrader first', 'err');
@@ -6276,54 +6276,66 @@ function copierConnectWS() {
   copierLog('Connecting to cTrader...', 'info');
   copierUpdateStatus('warn', 'Connecting...');
 
-  // Use live endpoint (accounts already fetched via server, this is direct WS for trading)
-  var wsUrl = 'wss://live.ctraderapi.com:5036';
-  _copier.ws = new WebSocket(wsUrl);
+  // Connect to BOTH live and demo endpoints
+  _copier.wsLive = null;
+  _copier.wsDemo = null;
   _copier.wsReady = false;
   _copier.authedAccounts = {};
 
-  _copier.ws.onopen = function() {
-    copierLog('WebSocket connected, authenticating app...', 'info');
-    // Step 1: App auth
-    copierWsSend({
+  copierConnectEndpoint('wss://live.ctraderapi.com:5036', 'live');
+  copierConnectEndpoint('wss://demo.ctraderapi.com:5036', 'demo');
+}
+
+function copierConnectEndpoint(wsUrl, label) {
+  var token = cfg.ctraderTokens && cfg.ctraderTokens.accessToken;
+  if (!token) return;
+
+  copierLog('Connecting ' + label + '...', 'info');
+  var ws = new WebSocket(wsUrl);
+  if (label === 'live') _copier.wsLive = ws;
+  else _copier.wsDemo = ws;
+
+  ws.onopen = function() {
+    copierLog(label + ' connected, authenticating...', 'info');
+    ws.send(JSON.stringify({
       payloadType: 2100,
       payload: {
         clientId: '24039_fMwbudNZ9md7AvngvYnIPwc2QROzJJpOUVh3qnjA0UOdukqgtq',
         clientSecret: 'nmtQB4jPhHqaRJlEbu2tUXxM68All0tJYYb6Xdjxe772bzXCK5'
       }
-    });
+    }));
   };
 
-  _copier.ws.onmessage = function(evt) {
+  ws.onmessage = function(evt) {
     var msg;
     try { msg = JSON.parse(evt.data); } catch(e) { return; }
-    copierHandleMessage(msg);
+    copierHandleMessage(msg, ws);
   };
 
-  _copier.ws.onerror = function(err) {
-    copierLog('WebSocket error', 'err');
-    copierUpdateStatus('err', 'Connection error');
+  ws.onerror = function(err) {
+    copierLog(label + ' error', 'err');
   };
 
-  _copier.ws.onclose = function() {
-    _copier.wsReady = false;
-    _copier.authedAccounts = {};
-    copierLog('WebSocket closed', 'err');
+  ws.onclose = function() {
+    copierLog(label + ' closed', 'err');
     if (_copier.active) {
-      copierUpdateStatus('warn', 'Reconnecting...');
+      copierUpdateStatus('warn', 'Reconnecting ' + label + '...');
       clearTimeout(_copier.reconnectTimer);
       _copier.reconnectTimer = setTimeout(copierConnectWS, 3000);
     }
   };
 }
 
-function copierWsSend(obj) {
-  if (_copier.ws && _copier.ws.readyState === 1) {
-    _copier.ws.send(JSON.stringify(obj));
-  }
+function copierWsSend(obj, targetAcctId) {
+  // Send to the right endpoint for this account, or both if unknown
+  var data = JSON.stringify(obj);
+  var sent = false;
+  if (_copier.wsLive && _copier.wsLive.readyState === 1) { _copier.wsLive.send(data); sent = true; }
+  if (_copier.wsDemo && _copier.wsDemo.readyState === 1) { _copier.wsDemo.send(data); sent = true; }
+  return sent;
 }
 
-function copierHandleMessage(msg) {
+function copierHandleMessage(msg, ws) {
   var pt = msg.payloadType;
   var pl = msg.payload || msg;
 
@@ -6331,8 +6343,9 @@ function copierHandleMessage(msg) {
   if (pt === 2101) {
     copierLog('App authenticated', 'ok');
     _copier.wsReady = true;
-    // Auth all relevant accounts
-    copierAuthAllAccounts();
+    copierUpdateStatus('ok', 'Connected');
+    // Auth all relevant accounts on THIS connection
+    copierAuthOnWs(ws);
     return;
   }
 
@@ -6372,18 +6385,18 @@ function copierHandleMessage(msg) {
   }
 }
 
-function copierAuthAllAccounts() {
+function copierAuthOnWs(ws) {
   var token = cfg.ctraderTokens && cfg.ctraderTokens.accessToken;
-  if (!token) return;
+  if (!token || !ws || ws.readyState !== 1) return;
   var ctAccounts = getCTraderAccounts();
   ctAccounts.forEach(function(a) {
-    copierWsSend({
+    ws.send(JSON.stringify({
       payloadType: 2102,
       payload: {
         ctidTraderAccountId: a.ctidTraderAccountId,
         accessToken: token
       }
-    });
+    }));
   });
 }
 
@@ -6608,7 +6621,8 @@ function copierStart() {
 function copierStop() {
   _copier.active = false;
   clearTimeout(_copier.reconnectTimer);
-  if (_copier.ws) { try { _copier.ws.close(); } catch(e) {} _copier.ws = null; }
+  if (_copier.wsLive) { try { _copier.wsLive.close(); } catch(e) {} _copier.wsLive = null; }
+  if (_copier.wsDemo) { try { _copier.wsDemo.close(); } catch(e) {} _copier.wsDemo = null; }
   _copier.wsReady = false;
   _copier.authedAccounts = {};
   copierLog('Copy trading stopped', 'err');

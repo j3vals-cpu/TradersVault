@@ -1,6 +1,5 @@
-## v2.6.3
+## v2.6.4
 
-- Copier panel always shows full UI (master dropdown, multiplier, controls)
-- No more blocking "connect 2 accounts" message
-- Accounts appear in dropdown as they get connected
-- Empty dropdown shown with helpful hint if no cTrader accounts yet
+- Copier connects to BOTH live and demo cTrader endpoints
+- Demo accounts now authorize and copy trade properly
+- Sends to both WebSocket connections simultaneously
