@@ -9142,35 +9142,51 @@ function sendDiscordHeartbeat() {
   }
 
   if (saved && saved.token && saved.expires > Date.now()) {
-    tvSession = saved;
-    // Restore E2E encryption key from session if available
-    await CloudSync.restoreEncKey();
-    // ── EARLY forced update check BEFORE showing app ──
+    // ── VALIDATE FIRST before hiding login — never trust cached session blindly ──
     try {
       var earlyCheck = await validateToken(saved.token);
-      if (earlyCheck && !earlyCheck._error) {
-        checkForUpdate(earlyCheck); // blocks UI if update needed
+      if (!earlyCheck || earlyCheck._error) {
+        // Token invalid/expired on server — force login
+        tvSession = null;
+        localStorage.removeItem('tv_session');
+        if (window.electronAPI && window.electronAPI.saveData) window.electronAPI.saveData('vault-session', null);
+        showLoginScreen();
+        if (earlyCheck && earlyCheck._error) setAuthStatus('Session expired — sign in again', '#5f5f78');
+        return;
       }
-    } catch(e) {}
-    // If force-update overlay is showing, don't proceed further
-    if (_forceUpdateRunning) return;
-    hideLoginScreen();
-    validateSessionSilent(saved.token);
-  } else {
-    localStorage.removeItem('tv_session');
-    tvSession = null;
-    function tryShowLogin(attempts) {
-      var el = document.getElementById('tvLoginScreen');
-      if (el) { showLoginScreen(); }
-      else if (attempts < 20) { setTimeout(function() { tryShowLogin(attempts + 1); }, 200); }
+      tvSession = saved;
+      // Restore E2E encryption key from session if available
+      await CloudSync.restoreEncKey();
+      checkForUpdate(earlyCheck); // blocks UI if update needed
+      // If force-update overlay is showing, don't proceed further
+      if (_forceUpdateRunning) return;
+      hideLoginScreen();
+      applyLicenceBadge(earlyCheck);
+      checkSyncAccess(earlyCheck);
+      if (earlyCheck.branding) applyServerBranding(earlyCheck.branding);
+      if (earlyCheck.promotions) applyPromotions(earlyCheck.promotions);
+      startHeartbeat();
+      loadPublicProfile();
+    } catch(e) {
+      // Network error — allow cached session to proceed (offline mode)
+      tvSession = saved;
+      await CloudSync.restoreEncKey();
+      hideLoginScreen();
     }
-    setTimeout(function() { tryShowLogin(0); }, 400);
+  } else {
+    // No saved session or expired — clear everything and show login
+    localStorage.removeItem('tv_session');
+    if (window.electronAPI && window.electronAPI.saveData) window.electronAPI.saveData('vault-session', null);
+    tvSession = null;
+    showLoginScreen();
   }
 })();
 
 function showLoginScreen() {
   var el = document.getElementById('tvLoginScreen');
   if (el) { el.style.display = 'flex'; el.style.opacity = '0'; requestAnimationFrame(function(){ el.style.transition='opacity .4s'; el.style.opacity='1'; }); }
+  // Ensure click-through is OFF so login is fully interactive
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
 }
 function hideLoginScreen() {
   var el = document.getElementById('tvLoginScreen');
@@ -9690,16 +9706,23 @@ function showAccountModal() {
 
 function tvSignOut() {
   localStorage.removeItem('tv_session');
+  localStorage.removeItem('vd_sync_consent');
   tvSession = null;
   _canSync = false;
+  // Clear Electron file-based session too
+  if (window.electronAPI && window.electronAPI.saveData) window.electronAPI.saveData('vault-session', null);
   applySyncVisibility();
   var badge = document.getElementById('tvLicenceBadge');
   if (badge) badge.parentNode.removeChild(badge);
   var modal = document.getElementById('tvAccountModal');
   if (modal) modal.remove();
+  // Disable click-through so login screen is fully interactive
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
   showLoginScreen();
   toast('Signed out', 'info');
 }
+// Alias for backwards compat (referenced in heartbeat)
+var doLogout = tvSignOut;
 
 function showUpgradePrompt(v) {
   toast('Licence expired — sign in to upgrade ↗', 'warn');
