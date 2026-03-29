@@ -4958,7 +4958,7 @@ var CloudSync = (function() {
       var insertPayload = {
         user_id: userId,
         data_key: dataKey,
-        data_value: dataValue,
+        data_value: storedValue,
         updated_at: new Date().toISOString()
       };
       var postR = await fetch(restUrl(), {
