@@ -9302,11 +9302,13 @@ async function doForgot() {
   if (!email) { setAuthStatus('Enter your email', '#ff4d6d'); return; }
   setAuthStatus('Sending reset link...', '#5f5f78');
   try {
-    await fetch(SUPABASE_URL + '/auth/v1/recover', {
+    var r = await fetch(TV_API + '/reset-password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })
     });
+    var d = await r.json();
+    if (d.error) { setAuthStatus(d.error, '#ff4d6d'); return; }
     setAuthStatus('✓ Reset link sent — check your email', '#22d46a');
   } catch(e) { setAuthStatus('Error sending reset link', '#ff4d6d'); }
 }
@@ -9318,11 +9320,13 @@ async function doResetPasswordFromSettings() {
   if (!email) { statusEl.textContent = 'Not signed in'; statusEl.style.color = '#ff4d6d'; return; }
   statusEl.textContent = 'Sending reset link...'; statusEl.style.color = '#5f5f78';
   try {
-    await fetch(SUPABASE_URL + '/auth/v1/recover', {
+    var r = await fetch(TV_API + '/reset-password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email })
     });
+    var d = await r.json();
+    if (d.error) { statusEl.textContent = d.error; statusEl.style.color = '#ff4d6d'; return; }
     statusEl.textContent = '\u2713 Reset link sent to ' + email; statusEl.style.color = '#22d46a';
   } catch(e) { statusEl.textContent = 'Error sending reset link'; statusEl.style.color = '#ff4d6d'; }
 }
