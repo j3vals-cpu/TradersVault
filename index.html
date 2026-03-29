@@ -4979,8 +4979,8 @@ var CloudSync = (function() {
     return new Promise(function(resolve) {
       var overlay = document.createElement('div');
       overlay.id = 'syncConsentOverlay';
-      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
-      overlay.innerHTML = '<div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:28px 24px;max-width:420px;width:100%;max-height:80vh;overflow-y:auto;">'
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99990;display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:all !important;';
+      overlay.innerHTML = '<div style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:28px 24px;max-width:420px;width:100%;max-height:80vh;overflow-y:auto;pointer-events:all !important;">'
         +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">'
           +'<div style="width:36px;height:36px;background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;">'
             +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8b84b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>'
@@ -4999,20 +4999,19 @@ var CloudSync = (function() {
           +'5. <strong>Developer access:</strong> Your sync data is encrypted with your password using AES-256-GCM. Even with full database access, the development team cannot decrypt, view, or monitor your personal trading data. The encryption key never leaves your device.'
         +'</div>'
         +'<div style="display:flex;gap:10px;">'
-          +'<button id="syncAgreeBtn" style="flex:1;height:40px;border:none;border-radius:10px;background:var(--gold);color:#07070a;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">I Agree</button>'
-          +'<button id="syncDeclineBtn" style="flex:1;height:40px;border:1px solid var(--border2);border-radius:10px;background:transparent;color:var(--text2);font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>'
+          +'<button id="syncAgreeBtn" style="flex:1;height:40px;border:none;border-radius:10px;background:var(--gold);color:#07070a;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;pointer-events:all !important;">I Agree</button>'
+          +'<button id="syncDeclineBtn" style="flex:1;height:40px;border:1px solid var(--border2);border-radius:10px;background:transparent;color:var(--text2);font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;pointer-events:all !important;">Cancel</button>'
         +'</div>'
       +'</div>';
       document.body.appendChild(overlay);
-      document.getElementById('syncAgreeBtn').addEventListener('click', function() {
-        localStorage.setItem('vd_sync_consent', '1');
-        overlay.remove();
-        resolve(true);
-      });
-      document.getElementById('syncDeclineBtn').addEventListener('click', function() {
-        overlay.remove();
-        resolve(false);
-      });
+      var agreeBtn = document.getElementById('syncAgreeBtn');
+      var declineBtn = document.getElementById('syncDeclineBtn');
+      function onAgree(e) { e.stopPropagation(); localStorage.setItem('vd_sync_consent', '1'); overlay.remove(); resolve(true); }
+      function onDecline(e) { e.stopPropagation(); overlay.remove(); resolve(false); }
+      agreeBtn.addEventListener('click', onAgree);
+      agreeBtn.addEventListener('touchend', function(e) { e.preventDefault(); onAgree(e); });
+      declineBtn.addEventListener('click', onDecline);
+      declineBtn.addEventListener('touchend', function(e) { e.preventDefault(); onDecline(e); });
       overlay.addEventListener('click', function(e) {
         if (e.target === overlay) { overlay.remove(); resolve(false); }
       });
