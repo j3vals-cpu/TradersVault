@@ -28,7 +28,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   background-repeat:repeat;background-size:100px 100px;}
 
 /* ───── TOPBAR ───── */
-.topbar{height:52px;background:rgba(14,14,19,0.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;position:relative;z-index:200;-webkit-app-region:drag;}
+.topbar{height:52px;background:rgba(14,14,19,0.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;position:relative;z-index:200;-webkit-app-region:drag;overflow:hidden;}
 .topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);pointer-events:none;}
 .logo{display:flex;align-items:center;gap:9px;flex-shrink:0;}
 .logo-gem{width:32px;height:32px;background:linear-gradient(135deg,var(--gold) 0%,var(--gold-soft) 100%);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 20px var(--gold-glow),0 2px 8px rgba(0,0,0,.4);flex-shrink:0;}
@@ -807,6 +807,20 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   .settings-modal{width:520px;}
   .footer-bar{height:20px;padding:0 10px;}
   .panel-toggles{padding:2px 3px;}
+  /* Hide low-priority topbar items at ≤1440px */
+  .topbar-greet{display:none;}
+  .topbar-date{display:none;}
+  #promoBarWrap{display:none !important;}
+}
+@media(max-width:1280px){
+  /* Further compact — hide transparency, socials, timezone */
+  .trans-wrap{display:none;}
+  .socials{display:none;}
+  .topbar-tz{display:none;}
+  .topbar{gap:4px;}
+  .social-btn{width:22px;height:22px;font-size:9px;}
+  .session-pill{padding:3px 6px;}
+  .session-lbl{font-size:7px;}
 }
 @media(max-width:1200px){
   .topbar{height:42px;padding:0 8px;gap:4px;}
@@ -814,8 +828,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   .logo-txt{font-size:12px;}
   .logo-sub{font-size:6px;}
   .topbar-clock{font-size:11px;padding:3px 6px;}
-  .topbar-date{display:none;}
-  .topbar-greet{display:none;}
   .topbar2{height:26px;padding:0 8px;}
   .ptog{height:20px;padding:0 5px;font-size:9px;}
   .win-body{padding:6px 8px 8px;}
@@ -829,11 +841,46 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   .footer-brand{font-size:7px;}
   .footer-link{font-size:7px;}
   .panel-toggles{gap:2px;padding:2px 3px;overflow-x:auto;}
-  .social-btn{width:22px;height:22px;font-size:9px;}
-  .session-pill{padding:3px 6px;}
-  .session-lbl{font-size:7px;}
   .snap-btn{height:22px;padding:0 7px;font-size:9px;}
 }
+@media(max-width:1024px){
+  /* Minimal topbar — hide pomodoro, quick-colors, focus btn */
+  .pomo-wrap{display:none;}
+  .quick-colors{display:none;}
+  .focus-btn{display:none;}
+  .topbar{height:40px;padding:0 6px;gap:3px;}
+  .logo-gem{width:22px;height:22px;font-size:10px;border-radius:6px;}
+  .logo-txt{font-size:11px;}
+  .logo-sub{display:none;}
+  .topbar-clock{font-size:10px;padding:2px 5px;}
+  .topbar2{height:24px;padding:0 6px;}
+  .ptog{height:18px;padding:0 4px;font-size:8px;}
+  .settings-modal{width:380px;}
+  .snap-btn{height:20px;padding:0 5px;font-size:8px;}
+  .session-lbl{font-size:6px;}
+}
+
+/* ───── JS-DRIVEN RESPONSIVE CLASSES (applyResponsiveMode) ───── */
+html.screen-compact .topbar-greet,
+html.screen-compact .topbar-date,
+html.screen-compact #promoBarWrap{display:none !important;}
+
+html.screen-narrow .topbar-greet,
+html.screen-narrow .topbar-date,
+html.screen-narrow #promoBarWrap,
+html.screen-narrow .trans-wrap,
+html.screen-narrow .socials,
+html.screen-narrow .topbar-tz{display:none !important;}
+
+html.screen-ultra-compact .topbar-greet,
+html.screen-ultra-compact .topbar-date,
+html.screen-ultra-compact #promoBarWrap,
+html.screen-ultra-compact .trans-wrap,
+html.screen-ultra-compact .socials,
+html.screen-ultra-compact .topbar-tz,
+html.screen-ultra-compact .pomo-wrap,
+html.screen-ultra-compact .quick-colors,
+html.screen-ultra-compact .focus-btn{display:none !important;}
 /* Scrollable modals */
 .overlay .modal{max-height:90vh;overflow-y:auto;}
 @media(max-height:800px){
@@ -7182,6 +7229,29 @@ window.addEventListener('resize', (function() {
         }
       });
     }, 300);
+  };
+})());
+
+// ─── RESPONSIVE MODE — add CSS class to <html> based on viewport width ───
+function applyResponsiveMode() {
+  var w = window.innerWidth;
+  var root = document.documentElement;
+  root.classList.remove('screen-compact', 'screen-narrow', 'screen-ultra-compact');
+  if (w <= 1024) {
+    root.classList.add('screen-ultra-compact');
+  } else if (w <= 1280) {
+    root.classList.add('screen-narrow');
+  } else if (w <= 1440) {
+    root.classList.add('screen-compact');
+  }
+  scheduleHitRects();
+}
+applyResponsiveMode();
+window.addEventListener('resize', (function() {
+  var timer = null;
+  return function() {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(applyResponsiveMode, 150);
   };
 })());
 
