@@ -221,6 +221,7 @@ ipcMain.on('set-click-through', (event, enable) => {
     clickThroughLocked = true;
     mainWindow.setIgnoreMouseEvents(false);
     isIgnoringMouse = false;
+    if (isMac) mainWindow.moveTop();
   }
 });
 
@@ -242,6 +243,12 @@ function startMousePoller() {
     updateBoundsCache();
   }
 
+  // macOS: debounce transitions to avoid flaky setIgnoreMouseEvents
+  let overCount = 0;
+  let notOverCount = 0;
+  const enterThreshold = isMac ? 2 : 0; // ticks before enabling capture
+  const leaveThreshold = isMac ? 4 : 0; // ticks before re-enabling pass-through
+
   mousePoller = setInterval(() => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     if (clickThroughLocked) return;
@@ -251,23 +258,35 @@ function startMousePoller() {
     const lx = (cursor.x - cachedBounds.x) / cachedScale;
     const ly = (cursor.y - cachedBounds.y) / cachedScale;
 
+    // Expand hit rects slightly on macOS for better click reliability
+    const pad = isMac ? 4 : 0;
     let over = false;
     for (let i = 0, len = hitRects.length; i < len; i++) {
       const r = hitRects[i];
-      if (lx >= r.x && lx <= r.x + r.w && ly >= r.y && ly <= r.y + r.h) {
+      if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
         over = true;
         break;
       }
     }
 
-    if (over && isIgnoringMouse) {
-      mainWindow.setIgnoreMouseEvents(false);
-      isIgnoringMouse = false;
-    } else if (!over && !isIgnoringMouse) {
-      mainWindow.setIgnoreMouseEvents(true, { forward: true });
-      isIgnoringMouse = true;
+    if (over) {
+      overCount++;
+      notOverCount = 0;
+      if (overCount > enterThreshold && isIgnoringMouse) {
+        mainWindow.setIgnoreMouseEvents(false);
+        isIgnoringMouse = false;
+        // macOS: ensure window can receive clicks (dock-hidden accessory app quirk)
+        if (isMac) mainWindow.moveTop();
+      }
+    } else {
+      notOverCount++;
+      overCount = 0;
+      if (notOverCount > leaveThreshold && !isIgnoringMouse) {
+        mainWindow.setIgnoreMouseEvents(true, { forward: true });
+        isIgnoringMouse = true;
+      }
     }
-  }, 50);
+  }, isMac ? 35 : 50);
 }
 
 // ─── IPC ─────────────────────────────────────────────────────
@@ -299,6 +318,7 @@ ipcMain.handle('window-maximize', () => {
     mainWindow.setAlwaysOnTop(false);
     mainWindow.setIgnoreMouseEvents(false);
     isIgnoringMouse = false;
+    if (isMac) mainWindow.moveTop();
     if (mousePoller) { clearInterval(mousePoller); mousePoller = null; }
     // Use the display the cursor is on, not primary — use workArea not bounds
     const cursor = screen.getCursorScreenPoint();
@@ -338,8 +358,8 @@ ipcMain.handle('window-close', () => {
   if (mousePoller) clearInterval(mousePoller);
   app.quit();
 });
-ipcMain.handle('app-quit', () => {
 ipcMain.handle('open-external', (_, url) => { if (url) shell.openExternal(url); });
+ipcMain.handle('app-quit', () => {
   app.isQuitting = true;
   if (mousePoller) clearInterval(mousePoller);
   app.quit();

@@ -7109,6 +7109,16 @@ function updateHitRects() {
     if (isInteractable(o)) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
   });
 
+  // Consent overlay (Cloud Sync Agreement) — full-screen block when visible
+  var consentOverlay = document.getElementById('syncConsentOverlay');
+  if (consentOverlay) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+
+  // Walkthrough overlay — full-screen block when active
+  var wtOverlay = document.getElementById('wtOverlay');
+  if (wtOverlay && isInteractable(wtOverlay)) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+  var wtWelcome = document.getElementById('wtWelcome');
+  if (wtWelcome && isInteractable(wtWelcome)) rects.push({ x:0, y:0, w:window.innerWidth, h:window.innerHeight });
+
   // Login screen — block everything when visible
   var loginScreen = document.getElementById('tvLoginScreen');
   if (loginScreen && loginScreen.style.display !== 'none' && parseFloat(loginScreen.style.opacity || '1') > 0.1) {
