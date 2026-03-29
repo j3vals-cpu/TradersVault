@@ -4753,6 +4753,37 @@ function saveCfg(){
 var CloudSync = (function() {
   var _syncing = false;
   var _lastSync = null;
+  var _encKey = null;
+
+  // === E2E Encryption (AES-256-GCM, key from password via PBKDF2) ===
+  async function _deriveKey(password, salt) {
+    var enc = new TextEncoder();
+    var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  }
+  async function _exportKey(key) { var raw = await crypto.subtle.exportKey('raw', key); return btoa(String.fromCharCode.apply(null, new Uint8Array(raw))); }
+  async function _importKey(b64) { var raw = Uint8Array.from(atob(b64), function(c) { return c.charCodeAt(0); }); return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']); }
+  async function _encryptData(key, data) {
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var enc = new TextEncoder().encode(JSON.stringify(data));
+    var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc);
+    var buf = new Uint8Array(iv.length + ct.byteLength);
+    buf.set(iv); buf.set(new Uint8Array(ct), iv.length);
+    return btoa(String.fromCharCode.apply(null, buf));
+  }
+  async function _decryptData(key, b64) {
+    var buf = Uint8Array.from(atob(b64), function(c) { return c.charCodeAt(0); });
+    var iv = buf.slice(0, 12), ct = buf.slice(12);
+    var dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
+    return JSON.parse(new TextDecoder().decode(dec));
+  }
+  async function setEncKey(password, userId) {
+    _encKey = await _deriveKey(password, userId);
+    try { sessionStorage.setItem('vd_ek', await _exportKey(_encKey)); } catch(e) {}
+  }
+  async function restoreEncKey() {
+    try { var k = sessionStorage.getItem('vd_ek'); if (k) _encKey = await _importKey(k); } catch(e) {}
+  }
 
   function restUrl() {
     return SUPABASE_URL + '/rest/v1/user_data';
@@ -4889,8 +4920,13 @@ var CloudSync = (function() {
     var userId = getUserId();
     if (!token || !userId) throw new Error('Not logged in');
 
+    // Encrypt data before uploading
+    var storedValue = dataValue;
+    if (_encKey) {
+      storedValue = await _encryptData(_encKey, dataValue);
+    }
     var updatePayload = {
-      data_value: dataValue,
+      data_value: storedValue,
       updated_at: new Date().toISOString()
     };
 
@@ -4931,6 +4967,16 @@ var CloudSync = (function() {
       toast('Sign in to use Cloud Sync', 'error');
       return;
     }
+    // Need encryption key — if missing, prompt for password
+    if (!_encKey) {
+      await restoreEncKey();
+      if (!_encKey) {
+        var pw = prompt('Enter your password to encrypt/decrypt sync data:');
+        if (!pw) return;
+        var uid = getUserId();
+        await setEncKey(pw, uid);
+      }
+    }
     _syncing = true;
     setUI('syncing');
 
@@ -4948,12 +4994,21 @@ var CloudSync = (function() {
       // 3. Merge: cloud wins if cloud updated_at is newer
       var cloudRow = cloudMap['vault_cfg'];
       if (cloudRow && cloudRow.data_value) {
+        // Decrypt if encrypted (string = encrypted base64), otherwise legacy plain object
+        var cloudValue = cloudRow.data_value;
+        if (typeof cloudValue === 'string' && _encKey) {
+          try { cloudValue = await _decryptData(_encKey, cloudValue); } catch(e) {
+            try { cloudValue = JSON.parse(cloudValue); } catch(e2) { throw new Error('Could not decrypt cloud data — wrong password?'); }
+          }
+        } else if (typeof cloudValue === 'string') {
+          try { cloudValue = JSON.parse(cloudValue); } catch(e) {}
+        }
         var cloudTs = new Date(cloudRow.updated_at).getTime();
         var localTs = local.vault_cfg._localUpdated || 0;
 
         if (cloudTs > localTs) {
           // Cloud is newer — apply cloud data locally
-          applyCloudData(cloudRow.data_value);
+          applyCloudData(cloudValue);
           save();
           saveCfg();
           // Re-render UI
@@ -4988,7 +5043,7 @@ var CloudSync = (function() {
     }
   }
 
-  return { pull: pull, push: push, sync: sync, setUI: setUI };
+  return { pull: pull, push: push, sync: sync, setUI: setUI, setEncKey: setEncKey, restoreEncKey: restoreEncKey };
 })();
 
 // ── Cloud Sync Access Control ──────────────────────────────────
@@ -8895,6 +8950,8 @@ function sendDiscordHeartbeat() {
 
   if (saved && saved.token && saved.expires > Date.now()) {
     tvSession = saved;
+    // Restore E2E encryption key from session if available
+    await CloudSync.restoreEncKey();
     // ── EARLY forced update check BEFORE showing app ──
     try {
       var earlyCheck = await validateToken(saved.token);
@@ -8973,6 +9030,9 @@ async function doLogin() {
     if (validate._error) { setAuthStatus(validate._error, '#ff4d6d'); return; }
 
     saveSession(d.access_token, d.expires_in || 3600, validate);
+    // Derive E2E encryption key from password + user ID for cloud sync
+    var userId = validate.user_id || validate.id || d.user.id;
+    await CloudSync.setEncKey(pass, userId);
     setAuthStatus('✓ Welcome back!', '#22d46a');
     setTimeout(hideLoginScreen, 600);
     applyLicenceBadge(validate);
