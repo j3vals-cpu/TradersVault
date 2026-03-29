@@ -1581,6 +1581,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
       <button class="stab" onclick="switchSettingsTab('discord',this)">&#128172; DC</button>
       <button class="stab" onclick="switchSettingsTab('profile',this)">&#127760; Profile</button>
       <button class="stab" onclick="switchSettingsTab('data',this)">&#128190; Data</button>
+      <button class="stab" onclick="switchSettingsTab('licence',this)">&#128273; Key</button>
     </div>
 
     <!-- THEME TAB -->
@@ -1778,6 +1779,19 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
         <input type="file" accept=".json" onchange="importAllData(this)" style="display:none;">
       </label>
       <div id="importStatus" style="margin-top:8px;font-family:'Geist Mono',monospace;font-size:9px;min-height:14px;"></div>
+    </div>
+
+    <div class="settings-panel" id="stab-licence">
+      <div class="s-lbl" style="margin-top:0;">Redeem Licence Key</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.6;">Have a licence key? Enter it below to activate your subscription.</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input class="s-input" id="redeemKeyInput" placeholder="TV-XXXX-XXXX-XXXX-XXXX" style="flex:1;text-transform:uppercase;font-family:'Geist Mono',monospace;letter-spacing:1.5px;font-size:12px;">
+        <button id="redeemKeyBtn" onclick="redeemLicenceKey()" style="padding:8px 16px;background:var(--gold);border:none;border-radius:8px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;white-space:nowrap;transition:all .2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Redeem</button>
+      </div>
+      <div id="redeemStatus" style="font-family:'Geist Mono',monospace;font-size:10px;min-height:14px;"></div>
+      <div style="height:1px;background:var(--border2);margin:16px 0;"></div>
+      <div class="s-lbl" style="margin-top:0;">Current Licence</div>
+      <div id="redeemLicenceInfo" style="font-size:10px;color:var(--text3);line-height:1.6;">Not signed in</div>
     </div>
 
     <div class="settings-panel" id="stab-transparency">
@@ -5537,6 +5551,16 @@ function openSettings(){
   // Populate profile tab
   if (_publicProfile) applyProfileToUI(_publicProfile);
   updateProfileUrl();
+  // Populate licence info
+  var licInfo = document.getElementById('redeemLicenceInfo');
+  if (licInfo && tvSession) {
+    var lt = tvSession.licence || tvSession.licence_type || 'free';
+    var ls = tvSession.licence_status || 'active';
+    var le = tvSession.licence_expires_at;
+    licInfo.innerHTML = '<span style="color:var(--gold);font-weight:700;text-transform:uppercase;">' + lt + '</span> &middot; ' + ls + (le ? ' &middot; Expires: ' + new Date(le).toLocaleDateString() : '');
+  } else if (licInfo) {
+    licInfo.textContent = 'Not signed in';
+  }
   // Sync dock position buttons
   syncDockPosButtons();
   document.getElementById('settingsBtn').classList.add('active');
@@ -5546,6 +5570,46 @@ function openSettings(){
 function closeSettings(){
   document.getElementById('settingsBtn').classList.remove('active');
   document.getElementById('settingsModal').classList.remove('open');
+}
+
+async function redeemLicenceKey() {
+  var keyInput = document.getElementById('redeemKeyInput');
+  var statusEl = document.getElementById('redeemStatus');
+  var btn = document.getElementById('redeemKeyBtn');
+  var key = (keyInput.value || '').trim().toUpperCase();
+  if (!key) { statusEl.style.color = 'var(--red)'; statusEl.textContent = 'Please enter a licence key.'; return; }
+  if (!tvSession || !tvSession.token) { statusEl.style.color = 'var(--red)'; statusEl.textContent = 'You must be signed in to redeem a key.'; return; }
+  btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = '...';
+  statusEl.style.color = 'var(--text3)'; statusEl.textContent = 'Validating key...';
+  try {
+    var r = await fetch('https://tradersvault.app/api/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tvSession.token },
+      body: JSON.stringify({ action: 'redeem_key', key: key })
+    });
+    var d = await r.json();
+    if (!r.ok) { statusEl.style.color = 'var(--red)'; statusEl.textContent = d.error || 'Redemption failed'; btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Redeem'; return; }
+    statusEl.style.color = 'var(--green)'; statusEl.textContent = '\u2713 ' + d.message;
+    keyInput.value = '';
+    // Update local session
+    if (tvSession) {
+      tvSession.licence = d.licence_type;
+      tvSession.licence_type = d.licence_type;
+      tvSession.licence_status = d.licence_status;
+      tvSession.licence_expires_at = d.licence_expires_at;
+      if (typeof window.electronAPI !== 'undefined' && window.electronAPI.saveData) {
+        window.electronAPI.saveData('vault-session', tvSession);
+      }
+    }
+    // Update licence info display
+    var licInfo = document.getElementById('redeemLicenceInfo');
+    if (licInfo) {
+      licInfo.innerHTML = '<span style="color:var(--gold);font-weight:700;text-transform:uppercase;">' + d.licence_type + '</span> &middot; ' + d.licence_status + (d.licence_expires_at ? ' &middot; Expires: ' + new Date(d.licence_expires_at).toLocaleDateString() : '');
+    }
+  } catch(e) {
+    statusEl.style.color = 'var(--red)'; statusEl.textContent = 'Network error: ' + e.message;
+  }
+  btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Redeem';
 }
 
 function switchSettingsTab(id, btn){
