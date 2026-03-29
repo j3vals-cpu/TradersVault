@@ -72,6 +72,7 @@
       "target": "pkg",
       "icon": "assets/icon.png",
       "category": "public.app-category.finance",
+      "minimumSystemVersion": "10.15",
       "darkModeSupport": true,
       "hardenedRuntime": false,
       "gatekeeperAssess": false
