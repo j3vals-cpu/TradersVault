@@ -4889,23 +4889,37 @@ var CloudSync = (function() {
     var userId = getUserId();
     if (!token || !userId) throw new Error('Not logged in');
 
-    var payload = {
-      user_id: userId,
-      data_key: dataKey,
+    var updatePayload = {
       data_value: dataValue,
       updated_at: new Date().toISOString()
     };
 
-    var r = await fetch(restUrl(), {
-      method: 'POST',
-      headers: Object.assign({}, headers(token), {
-        'Prefer': 'resolution=merge-duplicates'
-      }),
-      body: JSON.stringify(payload)
+    // Try PATCH first (update existing row)
+    var patchR = await fetch(restUrl() + '?user_id=eq.' + userId + '&data_key=eq.' + dataKey, {
+      method: 'PATCH',
+      headers: Object.assign({}, headers(token), { 'Prefer': 'return=representation' }),
+      body: JSON.stringify(updatePayload)
     });
-    if (!r.ok) {
-      var errText = await r.text();
-      throw new Error('Push failed: ' + r.status + ' ' + errText);
+    var patchResult = [];
+    try { patchResult = await patchR.json(); } catch(e) { patchResult = []; }
+
+    // If PATCH returned empty array, row doesn't exist — INSERT
+    if (Array.isArray(patchResult) && patchResult.length === 0) {
+      var insertPayload = {
+        user_id: userId,
+        data_key: dataKey,
+        data_value: dataValue,
+        updated_at: new Date().toISOString()
+      };
+      var postR = await fetch(restUrl(), {
+        method: 'POST',
+        headers: headers(token),
+        body: JSON.stringify(insertPayload)
+      });
+      if (!postR.ok) {
+        var errText = await postR.text();
+        throw new Error('Push failed: ' + postR.status + ' ' + errText);
+      }
     }
     return true;
   }
