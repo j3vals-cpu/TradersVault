@@ -11003,6 +11003,44 @@ _appVersionReady.then(function(ver) {
 
 // ── Update system (FORCED auto-update) ──────────────────────────
 
+var _forceUpdateRunning = false;
+var _updateCheckedThisSession = false;  // only check once per app launch
+var _updateRetryCount = 0;
+var _maxUpdateRetries = 3;
+
+function isNewerVersion(remote, local) {
+  var r = remote.split('.').map(Number);
+  var l = local.split('.').map(Number);
+  for (var i = 0; i < 3; i++) {
+    if ((r[i]||0) > (l[i]||0)) return true;
+    if ((r[i]||0) < (l[i]||0)) return false;
+  }
+  return false;
+}
+
+// Check if we already attempted to update to this version (persisted across restarts)
+function _wasUpdateAttempted(version) {
+  try {
+    var attempted = localStorage.getItem('tv_update_attempted');
+    if (!attempted) return false;
+    var data = JSON.parse(attempted);
+    // If we attempted this exact version and it was less than 1 hour ago, skip it
+    if (data.version === version && (Date.now() - data.ts) < 3600000) return true;
+  } catch(e) {}
+  return false;
+}
+
+function _markUpdateAttempted(version) {
+  try {
+    localStorage.setItem('tv_update_attempted', JSON.stringify({ version: version, ts: Date.now() }));
+  } catch(e) {}
+}
+
+// Clear the attempted flag (call when a successful update install is confirmed or version changes)
+function _clearUpdateAttempted() {
+  try { localStorage.removeItem('tv_update_attempted'); } catch(e) {}
+}
+
 // ── PRE-LOGIN update check (no auth needed) ─────────────────────
 _appVersionReady.then(function(currentVer) {
   fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.stable&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
@@ -11025,22 +11063,24 @@ _appVersionReady.then(function(currentVer) {
   .catch(function(e) { console.log('[Pre-login update] check failed:', e); });
 });
 
-var _forceUpdateRunning = false;
-
-function isNewerVersion(remote, local) {
-  var r = remote.split('.').map(Number);
-  var l = local.split('.').map(Number);
-  for (var i = 0; i < 3; i++) {
-    if ((r[i]||0) > (l[i]||0)) return true;
-    if ((r[i]||0) < (l[i]||0)) return false;
-  }
-  return false;
-}
-
 function checkForUpdate(v) {
   if (!v || !v.latest_version) return;
+  // Only check once per session — prevents heartbeat/validation from re-triggering
+  if (_updateCheckedThisSession) return;
+  if (_forceUpdateRunning) return;
   var current = _appVersion;
-  if (!isNewerVersion(v.latest_version, current)) return;
+  if (!isNewerVersion(v.latest_version, current)) {
+    // Current version is up-to-date; clear any stale attempted flag
+    _clearUpdateAttempted();
+    return;
+  }
+  // Guard against restart loops: if we already tried to install this version, don't try again
+  if (_wasUpdateAttempted(v.latest_version)) {
+    console.log('[Update] Skipping v' + v.latest_version + ' — already attempted this session/hour');
+    _updateCheckedThisSession = true;
+    return;
+  }
+  _updateCheckedThisSession = true;
   v.update_url = v.update_url || v.latest_url || v.download_url;
   tvUpdateInfo = v;
   // Immediately trigger forced update — no banner, no user choice
@@ -11070,6 +11110,7 @@ function forceUpdateAndDownload(v) {
   var dlUrl = v.update_url;
   if (!dlUrl) {
     if (detailEl) detailEl.textContent = 'No download URL — please reinstall manually.';
+    _forceUpdateRunning = false;
     return;
   }
   var platform = window.electronAPI ? window.electronAPI.platform : 'win32';
@@ -11084,6 +11125,7 @@ function forceUpdateAndDownload(v) {
   // Must have Electron download API
   if (!window.electronAPI || !window.electronAPI.downloadUpdate) {
     if (detailEl) detailEl.textContent = 'Cannot auto-update in browser — download from tradersvault.app';
+    _forceUpdateRunning = false;
     return;
   }
 
@@ -11103,17 +11145,31 @@ function forceUpdateAndDownload(v) {
       if (pctEl) pctEl.textContent = '100%';
       if (titleEl) titleEl.textContent = 'Installing v' + v.latest_version + '...';
       if (detailEl) detailEl.textContent = 'Launching installer — the app will close.';
+      // Mark this version as attempted so we don't loop on restart
+      _markUpdateAttempted(v.latest_version);
       // Launch installer and quit
       window.electronAPI.openFile(result.path);
       setTimeout(function() { window.electronAPI.quit(); }, 2000);
     } else {
-      // Download failed — retry after 5 seconds
-      if (titleEl) titleEl.textContent = 'Download failed — retrying...';
-      if (detailEl) detailEl.textContent = result.error || 'Unknown error';
-      if (barEl) barEl.style.width = '0%';
-      if (pctEl) pctEl.textContent = '';
-      _forceUpdateRunning = false;
-      setTimeout(function() { forceUpdateAndDownload(v); }, 5000);
+      _updateRetryCount++;
+      if (_updateRetryCount >= _maxUpdateRetries) {
+        // Give up after max retries — don't loop forever
+        if (titleEl) titleEl.textContent = 'Update failed';
+        if (detailEl) detailEl.textContent = 'Could not download update after ' + _maxUpdateRetries + ' attempts. Please download manually from tradersvault.app';
+        if (barEl) barEl.style.width = '0%';
+        if (pctEl) pctEl.textContent = '';
+        _markUpdateAttempted(v.latest_version);
+        // Don't reset _forceUpdateRunning — keep overlay visible with error message
+      } else {
+        // Retry with backoff
+        var delay = 5000 * _updateRetryCount;
+        if (titleEl) titleEl.textContent = 'Download failed — retrying (' + _updateRetryCount + '/' + _maxUpdateRetries + ')...';
+        if (detailEl) detailEl.textContent = result.error || 'Unknown error';
+        if (barEl) barEl.style.width = '0%';
+        if (pctEl) pctEl.textContent = '';
+        _forceUpdateRunning = false;
+        setTimeout(function() { forceUpdateAndDownload(v); }, delay);
+      }
     }
   });
 }
