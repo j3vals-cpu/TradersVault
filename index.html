@@ -1649,6 +1649,10 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
       </div>
     </div>
     <div id="ptCostPreview" style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--text2);margin-bottom:12px;padding:7px 10px;background:var(--panel2);border-radius:6px;display:none;">Total: $0.00</div>
+    <label class="f-lbl">Expense Category</label>
+    <select class="f-in" id="ptExpenseCategory" style="cursor:pointer;">
+      <option value="">No category</option>
+    </select>
     <div class="modal-actions"><button class="btn-cancel" onclick="closePropFirmModal()">Cancel</button><button class="btn-save" onclick="savePropTrackerFirm()">Add</button></div>
   </div>
 </div>
@@ -3514,6 +3518,13 @@ function openPropFirmModal(){
   // Wire up live preview
   document.getElementById('ptCost').oninput=updatePtPreview;
   document.getElementById('ptQty').oninput=updatePtPreview;
+  // Populate expense category dropdown
+  var catSel = document.getElementById('ptExpenseCategory');
+  if (catSel) {
+    catSel.innerHTML = '<option value="">No category</option>' + (state.tracker.categories||[]).map(function(c) {
+      return '<option value="' + c.id + '">' + esc(c.name) + '</option>';
+    }).join('');
+  }
 }
 function closePropFirmModal(){document.getElementById('propFirmModal').classList.remove('open');}
 function savePropTrackerFirm(){
@@ -3523,10 +3534,23 @@ function savePropTrackerFirm(){
   else{var f=state.firms.find(function(x){return x.id===fsel;});name=f?f.name:fsel;}
   var costPerUnit=parseFloat(document.getElementById('ptCost').value)||0;
   var qty=Math.max(1,parseInt(document.getElementById('ptQty').value)||1);
+  var catId = (document.getElementById('ptExpenseCategory')||{}).value || '';
   state.propTracker.push({
     id:uid(),name:name,firmId:fsel==='__custom__'?null:fsel,
-    costPerUnit:costPerUnit,qty:qty,payouts:[]
+    costPerUnit:costPerUnit,qty:qty,payouts:[],categoryId:catId
   });
+  // Auto-add to expense tracker if category selected
+  if (catId) {
+    state.tracker.items.push({
+      id: uid(),
+      categoryId: catId,
+      name: name + ' (' + qty + 'x)',
+      amount: costPerUnit * qty,
+      date: new Date().toISOString().slice(0,10),
+      frequency: 'one-time',
+      notes: 'Auto-added from Prop Tracker'
+    });
+  }
   save();closePropFirmModal();renderPropTracker();
   // Discord: new prop entry
   if(cfg.discordWebhook&&cfg.dcPropUpdates){
@@ -3657,6 +3681,11 @@ function renderPropTracker(){
       var net2=earned-totalCost;
       var netCls2=net2>=0?'earned':'spent';
       var netSign2=net2>=0?'+':'';
+      var catName = '';
+      if (pt.categoryId) {
+        var cat = (state.tracker.categories||[]).find(function(c){return c.id===pt.categoryId;});
+        if (cat) catName = '<span style="font-size:7px;padding:1px 4px;border-radius:3px;background:' + (cat.color||'var(--gold)') + '22;color:' + (cat.color||'var(--gold)') + ';font-weight:700;margin-left:4px;">' + esc(cat.name) + '</span>';
+      }
 
       var chips=pt.payouts.map(function(p){
         return '<div class="prop-payout-chip">'
@@ -3671,7 +3700,7 @@ function renderPropTracker(){
         // Tier header line
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
         +'<div style="display:flex;align-items:center;gap:8px;">'
-        +'<span style="font-family:Geist Mono,monospace;font-size:9px;color:var(--gold);font-weight:700;">$'+cpu.toFixed(2)+' / account</span>'
+        +'<span style="font-family:Geist Mono,monospace;font-size:9px;color:var(--gold);font-weight:700;">$'+cpu.toFixed(2)+' / account</span>'+catName
         +'<div class="prop-qty">'
         +'<button class="prop-qty-btn" data-id="'+pt.id+'" onclick="event.stopPropagation();updatePropQty(this.dataset.id,-1)">&#8722;</button>'
         +'<span class="prop-qty-val" style="font-size:11px;">'+qty+'</span>'
@@ -11239,11 +11268,12 @@ function renderTaxCalc(){
 
   var taxRate=parseFloat(cfg.taxRate)||0;
 
-  // Total income from trading P&L
+  // Total income from Prop Tracker payouts
   var totalIncome=0;
-  state.accounts.forEach(function(a){
-    var pnl=(a.currentBalance||0)-(a.startBalance||0);
-    if(pnl>0)totalIncome+=pnl;
+  (state.propTracker||[]).forEach(function(pt){
+    (pt.payouts||[]).forEach(function(p){
+      totalIncome+=(p.amount||0);
+    });
   });
 
   // Total expenses from tracker
@@ -11263,7 +11293,7 @@ function renderTaxCalc(){
   var html='<div class="tax-calc">';
   html+='<div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px;">Tax Calculator</div>';
   html+='<div class="tax-row"><div class="tax-lbl">Tax Rate</div><div><input class="tax-rate-input" type="number" min="0" max="100" step="0.1" value="'+taxRate+'" oninput="updateTaxRate(this.value)"> <span style="font-size:11px;color:var(--text3);">%</span></div></div>';
-  html+='<div class="tax-row"><div class="tax-lbl">Total Income (Trading P&L)</div><div class="tax-val income">'+fmtMF(totalIncome)+'</div></div>';
+  html+='<div class="tax-row"><div class="tax-lbl">Total Income (Prop Payouts)</div><div class="tax-val income">'+fmtMF(totalIncome)+'</div></div>';
   html+='<div class="tax-row"><div class="tax-lbl">Total Expenses</div><div class="tax-val expense">'+fmtMF(totalExpenses)+'</div></div>';
   html+='<div class="tax-row"><div class="tax-lbl">Deductible Expenses</div><div class="tax-val expense">'+fmtMF(deductibleExpenses)+'</div></div>';
   html+='<div class="tax-row"><div class="tax-lbl">Taxable Income</div><div class="tax-val">'+fmtMF(taxableIncome)+'</div></div>';

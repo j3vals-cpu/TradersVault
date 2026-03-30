@@ -1,3 +1,9 @@
+## [2.7.9] — 2026-03-30
+### Fixed
+- Tax Calculator now uses Prop Tracker payouts as income (not Trading account P&L)
+- Expense category dropdown added to Prop Tracker entry modal
+- Prop entries auto-create expense items when category is selected
+
 ## [2.7.8] — 2026-03-30
 ### Added
 - Expense categories now have a "Tax Deductible" toggle — only deductible categories are subtracted in the Tax Calculator
