@@ -1,3 +1,9 @@
+## v2.7.5
+
+- Fixed settings modal X button and tabs not visible on Windows laptops — tabs now scroll horizontally instead of wrapping
+- Fixed right/left dock overflowing on small screens — bar now scrolls, non-essential items auto-hidden
+- Compact header and tab sizing on short screens
+
 ## v2.7.4
 
 - Fixed settings modal not fitting on Windows laptops — content now scrolls properly within the modal
