@@ -1,3 +1,10 @@
+## v2.7.6
+
+- Settings modal: JS now measures actual window height and forces max-height in pixels (not vh)
+- Vertical dock (left/right): JS detects overflow and auto-hides non-essential items
+- If dock still overflows, panel buttons shrink to icon-only mode
+- Tabs remain single horizontal scrollable row
+
 ## v2.7.5
 
 - Fixed settings modal X button and tabs not visible on Windows laptops — tabs now scroll horizontally instead of wrapping

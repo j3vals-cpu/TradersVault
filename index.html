@@ -4405,6 +4405,8 @@ function applyDockMode() {
     setupDockAutoHide();
     // Update hit rects for new position
     scheduleHitRects();
+    // Fit vertical dock to screen
+    setTimeout(fitVerticalDock, 150);
   } else {
     chrome.classList.remove('dock-mode','dock-hidden','dock-pos-top','dock-pos-bottom','dock-pos-left','dock-pos-right');
     if (btn) { btn.style.borderColor=''; btn.style.color=''; }
@@ -4640,6 +4642,34 @@ function setDockPosition(pos) {
   // Close dock bar menu
   var menu = document.getElementById('dockPosMenu');
   if (menu) menu.classList.remove('show');
+  // Fit vertical dock to screen
+  setTimeout(fitVerticalDock, 100);
+}
+
+// Hide non-essential dock items when vertical dock overflows
+function fitVerticalDock(){
+  if(!_dockMode) return;
+  var isVert = (_dockPosition === 'left' || _dockPosition === 'right');
+  // Reset all extras visibility first
+  var extras = document.querySelectorAll('.dock-extra, .dock-extra-div');
+  extras.forEach(function(el){ el.style.display = ''; });
+  if(!isVert) return;
+  var bar = document.getElementById('dockBar');
+  if(!bar) return;
+  // If bar overflows, hide extras
+  if(bar.scrollHeight > bar.clientHeight + 10){
+    extras.forEach(function(el){ el.style.display = 'none'; });
+  }
+  // If still overflows, shrink panel buttons
+  if(bar.scrollHeight > bar.clientHeight + 10){
+    var btns = document.querySelectorAll('.dock-panel-btn');
+    btns.forEach(function(b){
+      b.style.height = '24px';
+      b.style.width = '28px';
+      var lbl = b.querySelector('.dock-btn-label');
+      if(lbl) lbl.style.display = 'none';
+    });
+  }
 }
 
 function syncDockPosButtons() {
@@ -5710,6 +5740,15 @@ function openSettings(){
   syncDockPosButtons();
   document.getElementById('settingsBtn').classList.add('active');
   document.getElementById('settingsModal').classList.add('open');
+  // Force-fit modal to actual window height
+  setTimeout(function(){
+    var sm = document.querySelector('.settings-modal');
+    if(sm){
+      var wh = window.innerHeight;
+      var maxH = Math.floor(wh * 0.85);
+      sm.style.maxHeight = maxH + 'px';
+    }
+  },50);
 }
 
 function closeSettings(){
