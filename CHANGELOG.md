@@ -1,3 +1,9 @@
+## [2.7.10] — 2026-03-30
+### Fixed
+- Tracker Expenses: category dropdown filter to reduce clutter
+- Discord Settings: added missing Server ID and Channel ID inputs for chat panel
+- Settings modal: tabs now wrap to multiple rows instead of overflowing off-screen on Windows
+
 ## [2.7.9] — 2026-03-30
 ### Fixed
 - Tax Calculator now uses Prop Tracker payouts as income (not Trading account P&L)

@@ -106,9 +106,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 
 /* Settings modal overrides */
 .settings-modal{width:720px;max-width:96vw;max-height:88vh;padding:0;overflow:hidden;display:flex;flex-direction:column;}
-.settings-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid var(--border2);scrollbar-width:none;flex-shrink:0;}
-.settings-tabs::-webkit-scrollbar{display:none;}
-.stab{flex-shrink:0;padding:10px 6px;font-size:9px;font-weight:800;letter-spacing:.2px;text-align:center;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;transition:all .18s;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.settings-tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--border2);flex-shrink:0;padding:2px 4px;}
+.settings-tabs::-webkit-scrollbar{height:0;}
+.stab{flex-shrink:0;padding:8px 6px;font-size:9px;font-weight:800;letter-spacing:.2px;text-align:center;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:'Cabinet Grotesk',sans-serif;transition:all .18s;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
 .stab:hover{color:var(--text2);}
 .stab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .settings-panel{display:none;padding:18px 20px 20px;}
@@ -1805,6 +1805,26 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
         <button onclick="saveDiscordSettings()" style="flex:1;padding:9px;background:var(--gold);border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;">Save</button>
       </div>
       <div id="discordStatus" style="margin-top:8px;font-family:'Geist Mono',monospace;font-size:9px;min-height:14px;"></div>
+      <div class="s-lbl" style="margin-top:18px;">Discord Chat Panel</div>
+      <div style="background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:10px;color:rgba(148,155,252,.9);line-height:1.7;font-family:'Cabinet Grotesk',sans-serif;">
+        &#9432; Embed a live Discord chat channel directly into a panel. You need: <b>Server ID</b> and <b>Channel ID</b>.<br>
+        In Discord: <b>Right-click server/channel → Copy ID</b> (enable Developer Mode in Discord settings first).
+      </div>
+      <div class="srow">
+        <span class="srow-lbl">Server ID</span>
+        <div class="srow-ctrl">
+          <input class="s-input" id="dcChatServerId" placeholder="e.g. 299881420891881473" oninput="cfg.dcChatServerId=this.value.trim();saveCfg()" style="font-family:'Geist Mono',monospace;font-size:10px;">
+        </div>
+      </div>
+      <div class="srow">
+        <span class="srow-lbl">Channel ID</span>
+        <div class="srow-ctrl">
+          <input class="s-input" id="dcChatChannelId" placeholder="e.g. 355719584830980096" oninput="cfg.dcChatChannelId=this.value.trim();saveCfg()" style="font-family:'Geist Mono',monospace;font-size:10px;">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="cfg.dcChatServerId=document.getElementById('dcChatServerId').value.trim();cfg.dcChatChannelId=document.getElementById('dcChatChannelId').value.trim();saveCfg();renderDiscordPanel();toast('Discord chat updated','success');" style="flex:1;padding:9px;background:rgba(88,101,242,.15);border:1px solid rgba(88,101,242,.4);border-radius:7px;color:rgba(148,155,252,1);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;">&#128172; Connect Chat Panel</button>
+      </div>
     </div>
 
     <!-- PROFILE TAB -->
@@ -10886,6 +10906,7 @@ function confirmImport(){
 // FEATURE: TRACKER PANEL (Bills/Expenses)
 // ═══════════════════════════════════════════
 var _trackerTab='expenses'; // expenses | tax
+var _trackerCatFilter='all';
 var _editTrackerId=null;
 var _editTrackerCatId=null;
 
@@ -10907,6 +10928,11 @@ function switchTrackerTab(tab,btn){
   _trackerTab=tab;
   document.querySelectorAll('.tracker-tab').forEach(function(b){b.classList.remove('active');});
   if(btn)btn.classList.add('active');
+  renderTracker();
+}
+
+function filterTrackerCat(val){
+  _trackerCatFilter=val;
   renderTracker();
 }
 
@@ -10935,16 +10961,32 @@ function renderTracker(){
   html+='<div class="tracker-stat"><div class="tracker-stat-val">'+cats.length+'</div><div class="tracker-stat-lbl">Categories</div></div>';
   html+='</div>';
 
+  // Uncategorized items (calculated before dropdown so we can reference it)
+  var uncatItems=items.filter(function(it){return !it.categoryId||!cats.find(function(c){return c.id===it.categoryId;});});
+
   if(!cats.length&&!items.length){
     html+='<div class="tracker-empty">No expenses yet. Click <b>+ Category</b> then <b>+ Item</b> to start tracking.</div>';
     el.innerHTML=html;return;
   }
 
-  html+='<div class="tracker-cats">';
-  // Uncategorized items
-  var uncatItems=items.filter(function(it){return !it.categoryId||!cats.find(function(c){return c.id===it.categoryId;});});
-
+  // Category filter dropdown
+  html+='<div style="padding:8px 12px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;">';
+  html+='<span style="font-size:9px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Category</span>';
+  html+='<select id="trackerCatFilter" onchange="filterTrackerCat(this.value)" style="flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--text);font-family:\'Cabinet Grotesk\',sans-serif;cursor:pointer;outline:none;">';
+  html+='<option value="all">All Categories</option>';
   cats.forEach(function(cat){
+    html+='<option value="'+cat.id+'"'+((_trackerCatFilter===cat.id)?' selected':'')+'>'+esc(cat.name)+' ('+fmtMF(catTotals[cat.id]||0)+')</option>';
+  });
+  if(uncatItems.length) html+='<option value="uncat"'+((_trackerCatFilter==='uncat')?' selected':'')+'>Uncategorized</option>';
+  html+='</select>';
+  html+='</div>';
+
+  html+='<div class="tracker-cats">';
+  // Filter categories based on dropdown
+  var filteredCats = _trackerCatFilter === 'all' ? cats : cats.filter(function(c){ return c.id === _trackerCatFilter; });
+  var showUncat = _trackerCatFilter === 'all' || _trackerCatFilter === 'uncat';
+
+  filteredCats.forEach(function(cat){
     var catItems=items.filter(function(it){return it.categoryId===cat.id;});
     var catTotal=catTotals[cat.id]||0;
     html+='<div class="tracker-cat">';
@@ -10961,7 +11003,7 @@ function renderTracker(){
     html+='</div>';
   });
 
-  if(uncatItems.length){
+  if(showUncat && uncatItems.length){
     html+='<div class="tracker-cat"><div class="tracker-cat-hd"><div class="tracker-cat-dot" style="background:var(--text3)"></div><div class="tracker-cat-name">Uncategorized</div></div>';
     uncatItems.forEach(function(it){html+=renderTrackerItem(it);});
     html+='</div>';
