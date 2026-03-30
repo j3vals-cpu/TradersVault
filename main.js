@@ -506,8 +506,20 @@ app.on('before-quit', () => {
 ipcMain.handle('download-update', async (_, url) => {
   if (!url) return { ok: false, error: 'No URL' };
   const downloadsDir = app.getPath('downloads');
-  const fileName = url.split('/').pop() || 'TradersVault-update.exe';
-  const filePath = path.join(downloadsDir, fileName);
+
+  // Derive a safe .exe filename from the URL.
+  // If the URL doesn't end with .exe (e.g. it's a release page URL like
+  // /releases/tag/v2.8.0), build a proper installer filename so Windows
+  // recognises the downloaded file as an executable.
+  let fileName = (url.split('/').pop() || '').split('?')[0]; // strip query params
+  if (!fileName || !fileName.toLowerCase().endsWith('.exe')) {
+    const verMatch = url.match(/(\d+\.\d+\.\d+)/);
+    fileName = verMatch
+      ? 'Traders.Vault.Setup.' + verMatch[1] + '.exe'
+      : 'TradersVault-update.exe';
+  }
+
+  let filePath = path.join(downloadsDir, fileName);
 
   return new Promise((resolve) => {
     function doGet(reqUrl, redirects) {
@@ -521,6 +533,21 @@ ipcMain.handle('download-update', async (_, url) => {
         if (res.statusCode !== 200) {
           return resolve({ ok: false, error: 'HTTP ' + res.statusCode });
         }
+
+        // Try to get a better filename from Content-Disposition header
+        const cd = res.headers['content-disposition'];
+        if (cd) {
+          const m = cd.match(/filename[^;=\n]*=\s*["']?([^"';\n]+)/i);
+          if (m && m[1] && m[1].toLowerCase().endsWith('.exe')) {
+            filePath = path.join(downloadsDir, m[1].trim());
+          }
+        }
+
+        // Final safety net: ensure .exe extension on Windows
+        if (process.platform === 'win32' && !filePath.toLowerCase().endsWith('.exe')) {
+          filePath += '.exe';
+        }
+
         const totalBytes = parseInt(res.headers['content-length'] || '0', 10);
         let downloaded = 0;
         const file = fs.createWriteStream(filePath);
