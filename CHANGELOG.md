@@ -1,3 +1,14 @@
+## [2.7.8] — 2026-03-30
+### Added
+- Expense categories now have a "Tax Deductible" toggle — only deductible categories are subtracted in the Tax Calculator
+- Deductible/Non-Deductible badge shown on each category in the Tracker
+- Account selector modal for Share/Gains Card — choose which trading accounts and prop entries appear on the certificate
+- Discord panel moved to 2nd position in dock (after Trading)
+
+### Fixed
+- Settings modal widened to 720px with updated responsive breakpoints for better fit on all screen sizes
+- Settings modal centering and max-height improved for Windows laptops
+
 ## [2.7.7] — 2026-03-30
 ### Added
 - Discord Chat panel — embed a live Discord channel directly into a resizable panel via WidgetBot
