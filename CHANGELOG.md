@@ -1,3 +1,10 @@
+## [2.7.11] — 2026-03-30
+### Fixed
+- Discord panel: added WidgetBot invite link when errors occur
+- Gains Card: prop tracker entries now appear on certificate when selected
+- Gains Card: firm count on card now reflects only selected accounts
+- Gains Card: added Select All / Select None buttons to account selector
+
 ## [2.7.10] — 2026-03-30
 ### Fixed
 - Tracker Expenses: category dropdown filter to reduce clutter

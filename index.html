@@ -6554,11 +6554,15 @@ function renderDiscordPanel() {
     return;
   }
 
-  // Render WidgetBot iframe
+  // Render WidgetBot iframe with setup info bar
   var src = 'https://e.widgetbot.io/channels/' + encodeURIComponent(sid) + '/' + encodeURIComponent(cid);
   b.innerHTML =
-    '<iframe id="discord-chat-frame" src="' + src + '" '
-    + 'style="width:100%;height:100%;border:none;flex:1;" '
+    '<div style="padding:6px 10px;background:rgba(88,101,242,.1);border-bottom:1px solid rgba(88,101,242,.2);font-size:9px;color:rgba(148,155,252,.8);display:flex;align-items:center;gap:6px;flex-shrink:0;">'
+    + '<span>&#9432;</span>'
+    + '<span>If you see errors, <a href="https://add.widgetbot.io" target="_blank" style="color:rgba(148,155,252,1);text-decoration:underline;font-weight:700;">invite WidgetBot</a> to your server first.</span>'
+    + '</div>'
+    + '<iframe id="discord-chat-frame" src="' + src + '" '
+    + 'style="width:100%;flex:1;border:none;" '
     + 'allow="clipboard-write" '
     + 'sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-forms"'
     + '></iframe>';
@@ -10131,6 +10135,10 @@ function openGainsCardSelector() {
   // Build selection modal
   var html = '<div style="padding:24px;">';
   html += '<div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:16px;">Select Accounts for Card</div>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:12px;">';
+  html += '<button onclick="document.querySelectorAll(\'#gcSelectorModal input[type=checkbox]\').forEach(function(c){c.checked=true})" style="padding:4px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;font-size:9px;color:var(--text2);cursor:pointer;font-family:inherit;">Select All</button>';
+  html += '<button onclick="document.querySelectorAll(\'#gcSelectorModal input[type=checkbox]\').forEach(function(c){c.checked=false})" style="padding:4px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;font-size:9px;color:var(--text2);cursor:pointer;font-family:inherit;">Select None</button>';
+  html += '</div>';
 
   if (allAccounts.length > 0) {
     html += '<div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Trading Accounts</div>';
@@ -10269,6 +10277,26 @@ function openGainsCard() {
       + '</div>';
   }).join('');
 
+  // Add selected prop tracker entries to firm rows
+  if (window._gcSelectedProp) {
+    var propEntries = state.propTracker || [];
+    window._gcSelectedProp.forEach(function(idx) {
+      var pt = propEntries[idx];
+      if (!pt) return;
+      var ptEarned = 0;
+      (pt.payouts || []).forEach(function(p) { ptEarned += (p.amount || 0); });
+      var ptSpent = (pt.costPerUnit || pt.cost || 0) * (pt.qty || 1);
+      var ptNet = ptEarned - ptSpent;
+      var ptStr = (ptNet >= 0 ? '+' : '-') + '$' + Math.abs(ptNet).toLocaleString('en-US', {minimumFractionDigits:0});
+      firmRows += '<div style="display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.05);">'
+        + '<div style="width:10px;height:10px;border-radius:50%;background:#e8b84b;box-shadow:0 0 8px #e8b84b66;flex-shrink:0;"></div>'
+        + '<div style="font-size:14px;font-weight:600;color:rgba(240,238,232,.85);flex:1;">' + esc(pt.name) + '</div>'
+        + '<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:1px;margin-right:8px;">' + (pt.qty || 1) + ' ACCOUNT' + ((pt.qty || 1) !== 1 ? 'S' : '') + '</div>'
+        + '<div style="font-family:Geist Mono,monospace;font-size:16px;font-weight:700;color:' + (ptNet >= 0 ? '#16c96a' : '#e83050') + ';">' + ptStr + '</div>'
+        + '</div>';
+    });
+  }
+
   // ── Build the card HTML ───────────────────────────────────────
   var pnlColor2 = isPos ? '#16c96a' : '#e83050';
 
@@ -10308,7 +10336,7 @@ function openGainsCard() {
       + '<div style="font-size:88px;font-weight:900;line-height:.9;letter-spacing:-3px;color:' + pnlColor2 + ';">' + pnlStr + '</div>'
       + '<div style="font-family:Geist Mono,monospace;font-size:11px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:10px;text-transform:uppercase;">'
         + allAccounts.length + ' Account' + (allAccounts.length !== 1 ? 's' : '') + ' &nbsp;&middot;&nbsp; '
-        + (state.firms || []).length + ' Firm' + ((state.firms || []).length !== 1 ? 's' : '') + ' &nbsp;&middot;&nbsp; '
+        + firms.length + ' Firm' + (firms.length !== 1 ? 's' : '') + ' &nbsp;&middot;&nbsp; '
         + totalDays + ' Days Logged'
       + '</div>'
     + '</div>'
