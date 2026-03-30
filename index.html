@@ -5699,6 +5699,8 @@ function openSettings(){
   var db = document.getElementById('dcBotSignals');   if(db) db.checked = !!cfg.dcBotSignals;
   var dd = document.getElementById('dcDailySummary'); if(dd) dd.checked = !!cfg.dcDailySummary;
   var sr = document.getElementById('dcSignalRole'); if(sr) sr.value = cfg.dcSignalRole||'';
+  var dcs = document.getElementById('dcChatServerId'); if(dcs) dcs.value = cfg.dcChatServerId||'';
+  var dcc = document.getElementById('dcChatChannelId'); if(dcc) dcc.value = cfg.dcChatChannelId||'';
   buildThemeGrid();
   buildAccentGrid();
   buildPanelEditor();
@@ -6469,6 +6471,44 @@ function getCTraderAccounts() {
   return (state.accounts || []).filter(function(a) { return a.platform === 'ctrader' && a.ctidTraderAccountId; });
 }
 
+function buildDiscordWin() {
+  var el = createWindow({ id: 'discord', title: 'Discord', icon: '&#128172;' });
+  var b = document.getElementById('wbody-discord');
+  if (!b) return;
+  b.style.cssText = 'padding:0;display:flex;flex-direction:column;overflow:hidden;';
+  renderDiscordPanel();
+}
+
+function renderDiscordPanel() {
+  var b = document.getElementById('wbody-discord');
+  if (!b) return;
+  var sid = cfg.dcChatServerId;
+  var cid = cfg.dcChatChannelId;
+
+  if (!sid || !cid) {
+    // Show setup instructions
+    b.innerHTML =
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;">'
+      + '<div style="font-size:32px;margin-bottom:12px;">&#128172;</div>'
+      + '<div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px;font-family:\'Cabinet Grotesk\',sans-serif;">Discord Chat</div>'
+      + '<div style="font-size:10px;color:var(--text3);line-height:1.6;max-width:280px;font-family:\'Cabinet Grotesk\',sans-serif;">'
+      + 'Embed a live Discord channel here.<br>Go to <b>Settings → DC</b> tab and enter your <b>Server ID</b> and <b>Channel ID</b>.'
+      + '</div>'
+      + '<button onclick="openSettings();switchSettingsTab(\'discord\',document.querySelector(\'.stab\'))" style="margin-top:16px;padding:8px 20px;background:rgba(88,101,242,.15);border:1px solid rgba(88,101,242,.4);border-radius:7px;color:rgba(148,155,252,1);font-size:11px;font-weight:800;cursor:pointer;font-family:\'Cabinet Grotesk\',sans-serif;">Open Discord Settings</button>'
+      + '</div>';
+    return;
+  }
+
+  // Render WidgetBot iframe
+  var src = 'https://e.widgetbot.io/channels/' + encodeURIComponent(sid) + '/' + encodeURIComponent(cid);
+  b.innerHTML =
+    '<iframe id="discord-chat-frame" src="' + src + '" '
+    + 'style="width:100%;height:100%;border:none;flex:1;" '
+    + 'allow="clipboard-write" '
+    + 'sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-forms"'
+    + '></iframe>';
+}
+
 function buildCopierWin() {
   var el = createWindow({ id: 'copier', title: 'Copy Trader', icon: '&#128279;' });
   var body = document.getElementById('wbody-copier');
@@ -7091,6 +7131,7 @@ buildCalcsWin();
 buildBotWin();
 buildSignalWin();
 try { buildCopierWin(); } catch(e) { console.error('Copier init error:', e); }
+try { buildDiscordWin(); } catch(e) { console.error('Discord init error:', e); }
 
 buildToggles();
 initElectron();

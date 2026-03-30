@@ -1,3 +1,8 @@
+## [2.7.7] — 2026-03-30
+### Added
+- Discord Chat panel — embed a live Discord channel directly into a resizable panel via WidgetBot
+- Settings UI for Server ID and Channel ID configuration under DC tab
+
 ## v2.7.6
 
 - Settings modal: JS now measures actual window height and forces max-height in pixels (not vh)
