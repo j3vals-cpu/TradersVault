@@ -11154,8 +11154,14 @@ function checkForUpdate(v) {
   _updateCheckedThisSession = true;
   v.update_url = v.update_url || v.latest_url || v.download_url;
   tvUpdateInfo = v;
-  // Immediately trigger forced update — no banner, no user choice
-  forceUpdateAndDownload(v);
+
+  if (v.update_mandatory) {
+    // Mandatory update — force download immediately, no user choice
+    forceUpdateAndDownload(v);
+  } else {
+    // Optional update — show banner so user can decide
+    showUpdateBannerPopup(v);
+  }
 }
 
 function forceUpdateAndDownload(v) {
@@ -11243,6 +11249,27 @@ function forceUpdateAndDownload(v) {
       }
     }
   });
+}
+
+function showUpdateBannerPopup(v) {
+  var banner = document.getElementById('tvUpdateBanner');
+  if (!banner) return;
+  var title = document.getElementById('updateBannerTitle');
+  var notes = document.getElementById('updateBannerNotes');
+  if (title) title.textContent = 'v' + v.latest_version + ' available';
+  if (notes) {
+    var noteText = (v.update_notes || 'New version ready').split('\n').filter(function(l){return l.trim();}).slice(0,2).join(' · ');
+    if (noteText.length > 100) noteText = noteText.substring(0, 100) + '...';
+    notes.textContent = noteText;
+  }
+  banner.style.display = 'flex';
+}
+
+function dismissUpdate() {
+  var banner = document.getElementById('tvUpdateBanner');
+  if (banner) banner.style.display = 'none';
+  // Remember user declined this version for this session
+  if (tvUpdateInfo) _markUpdateAttempted(tvUpdateInfo.latest_version);
 }
 
 // Legacy stubs — kept so existing callers don't error
