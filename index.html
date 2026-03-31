@@ -3927,7 +3927,9 @@ function renderPropTracker(){
 // ═══════════════════════════════════════════
 // PROP TRACKER PNL CARD
 // ═══════════════════════════════════════════
-function openPropCard() {
+var _propCardVersion = 'v1';
+function openPropCard(version) {
+  if (version) _propCardVersion = version;
   // Compute prop tracker totals
   var totalSpent=0,totalEarned=0,totalEntries=0;
   state.propTracker.forEach(function(pt){
@@ -3987,6 +3989,7 @@ function openPropCard() {
     "font-family:'Cabinet Grotesk','Plus Jakarta Sans',sans-serif"
   ].join(';');
 
+  var isPropV2 = _propCardVersion === 'v2';
   var cardHTML='<div id="propCardCanvas" style="'+cardStyle+'">'
     // Background
     +'<div style="position:absolute;inset:0;background:'
@@ -3994,7 +3997,7 @@ function openPropCard() {
       +'radial-gradient(ellipse 40% 30% at 80% 80%,rgba(22,201,106,.04) 0%,transparent 50%),'
       +'radial-gradient(ellipse 30% 30% at 20% 90%,rgba(58,142,245,.04) 0%,transparent 50%)'
       +';pointer-events:none;z-index:0;"></div>'
-    +'<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;"></div>'
+    +(isPropV2 ? '' : '<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;"></div>')
     // Top bar
     +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:52px;position:relative;z-index:1;">'
       +'<div style="width:42px;height:42px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:11px;display:flex;align-items:center;justify-content:center;">'
@@ -4036,7 +4039,9 @@ function openPropCard() {
     // Footer
     +'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1;">'
       +'<div style="display:flex;align-items:center;gap:16px;">'
-        +'<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">'+_cardUrl+'</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">'+_cardSub+'</div></div>'
+        +(isPropV2
+          ?'<div><div style="font-family:Geist Mono,monospace;font-size:20px;font-weight:800;color:#e8b84b;letter-spacing:2px;">'+_cardUrl+'</div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.5);letter-spacing:3px;margin-top:4px;">'+_cardSub+'</div></div>'
+          :'<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">'+_cardUrl+'</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">'+_cardSub+'</div></div>')
         +'<div class="_ver_tag" style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">v'+_appVersion+'</div>'
       +'</div>'
       +(_userName?'<div style="font-size:18px;font-weight:800;color:rgba(240,238,232,.75);letter-spacing:.5px;">'+_userName+'</div>':'')
@@ -4052,8 +4057,16 @@ function openPropCard() {
   modal.onclick=function(e){if(e.target===modal)modal.remove();};
   var scale=Math.min(1,(window.innerWidth-80)/960);
   var scaledW=Math.round(960*scale);
+  var pv1Active=_propCardVersion==='v1';
+  var pvToggle='<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;">'
+    +'<button onclick="openPropCard(\'v1\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;'+(pv1Active?'background:#e8b84b;color:#07070a;':'background:transparent;color:rgba(255,255,255,.5);')+'">V1</button>'
+    +'<button onclick="openPropCard(\'v2\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;'+(!pv1Active?'background:#e8b84b;color:#07070a;':'background:transparent;color:rgba(255,255,255,.5);')+'">V2</button>'
+    +'</div>';
   modal.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;">'
-    +'<div style="font-size:15px;font-weight:800;color:#f0eee8;align-self:flex-start;">\ud83d\udcb0 Prop Tracker Card</div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;width:'+scaledW+'px;">'
+    +'<div style="font-size:15px;font-weight:800;color:#f0eee8;">\ud83d\udcb0 Prop Tracker Card</div>'
+    +pvToggle
+    +'</div>'
     +'<div style="transform-origin:top left;transform:scale('+scale+');width:960px;">'+cardHTML+'</div>'
     +'<div style="display:flex;gap:10px;width:'+scaledW+'px;margin-top:'+(scale<1?Math.round(-(1-scale)*400)+'px':'0')+';">' 
       +'<button onclick="downloadPropCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">\u2b07 Save as PNG</button>'
@@ -4071,9 +4084,18 @@ function propCardToCanvas(callback){
   var card=document.getElementById('propCardCanvas');
   if(!card){var st=document.getElementById('propCardStatus');if(st)st.textContent='Card not found';return;}
   if(typeof html2canvas!=='undefined'){
-    html2canvas(card,{backgroundColor:'#07070e',scale:2,useCORS:true,logging:false,allowTaint:true})
-      .then(function(canvas){callback(canvas);})
-      .catch(function(e){var st=document.getElementById('propCardStatus');if(st)st.textContent='Render error: '+e.message;});
+    // Clone card at full size to avoid scale issues
+    var clone=card.cloneNode(true);
+    clone.style.transform='none';
+    clone.style.position='fixed';
+    clone.style.left='-9999px';
+    clone.style.top='0';
+    clone.style.width='960px';
+    clone.style.zIndex='-1';
+    document.body.appendChild(clone);
+    html2canvas(clone,{backgroundColor:'#07070e',scale:3,useCORS:true,logging:false,allowTaint:true})
+      .then(function(canvas){document.body.removeChild(clone);callback(canvas);})
+      .catch(function(e){document.body.removeChild(clone);var st=document.getElementById('propCardStatus');if(st)st.textContent='Render error: '+e.message;});
   }else{var st=document.getElementById('propCardStatus');if(st)st.textContent='html2canvas not available';}
 }
 
@@ -8305,7 +8327,7 @@ var _walkthroughSteps = [
 ];
 
 function showWalkthrough() {
-  if (localStorage.getItem('vd_walkthrough_done')) return;
+  if (localStorage.getItem('vd_walkthrough_done') || localStorage.getItem('walkthrough_completed')) return;
   _walkthroughStep = 0;
   renderWalkthroughStep();
 }
@@ -8330,7 +8352,7 @@ function renderWalkthroughStep() {
     + '<h2>' + step.title + '</h2>'
     + '<p>' + step.text + '</p>'
     + '<button class="wt-btn" onclick="nextWalkthroughStep()">' + (_walkthroughStep === _walkthroughSteps.length - 1 ? 'Get Started' : 'Next') + '</button>'
-    + '<br><button class="wt-skip" onclick="skipWalkthrough()">Skip tour</button>'
+    + '<br><button class="wt-skip" onclick="skipWalkthroughOld()">Skip tour</button>'
     + '</div>';
   document.body.appendChild(overlay);
 
@@ -8355,8 +8377,9 @@ function nextWalkthroughStep() {
   renderWalkthroughStep();
 }
 
-function skipWalkthrough() {
+function skipWalkthroughOld() {
   localStorage.setItem('vd_walkthrough_done', '1');
+  localStorage.setItem('walkthrough_completed', '1');
   var overlay = document.querySelector('.walkthrough-overlay');
   if (overlay) overlay.remove();
   var pointer = document.querySelector('.walkthrough-pointer');
@@ -8454,7 +8477,11 @@ if(cfg.dxtradeCredentials&&cfg.dxtradeCredentials.token){
 startEconCountdown();
 
 // ── Walkthrough for first-time users ──
-setTimeout(showWalkthrough, 1000);
+setTimeout(function() {
+  if (!localStorage.getItem('walkthrough_completed')) {
+    showWelcomeScreen();
+  }
+}, 1000);
 
 // ── Popout mode: if ?popout=<panelId>, show only that panel ──
 (function handlePopoutMode(){
@@ -11509,7 +11536,9 @@ function generateSelectedGainsCard() {
   openGainsCard();
 }
 
-function openGainsCard() {
+var _gainsCardVersion = 'v1';
+function openGainsCard(version) {
+  if (version) _gainsCardVersion = version;
   // ── Compute stats from all accounts ──────────────────────────
   var allAccounts = state.accounts || [];
   if (window._gcSelectedTrading) {
@@ -11618,6 +11647,7 @@ function openGainsCard() {
     "font-family:'Cabinet Grotesk','Plus Jakarta Sans',sans-serif",
   ].join(';');
 
+  var isV2 = _gainsCardVersion === 'v2';
   var cardHTML = '<div id="gainsCardCanvas" style="' + cardStyle + '">'
 
     // Background layers
@@ -11626,7 +11656,7 @@ function openGainsCard() {
       + 'radial-gradient(ellipse 40% 30% at 80% 80%,rgba(22,201,106,.04) 0%,transparent 50%),'
       + 'radial-gradient(ellipse 30% 30% at 20% 90%,rgba(58,142,245,.04) 0%,transparent 50%)'
       + ';pointer-events:none;z-index:0;"></div>'
-    + '<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;"></div>'
+    + (isV2 ? '' : '<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;"></div>')
 
     // Top bar
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:52px;position:relative;z-index:1;">'
@@ -11667,8 +11697,8 @@ function openGainsCard() {
       + '</div>'
     + '</div>'
 
-    // Equity curve (only if we have data)
-    + (barData.length > 0
+    // Equity curve (only if we have data, hidden in V2)
+    + (!isV2 && barData.length > 0
       ? '<div style="margin-bottom:36px;position:relative;z-index:1;">'
           + '<div style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.25);letter-spacing:2px;margin-bottom:12px;">EQUITY CURVE</div>'
           + '<div style="display:flex;align-items:flex-end;gap:4px;height:60px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;">'
@@ -11687,7 +11717,9 @@ function openGainsCard() {
     // Footer
     + '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1;">'
       + '<div style="display:flex;align-items:center;gap:16px;">'
-        + '<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">' + _cardUrl + '</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">' + _cardSub + '</div></div>'
+        + (isV2
+          ? '<div><div style="font-family:Geist Mono,monospace;font-size:20px;font-weight:800;color:#e8b84b;letter-spacing:2px;">' + _cardUrl + '</div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.5);letter-spacing:3px;margin-top:4px;">' + _cardSub + '</div></div>'
+          : '<div><div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:1px;">' + _cardUrl + '</div><div style="font-family:Geist Mono,monospace;font-size:8px;color:rgba(201,168,76,.3);letter-spacing:2px;margin-top:2px;">' + _cardSub + '</div></div>')
         + '<div style="font-family:Geist Mono,monospace;font-size:10px;color:rgba(201,168,76,.35);letter-spacing:1px;">'+_appVersion+'</div>'
       + '</div>'
       + (_userName2 ? '<div style="font-size:18px;font-weight:800;color:rgba(240,238,232,.75);letter-spacing:.5px;">' + _userName2 + '</div>' : '')
@@ -11710,8 +11742,17 @@ function openGainsCard() {
   var scaledW = Math.round(960 * scale);
   var scaledH = 'auto';
 
+  var v1Active = _gainsCardVersion === 'v1';
+  var vToggle = '<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;">'
+    + '<button onclick="openGainsCard(\'v1\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;' + (v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:transparent;color:rgba(255,255,255,.5);') + '">V1</button>'
+    + '<button onclick="openGainsCard(\'v2\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;' + (!v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:transparent;color:rgba(255,255,255,.5);') + '">V2</button>'
+    + '</div>';
+
   modal.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;">'
-    + '<div style="font-size:15px;font-weight:800;color:#f0eee8;align-self:flex-start;">📸 Your Performance Card</div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;width:' + scaledW + 'px;">'
+    + '<div style="font-size:15px;font-weight:800;color:#f0eee8;">📸 Your Performance Card</div>'
+    + vToggle
+    + '</div>'
     + '<div style="transform-origin:top left;transform:scale(' + scale + ');width:960px;">' + cardHTML + '</div>'
     + '<div style="display:flex;gap:10px;width:' + scaledW + 'px;margin-top:' + (scale < 1 ? Math.round(-(1-scale)*400) + 'px' : '0') + ';">'
       + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
@@ -11751,7 +11792,7 @@ function gainsCardToCanvas(callback) {
     document.body.appendChild(clone);
     html2canvas(clone, {
       backgroundColor: '#07070e',
-      scale: 2,
+      scale: 3,
       logging: false,
       useCORS: true,
       allowTaint: true
@@ -12025,12 +12066,7 @@ function cleanupWalkthrough() {
   }
 }
 
-// Auto-trigger on first launch — only after login (not on login screen)
-// The walkthrough will be triggered from hideLoginScreen -> checkForUpdate flow instead
-// Mark as completed to prevent it from showing on reinstall
-if (!localStorage.getItem('walkthrough_completed')) {
-  localStorage.setItem('walkthrough_completed', '1');
-}
+// Walkthrough is now triggered from the init block above — show once, persist skip/complete in localStorage
 
 // ═══════════════════════════════════════════
 // FEATURE: IMPORT ACCOUNTS (XLSX/CSV/JSON)
