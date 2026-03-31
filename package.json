@@ -52,8 +52,8 @@
           ]
         }
       ],
-      "icon": "assets/icon.ico",
       "requestedExecutionLevel": "asInvoker",
+      "icon": "assets/icon.ico",
       "executableName": "TradersVault"
     },
     "nsis": {
