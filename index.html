@@ -4054,43 +4054,40 @@ function openPropCard(version) {
   var old=document.getElementById('propCardModal');if(old)old.remove();
   var modal=document.createElement('div');
   modal.id='propCardModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px;overflow:auto;';
-  modal.onclick=function(e){if(e.target===modal)modal.remove();};
-  var scale=Math.min(1,(window.innerWidth-80)/960);
-  var scaledW=Math.round(960*scale);
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(6px);padding:20px;pointer-events:auto;';
+  modal.onclick=function(e){if(e.target===modal)closePropCard();};
+  // Disable click-through so modal is fully interactive
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
   var pv1Active=_propCardVersion==='v1';
   var pvToggle='<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;">'
     +'<button onclick="openPropCard(\'v1\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;'+(pv1Active?'background:#e8b84b;color:#07070a;':'background:transparent;color:rgba(255,255,255,.5);')+'">V1</button>'
     +'<button onclick="openPropCard(\'v2\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;'+(!pv1Active?'background:#e8b84b;color:#07070a;':'background:transparent;color:rgba(255,255,255,.5);')+'">V2</button>'
     +'</div>';
-  // Measure the card's natural height so the wrapper clips correctly after transform:scale
-  var ptTempDiv = document.createElement('div');
-  ptTempDiv.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1;';
-  ptTempDiv.innerHTML = '<div style="width:960px;">' + cardHTML + '</div>';
-  document.body.appendChild(ptTempDiv);
-  var ptCardNaturalHeight = ptTempDiv.firstChild.offsetHeight;
-  document.body.removeChild(ptTempDiv);
-  var ptScaledH = Math.ceil(ptCardNaturalHeight * scale);
-
-  modal.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;max-height:100%;overflow-y:auto;padding:10px 0;">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;width:'+scaledW+'px;flex-shrink:0;position:relative;z-index:2;">'
+  modal.innerHTML=''
+    // Top bar: title + V1/V2 toggle (fixed)
+    +'<div style="display:flex;align-items:center;justify-content:space-between;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
     +'<div style="font-size:15px;font-weight:800;color:#f0eee8;">💰 Prop Tracker Card</div>'
     +pvToggle
     +'</div>'
-    +'<div style="width:'+scaledW+'px;height:'+ptScaledH+'px;overflow:hidden;flex-shrink:0;position:relative;z-index:1;">'
-      +'<div style="transform-origin:top left;transform:scale('+scale+');width:960px;">'+cardHTML+'</div>'
+    // Scrollable card preview area — card renders at full 960px, no scaling
+    +'<div style="flex:1;overflow-y:auto;width:960px;max-width:100%;min-height:0;pointer-events:auto;">'
+      +cardHTML
     +'</div>'
-    +'<div style="display:flex;gap:10px;width:'+scaledW+'px;flex-shrink:0;position:relative;z-index:2;">'
+    // Fixed buttons at bottom (always visible)
+    +'<div style="display:flex;gap:10px;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
       +'<button onclick="downloadPropCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
       +'<button onclick="copyPropCard()" id="propCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       +'<button onclick="closePropCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
     +'</div>'
-    +'<div id="propCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;"></div>'
-    +'</div>';
+    +'<div id="propCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;pointer-events:auto;"></div>';
   document.body.appendChild(modal);
 }
 
-function closePropCard(){var m=document.getElementById('propCardModal');if(m)m.remove();}
+function closePropCard(){
+  var m=document.getElementById('propCardModal');if(m)m.remove();
+  // Re-enable click-through for overlay mode
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(true);
+}
 
 function propCardToCanvas(callback){
   var card=document.getElementById('propCardCanvas');
@@ -11548,15 +11545,17 @@ function openGainsCardSelector() {
 
   html += '<div style="display:flex;gap:8px;margin-top:16px;">';
   html += '<button onclick="generateSelectedGainsCard()" style="flex:1;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#07070a;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">Generate Card</button>';
-  html += '<button onclick="document.getElementById(\'gcSelectorModal\').remove()" style="padding:10px 16px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>';
+  html += '<button onclick="document.getElementById(\'gcSelectorModal\').remove();if(window.electronAPI&&window.electronAPI.setClickThrough)window.electronAPI.setClickThrough(true);" style="padding:10px 16px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>';
   html += '</div></div>';
 
   var old = document.getElementById('gcSelectorModal');
   if (old) old.remove();
   var modal = document.createElement('div');
   modal.id = 'gcSelectorModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
-  modal.onclick = function(e) { if(e.target === modal) modal.remove(); };
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);pointer-events:auto;';
+  // Disable click-through so selector is fully interactive
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
+  modal.onclick = function(e) { if(e.target === modal) { modal.remove(); if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(true); } };
   var inner = document.createElement('div');
   inner.style.cssText = 'background:var(--panel);border:1px solid var(--border2);border-radius:14px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;';
   inner.innerHTML = html;
@@ -11785,12 +11784,11 @@ function openGainsCard(version) {
 
   var modal = document.createElement('div');
   modal.id = 'gainsCardModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px;overflow:auto;';
-  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(6px);padding:20px;pointer-events:auto;';
+  modal.onclick = function(e) { if (e.target === modal) closeGainsCard(); };
 
-  // Scale the 960px card down to fit the screen nicely in the modal
-  var scale = Math.min(1, (window.innerWidth - 80) / 960);
-  var scaledW = Math.round(960 * scale);
+  // Disable click-through so modal is fully interactive
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
 
   var v1Active = _gainsCardVersion === 'v1';
   var vToggle = '<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;">'
@@ -11798,30 +11796,23 @@ function openGainsCard(version) {
     + '<button onclick="openGainsCard(\'v2\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;' + (!v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:transparent;color:rgba(255,255,255,.5);') + '">V2</button>'
     + '</div>';
 
-  // Measure the card's natural height so the wrapper clips correctly after transform:scale
-  var tempDiv = document.createElement('div');
-  tempDiv.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1;';
-  tempDiv.innerHTML = '<div style="width:960px;">' + cardHTML + '</div>';
-  document.body.appendChild(tempDiv);
-  var cardNaturalHeight = tempDiv.firstChild.offsetHeight;
-  document.body.removeChild(tempDiv);
-  var scaledH = Math.ceil(cardNaturalHeight * scale);
-
-  modal.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;max-height:100%;overflow-y:auto;padding:10px 0;">'
-    + '<div style="display:flex;align-items:center;justify-content:space-between;width:' + scaledW + 'px;flex-shrink:0;position:relative;z-index:2;">'
+  modal.innerHTML = ''
+    // Top bar: title + V1/V2 toggle (fixed)
+    + '<div style="display:flex;align-items:center;justify-content:space-between;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
     + '<div style="font-size:15px;font-weight:800;color:#f0eee8;">📸 Your Performance Card</div>'
     + vToggle
     + '</div>'
-    + '<div style="width:' + scaledW + 'px;height:' + scaledH + 'px;overflow:hidden;flex-shrink:0;position:relative;z-index:1;">'
-      + '<div style="transform-origin:top left;transform:scale(' + scale + ');width:960px;">' + cardHTML + '</div>'
+    // Scrollable card preview area — card renders at full 960px, no scaling
+    + '<div style="flex:1;overflow-y:auto;width:960px;max-width:100%;min-height:0;pointer-events:auto;">'
+      + cardHTML
     + '</div>'
-    + '<div style="display:flex;gap:10px;width:' + scaledW + 'px;flex-shrink:0;position:relative;z-index:2;">'
+    // Fixed buttons at bottom (always visible)
+    + '<div style="display:flex;gap:10px;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
       + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
       + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       + '<button onclick="closeGainsCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
     + '</div>'
-    + '<div id="gainsCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;"></div>'
-    + '</div>';
+    + '<div id="gainsCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;pointer-events:auto;"></div>';
 
   document.body.appendChild(modal);
 
@@ -11832,6 +11823,8 @@ function openGainsCard(version) {
 
 function closeGainsCard() {
   var m = document.getElementById('gainsCardModal'); if (m) m.remove();
+  // Re-enable click-through for overlay mode
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(true);
 }
 
 function gainsCardToCanvas(callback) {
