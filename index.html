@@ -11814,16 +11814,11 @@ function openGainsCard() {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px;overflow:auto;';
   modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
 
-  // Scale the 960px card to fit both width AND height of viewport
-  var scaleW = Math.min(1, (window.innerWidth - 80) / 960);
-  var scaleH = Math.min(1, (window.innerHeight - 140) / 920);
-  var scale = Math.min(scaleW, scaleH);
-  var scaledW = Math.round(960 * scale);
-
-  modal.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:100%;">'
+  // Build modal first, then measure and scale to fit
+  modal.innerHTML = '<div id="_gcInner" style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:100%;">'
     + '<div style="font-size:13px;font-weight:800;color:#f0eee8;align-self:flex-start;">📸 Your Performance Card</div>'
-    + '<div style="transform-origin:top center;transform:scale(' + scale + ');width:960px;margin-bottom:' + Math.round(-(1 - scale) * 920) + 'px;">' + cardHTML + '</div>'
-    + '<div style="display:flex;gap:10px;width:' + scaledW + 'px;">'
+    + '<div id="_gcCardWrap" style="transform-origin:top center;width:960px;">' + cardHTML + '</div>'
+    + '<div id="_gcBtns" style="display:flex;gap:10px;width:960px;">'
       + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
       + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       + '<button onclick="closeGainsCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
@@ -11832,6 +11827,23 @@ function openGainsCard() {
     + '</div>';
 
   document.body.appendChild(modal);
+
+  // Measure actual card height and scale to fit viewport
+  setTimeout(function() {
+    var wrap = document.getElementById('_gcCardWrap');
+    var btns = document.getElementById('_gcBtns');
+    if (!wrap) return;
+    var cardH = wrap.offsetHeight;
+    var cardW = 960;
+    var availW = window.innerWidth - 60;
+    var availH = window.innerHeight - 120; // room for title + buttons + padding
+    var scaleW = Math.min(1, availW / cardW);
+    var scaleH = Math.min(1, availH / cardH);
+    var s = Math.min(scaleW, scaleH);
+    wrap.style.transform = 'scale(' + s + ')';
+    wrap.style.marginBottom = Math.round(-(cardH * (1 - s))) + 'px';
+    if (btns) btns.style.width = Math.round(cardW * s) + 'px';
+  }, 30);
 
   // Clean up selection state
   delete window._gcSelectedTrading;
