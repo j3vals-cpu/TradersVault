@@ -993,6 +993,7 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
 .squawk-item:hover{border-color:var(--gold-soft);background:var(--panel3);}
 .squawk-item .sq-time{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.5px;}
 .squawk-item .sq-src{font-family:'Geist Mono',monospace;font-size:8px;color:var(--gold);font-weight:700;letter-spacing:.5px;margin-left:6px;}
+.squawk-item .sq-impact{font-family:'Geist Mono',monospace;font-size:7px;font-weight:700;color:#fff;padding:1px 4px;border-radius:3px;margin-left:6px;letter-spacing:.5px;vertical-align:middle;}
 .squawk-item .sq-headline{font-size:11px;font-weight:700;color:var(--text);margin-top:3px;line-height:1.4;}
 .squawk-item .sq-snippet{font-size:9px;color:var(--text2);margin-top:3px;line-height:1.4;display:none;}
 .squawk-item.expanded .sq-snippet{display:block;}
@@ -1223,20 +1224,30 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
 <!-- ═══ UPDATE BANNER ═══ -->
 <div id="tvUpdateBanner" style="
   display:none;
-  position:fixed;top:0;left:0;right:0;z-index:99997;
-  background:linear-gradient(90deg,rgba(14,14,19,.98),rgba(18,18,26,.98));
-  border-bottom:1px solid rgba(232,184,75,.3);
-  padding:10px 20px;
-  display:none;align-items:center;gap:14px;
+  position:fixed;bottom:24px;right:24px;z-index:99997;
+  background:rgba(12,12,18,.95);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(232,184,75,.2);
+  border-radius:14px;
+  padding:18px 22px;
+  width:340px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
   font-family:'Cabinet Grotesk',sans-serif;
+  animation:bannerSlideIn .35s cubic-bezier(.4,0,.2,1);
 ">
-  <span style="font-size:14px;">🚀</span>
-  <div style="flex:1;">
-    <div style="font-size:12px;font-weight:800;color:#f0eee8;" id="updateBannerTitle">Update available</div>
-    <div style="font-size:10px;color:#9a9ab2;" id="updateBannerNotes">New version ready</div>
+  <style>@keyframes bannerSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+    <div style="width:32px;height:32px;border-radius:8px;background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.25);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🚀</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:800;color:#f0eee8;" id="updateBannerTitle">Update available</div>
+      <div style="font-size:10px;color:#5f5f78;margin-top:1px;" id="updateBannerNotes">New version ready</div>
+    </div>
+    <button onclick="dismissUpdate()" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.05);border:none;color:#5f5f78;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
   </div>
-  <button onclick="doUpdate()" style="height:30px;padding:0 14px;background:#e8b84b;border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;">⬇ Update Now</button>
-  <button onclick="dismissUpdate()" style="height:30px;padding:0 10px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#5f5f78;font-size:11px;cursor:pointer;font-family:inherit;">Later</button>
+  <div style="display:flex;gap:8px;">
+    <button onclick="doUpdate()" style="flex:1;height:34px;background:#e8b84b;border:none;border-radius:8px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;">Update Now</button>
+    <button onclick="dismissUpdate()" style="flex:1;height:34px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#9a9ab2;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Later</button>
+  </div>
 </div>
 
 <!-- ═══ FORCE UPDATE OVERLAY (full-screen blocking) ═══ -->
@@ -2037,7 +2048,12 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
 
     <!-- DATA TAB -->
     <div class="settings-panel" id="stab-data">
-      <div class="s-lbl" style="margin-top:0;">Walkthrough</div>
+      <div class="s-lbl" style="margin-top:0;">Updates</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Current version: <span style="color:var(--gold);font-weight:700;" id="settingsVersionLabel">—</span></div>
+      <button onclick="manualCheckForUpdate()" id="settingsUpdateBtn" style="width:100%;padding:10px;background:var(--gold-dim);border:1px solid rgba(232,184,75,.3);border-radius:8px;color:var(--gold);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-bottom:6px;transition:all .2s;" onmouseover="this.style.background='rgba(232,184,75,.18)'" onmouseout="this.style.background='var(--gold-dim)'">&#128259; Check for Updates</button>
+      <div id="settingsUpdateStatus" style="font-family:'Geist Mono',monospace;font-size:9px;color:var(--text3);min-height:14px;margin-bottom:14px;"></div>
+      <div style="height:1px;background:var(--border2);margin:0 0 16px;"></div>
+            <div class="s-lbl" style="margin-top:0;">Walkthrough</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Re-run the onboarding tour to learn about each panel.</div>
       <button onclick="closeSettings();setTimeout(startWalkthrough,300);" style="width:100%;padding:10px;background:var(--gold-dim);border:1px solid rgba(232,184,75,.3);border-radius:8px;color:var(--gold);font-size:11px;font-weight:800;cursor:pointer;font-family:'Cabinet Grotesk',sans-serif;margin-bottom:14px;transition:all .2s;" onmouseover="this.style.background='rgba(232,184,75,.18)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='var(--gold-dim)';this.style.borderColor='rgba(232,184,75,.3)'">&#127891; Restart Tour</button>
       <div class="s-lbl" style="margin-top:0;">Cloud Sync</div>
@@ -5926,6 +5942,9 @@ function applyProfileToUI(p) {
 var _settingsActiveTab = 'theme';
 
 function openSettings(){
+  // Populate version label
+  var vl = document.getElementById('settingsVersionLabel');
+  if (vl && typeof _appVersion !== 'undefined') vl.textContent = 'v' + _appVersion;
   // Populate Discord settings
   var dw = document.getElementById('discordWebhook'); if(dw) dw.value = cfg.discordWebhook||'';
   var dn = document.getElementById('discordBotName'); if(dn) dn.value = cfg.discordBotName||'Traders Vault';
@@ -7572,48 +7591,84 @@ function renderSquawkPanel() {
 }
 
 function fetchSquawkFeed() {
-  // Use multiple RSS feed sources via CORS proxy
+  // Fetch directly — Electron has webSecurity:false so no CORS proxy needed
   var feeds = [
-    { name: 'CNBC', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.cnbc.com/id/100003114/device/rss/rss.html') },
-    { name: 'MarketWatch', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://feeds.marketwatch.com/marketwatch/topstories/') },
-    { name: 'Reuters', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best') }
+    { name: 'CNBC', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114' },
+    { name: 'MarketWatch', url: 'https://feeds.marketwatch.com/marketwatch/topstories/' },
+    { name: 'Google Biz', url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en' },
+    { name: 'Investing', url: 'https://www.investing.com/rss/news.rss' }
   ];
 
   var allItems = [];
   var completed = 0;
+  var errors = [];
 
   feeds.forEach(function(feed) {
-    fetch(feed.url).then(function(r) { return r.text(); }).then(function(xml) {
+    fetch(feed.url, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+    .then(function(r) {
+      if (!r.ok) throw new Error(feed.name + ' returned HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(xml) {
       var parser = new DOMParser();
       var doc = parser.parseFromString(xml, 'text/xml');
+      var parseErr = doc.querySelector('parsererror');
+      if (parseErr) throw new Error(feed.name + ': invalid XML');
       var items = doc.querySelectorAll('item');
       items.forEach(function(item) {
         var title = (item.querySelector('title') || {}).textContent || '';
         var desc = (item.querySelector('description') || {}).textContent || '';
         var link = (item.querySelector('link') || {}).textContent || '';
         var pubDate = (item.querySelector('pubDate') || {}).textContent || '';
-        // Strip HTML from description
         desc = desc.replace(/<[^>]+>/g, '').trim();
         if (desc.length > 200) desc = desc.substring(0, 200) + '...';
-        allItems.push({
-          title: title,
-          desc: desc,
-          link: link,
-          date: pubDate ? new Date(pubDate) : new Date(),
-          source: feed.name
-        });
+        if (title) {
+          allItems.push({
+            title: title,
+            desc: desc,
+            link: link,
+            date: pubDate ? new Date(pubDate) : new Date(),
+            source: feed.name,
+            impact: getImpactLevel(title)
+          });
+        }
       });
-    }).catch(function() {}).finally(function() {
+    })
+    .catch(function(err) {
+      errors.push(feed.name + ': ' + err.message);
+      console.warn('[Squawk] Feed error:', feed.name, err.message);
+    })
+    .finally(function() {
       completed++;
       if (completed === feeds.length) {
         allItems.sort(function(a, b) { return b.date - a.date; });
         _squawkItems = allItems.slice(0, 50);
         renderSquawkFeed();
         var status = document.getElementById('squawkStatus');
-        if (status) status.textContent = 'Last updated: ' + new Date().toLocaleTimeString() + ' · ' + _squawkItems.length + ' articles';
+        if (status) {
+          var msg = 'Updated: ' + new Date().toLocaleTimeString() + ' · ' + _squawkItems.length + ' articles';
+          if (errors.length) msg += ' · ' + errors.length + ' feed(s) failed';
+          status.textContent = msg;
+        }
+        if (!_squawkItems.length && errors.length) {
+          var el = document.getElementById('squawkFeed');
+          if (el) el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--red);font-size:10px;">'
+            + '&#9888; Failed to load feeds:<br><span style="color:var(--text3);font-size:9px;">' + errors.join('<br>') + '</span>'
+            + '<br><br><button onclick="fetchSquawkFeed()" style="padding:4px 12px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;color:var(--gold);cursor:pointer;font-size:9px;">Retry</button>'
+            + '</div>';
+        }
       }
     });
   });
+}
+
+function getImpactLevel(headline) {
+  var h = headline.toLowerCase();
+  var highWords = ['crash', 'surge', 'plunge', 'soar', 'record', 'emergency', 'war', 'crisis', 'recession', 'default', 'bankrupt', 'halt', 'shutdown', 'collapse', 'rate hike', 'rate cut', 'fed ', 'federal reserve', 'breaking'];
+  var medWords = ['rise', 'fall', 'drop', 'gain', 'jump', 'slip', 'rally', 'decline', 'upgrade', 'downgrade', 'earnings', 'revenue', 'profit', 'loss', 'layoff', 'acquisition', 'merger', 'ipo', 'buyback', 'dividend'];
+  for (var i = 0; i < highWords.length; i++) { if (h.indexOf(highWords[i]) !== -1) return 'HIGH'; }
+  for (var j = 0; j < medWords.length; j++) { if (h.indexOf(medWords[j]) !== -1) return 'MED'; }
+  return 'LOW';
 }
 
 function renderSquawkFeed() {
@@ -7628,12 +7683,15 @@ function renderSquawkFeed() {
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:10px;">No articles found</div>';
     return;
   }
-  el.innerHTML = items.map(function(it, idx) {
+  el.innerHTML = items.map(function(it) {
     var timeStr = it.date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     var sentiment = getSentiment(it.title);
     var borderColor = sentiment === 'bull' ? 'var(--green)' : sentiment === 'bear' ? 'var(--red)' : 'var(--border2)';
+    var impact = it.impact || 'LOW';
+    var impactColor = impact === 'HIGH' ? '#ff4444' : impact === 'MED' ? '#ffaa00' : '#666';
     return '<div class="squawk-item" style="border-left:3px solid ' + borderColor + '" onclick="this.classList.toggle(\'expanded\')" data-link="' + esc(it.link) + '">'
-      + '<div><span class="sq-time">' + timeStr + '</span><span class="sq-src">' + esc(it.source) + '</span></div>'
+      + '<div><span class="sq-time">' + timeStr + '</span><span class="sq-src">' + esc(it.source) + '</span>'
+      + '<span class="sq-impact" style="background:' + impactColor + '">' + impact + '</span></div>'
       + '<div class="sq-headline">' + esc(it.title) + '</div>'
       + '<div class="sq-snippet">' + esc(it.desc) + '<br><a href="' + esc(it.link) + '" target="_blank" style="color:var(--gold);font-size:9px;margin-top:4px;display:inline-block;">Open in browser &rarr;</a></div>'
       + '</div>';
@@ -11087,8 +11145,14 @@ function checkForUpdate(v) {
   _updateCheckedThisSession = true;
   v.update_url = v.update_url || v.latest_url || v.download_url;
   tvUpdateInfo = v;
-  // Immediately trigger forced update — no banner, no user choice
-  forceUpdateAndDownload(v);
+
+  if (v.update_mandatory) {
+    // Mandatory update — force download immediately
+    forceUpdateAndDownload(v);
+  } else {
+    // Optional update — show banner so user can decide
+    showUpdateBannerPopup(v);
+  }
 }
 
 function forceUpdateAndDownload(v) {
@@ -11181,7 +11245,52 @@ function forceUpdateAndDownload(v) {
 // Legacy stubs — kept so existing callers don't error
 function showUpdateBanner(v) { checkForUpdate(v); }
 function doUpdate() { if (tvUpdateInfo) forceUpdateAndDownload(tvUpdateInfo); }
-function dismissUpdate() { /* no-op — updates are mandatory */ }
+
+function showUpdateBannerPopup(v) {
+  var banner = document.getElementById('tvUpdateBanner');
+  if (!banner) return;
+  var title = document.getElementById('updateBannerTitle');
+  var notes = document.getElementById('updateBannerNotes');
+  if (title) title.textContent = 'v' + v.latest_version + ' available';
+  if (notes) {
+    var noteText = (v.update_notes || 'New version ready').split('\n').filter(function(l){return l.trim();}).slice(0,2).join(' \u00b7 ');
+    if (noteText.length > 100) noteText = noteText.substring(0, 100) + '...';
+    notes.textContent = noteText;
+  }
+  banner.style.display = 'flex';
+}
+
+function dismissUpdate() {
+  var banner = document.getElementById('tvUpdateBanner');
+  if (banner) banner.style.display = 'none';
+}
+
+function manualCheckForUpdate() {
+  var btn = document.getElementById('settingsUpdateBtn');
+  var status = document.getElementById('settingsUpdateStatus');
+  var vlabel = document.getElementById('settingsVersionLabel');
+  if (vlabel && _appVersion) vlabel.textContent = 'v' + _appVersion;
+  if (btn) btn.textContent = '\u23f3 Checking...';
+  if (status) { status.style.color = 'var(--text3)'; status.textContent = 'Contacting server...'; }
+  _updateCheckedThisSession = false;
+  fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.stable&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(rows) {
+    if (btn) btn.textContent = '\ud83d\udd01 Check for Updates';
+    if (!rows || !rows.length) { if (status) status.textContent = 'Could not reach server.'; return; }
+    var latest = rows[0];
+    if (latest.version && isNewerVersion(latest.version, _appVersion)) {
+      if (status) { status.style.color = '#22d46a'; status.textContent = 'v' + latest.version + ' available!'; }
+      tvUpdateInfo = { latest_version: latest.version, update_url: latest.download_url, update_notes: latest.release_notes, update_mandatory: latest.is_mandatory };
+      showUpdateBannerPopup(tvUpdateInfo);
+    } else {
+      if (status) { status.style.color = '#22d46a'; status.textContent = 'You\'re on the latest version!'; }
+    }
+  })
+  .catch(function(e) { if (btn) btn.textContent = '\ud83d\udd01 Check for Updates'; if (status) { status.style.color = '#ff4d6d'; status.textContent = 'Failed: ' + e.message; } });
+}
 
 // ── Account modal (upgrade / sign out) ─────────────────────────
 function showAccountModal() {
@@ -12025,11 +12134,10 @@ function cleanupWalkthrough() {
   }
 }
 
-// Auto-trigger on first launch — only after login (not on login screen)
-// The walkthrough will be triggered from hideLoginScreen -> checkForUpdate flow instead
-// Mark as completed to prevent it from showing on reinstall
-if (!localStorage.getItem('walkthrough_completed')) {
-  localStorage.setItem('walkthrough_completed', '1');
+// Auto-trigger on first launch — only if user hasn't completed or skipped before
+if (!localStorage.getItem('walkthrough_completed') && !localStorage.getItem('vd_walkthrough_done')) {
+  // Show walkthrough on next tick (after panels are built)
+  setTimeout(function() { if (typeof startWalkthrough === 'function') startWalkthrough(); }, 1500);
 }
 
 // ═══════════════════════════════════════════
