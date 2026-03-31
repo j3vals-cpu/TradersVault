@@ -4059,9 +4059,9 @@ function openPropCard(version) {
   // Disable click-through so modal is fully interactive
   if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
   var pv1Active=_propCardVersion==='v1';
-  var pvToggle='<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;">'
-    +'<button onclick="openPropCard(\'v1\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;'+(pv1Active?'background:#e8b84b;color:#07070a;':'background:transparent;color:rgba(255,255,255,.5);')+'">V1</button>'
-    +'<button onclick="openPropCard(\'v2\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;'+(!pv1Active?'background:#e8b84b;color:#07070a;':'background:transparent;color:rgba(255,255,255,.5);')+'">V2</button>'
+  var pvToggle='<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;position:relative;z-index:70000;">'
+    +'<button onclick="event.stopPropagation();_propCardVersion=\'v1\';openPropCard(\'v1\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;'+(pv1Active?'background:#e8b84b;color:#07070a;':'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);')+'">V1</button>'
+    +'<button onclick="event.stopPropagation();_propCardVersion=\'v2\';openPropCard(\'v2\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;'+(!pv1Active?'background:#e8b84b;color:#07070a;':'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);')+'">V2</button>'
     +'</div>';
   modal.innerHTML=''
     // Top bar: title + V1/V2 toggle (fixed)
@@ -11806,9 +11806,9 @@ function openGainsCard(version) {
   if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
 
   var v1Active = _gainsCardVersion === 'v1';
-  var vToggle = '<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;">'
-    + '<button onclick="openGainsCard(\'v1\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;' + (v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:transparent;color:rgba(255,255,255,.5);') + '">V1</button>'
-    + '<button onclick="openGainsCard(\'v2\')" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;' + (!v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:transparent;color:rgba(255,255,255,.5);') + '">V2</button>'
+  var vToggle = '<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;position:relative;z-index:70000;">'
+    + '<button onclick="event.stopPropagation();_gainsCardVersion=\'v1\';openGainsCard(\'v1\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;' + (v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);') + '">V1</button>'
+    + '<button onclick="event.stopPropagation();_gainsCardVersion=\'v2\';openGainsCard(\'v2\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;' + (!v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);') + '">V2</button>'
     + '</div>';
 
   modal.innerHTML = ''
