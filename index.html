@@ -3558,7 +3558,7 @@ function updateBalance(id){
   var inp=document.getElementById('balin-'+id);
   var val=parseFloat(inp.value);if(isNaN(val)||val<0)return;
   var a=state.accounts.find(function(x){return x.id===id;});if(!a)return;
-  var prev=a.currentBalance||a.balance||a.startBalance||0;a.currentBalance=val;
+  var prev=parseFloat(a.currentBalance||a.balance||a.startBalance)||0;a.currentBalance=val;
   var pnlChange=val-prev;
   a.dailyLogs.push({date:today(),balance:val,pnl:pnlChange});
   inp.value='';save();renderTrading();
@@ -3596,7 +3596,7 @@ function renderTrading(){
   var al=document.getElementById('accountsList');
   if(!ts||!tp||!al)return;
   var totalStart=0,totalCurrent=0,totalTarget=0;
-  accounts.forEach(function(a){totalStart+=(a.startBalance||0);totalCurrent+=(a.currentBalance||a.balance||a.startBalance||0);totalTarget+=a.totalProfitNeeded||0;});
+  accounts.forEach(function(a){totalStart+=parseFloat(a.startBalance)||0;totalCurrent+=parseFloat(a.currentBalance||a.balance||a.startBalance)||0;totalTarget+=parseFloat(a.totalProfitNeeded)||0;});
   var totalPnl=totalCurrent-totalStart;
   var pnlCls=totalPnl>0?'pos':totalPnl<0?'neg':'neu';
   ts.innerHTML='<div class="ts-card"><div class="ts-val neu">'+fmtM(totalCurrent)+'</div><div class="ts-lbl">Balance</div></div>'
@@ -3622,12 +3622,12 @@ function renderTrading(){
   if(!accounts.length){al.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--text3);font-size:11px;">No accounts. Click + Account.</div>';return;}
   var html='';
   accounts.forEach(function(a){
-    var pnl=(a.currentBalance||a.balance||a.startBalance||0)-(a.startBalance||0);
+    var pnl=(parseFloat(a.currentBalance||a.balance||a.startBalance)||0)-(parseFloat(a.startBalance)||0);
     var pnlCls2=pnl>0?'pos':pnl<0?'neg':'';
     var firm=state.firms.find(function(f){return f.id===a.firmId;});
     var color=a.color||'#e8b84b';
-    var sb=a.startBalance||0;
-    var cb=a.currentBalance||a.balance||sb;
+    var sb=parseFloat(a.startBalance)||0;
+    var cb=parseFloat(a.currentBalance||a.balance)||sb;
     var label=a.label||(a.firmName+' '+(sb/1000).toFixed(0)+'K');
     var acType=a.acType||'evaluation';
     var size='$'+(sb>=1000?(sb/1000).toFixed(0)+'K':sb);
@@ -4065,22 +4065,34 @@ function openPropCard(version) {
     +'</div>';
   modal.innerHTML=''
     // Top bar: title + V1/V2 toggle (fixed)
-    +'<div style="display:flex;align-items:center;justify-content:space-between;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:960px;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
     +'<div style="font-size:15px;font-weight:800;color:#f0eee8;">💰 Prop Tracker Card</div>'
     +pvToggle
     +'</div>'
-    // Scrollable card preview area — card renders at full 960px, no scaling
-    +'<div style="flex:1;overflow-y:auto;width:960px;max-width:100%;min-height:0;pointer-events:auto;">'
-      +cardHTML
+    // Scrollable card preview area — scale card to fit viewport
+    +'<div style="flex:1;overflow-y:auto;max-width:100%;min-height:0;pointer-events:auto;display:flex;justify-content:center;">'
+      +'<div id="propCardScaler" style="transform-origin:top center;width:960px;flex-shrink:0;">'+cardHTML+'</div>'
     +'</div>'
     // Fixed buttons at bottom (always visible)
-    +'<div style="display:flex;gap:10px;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
+    +'<div style="display:flex;gap:10px;width:100%;max-width:960px;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
       +'<button onclick="downloadPropCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
       +'<button onclick="copyPropCard()" id="propCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       +'<button onclick="closePropCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
     +'</div>'
     +'<div id="propCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;pointer-events:auto;"></div>';
   document.body.appendChild(modal);
+  // Scale card to fit viewport
+  setTimeout(function() {
+    var scaler = document.getElementById('propCardScaler');
+    if (scaler) {
+      var vw = window.innerWidth - 40;
+      if (vw < 960) {
+        var s = vw / 960;
+        scaler.style.transform = 'scale(' + s + ')';
+        scaler.style.marginBottom = '-' + Math.round(scaler.offsetHeight * (1 - s)) + 'px';
+      }
+    }
+  }, 50);
 }
 
 function closePropCard(){
@@ -5764,7 +5776,7 @@ function buildPublicData() {
   if (showPnl && showPnl.classList.contains('on')) {
     var totalPnl = 0, allLogs = [];
     (state.accounts || []).forEach(function(a) {
-      totalPnl += (a.currentBalance || 0) - (a.startBalance || 0);
+      totalPnl += (parseFloat(a.currentBalance) || 0) - (parseFloat(a.startBalance) || 0);
       (a.dailyLogs || []).forEach(function(l) { allLogs.push(l); });
     });
     var winDays = allLogs.filter(function(l) { return l.pnl > 0; }).length;
@@ -10515,10 +10527,10 @@ function getPnlSnapshot() {
     var totalPnl = 0, totalStart = 0, totalCurrent = 0;
     var allLogs = [];
     accounts.forEach(function(a) {
-      var pnl = (a.currentBalance || 0) - (a.startBalance || 0);
+      var pnl = (parseFloat(a.currentBalance) || 0) - (parseFloat(a.startBalance) || 0);
       totalPnl += pnl;
-      totalStart += (a.startBalance || 0);
-      totalCurrent += (a.currentBalance || 0);
+      totalStart += (parseFloat(a.startBalance) || 0);
+      totalCurrent += (parseFloat(a.currentBalance) || 0);
       (a.dailyLogs || []).forEach(function(l) { allLogs.push(l); });
     });
     // Win rate from daily logs
@@ -11601,8 +11613,9 @@ function openGainsCard(version) {
   var bestDay     = 0;
 
   allAccounts.forEach(function(a) {
-    var pnl = typeof a.pnl === 'number' ? a.pnl
-              : ((a.currentBalance || a.balance || a.startBalance || 0) - (a.startBalance || 0));
+    var cb = parseFloat(a.currentBalance || a.balance || a.startBalance) || 0;
+    var sb = parseFloat(a.startBalance) || 0;
+    var pnl = typeof a.pnl === 'number' ? a.pnl : (cb - sb);
     totalPnl += pnl;
     (a.dailyLogs || []).forEach(function(log) {
       if (!dayMap[log.date]) dayMap[log.date] = 0;
@@ -11637,7 +11650,9 @@ function openGainsCard(version) {
     var accs = allAccounts.filter(function(a) { return a.firmId === f.id; });
     var fp = 0;
     accs.forEach(function(a) {
-      fp += typeof a.pnl === 'number' ? a.pnl : ((a.currentBalance || a.balance || a.startBalance || 0) - (a.startBalance || 0));
+      var _cb = parseFloat(a.currentBalance || a.balance || a.startBalance) || 0;
+      var _sb = parseFloat(a.startBalance) || 0;
+      fp += typeof a.pnl === 'number' ? a.pnl : (_cb - _sb);
     });
     return { name: f.name, pnl: fp, color: f.color || '#e8b84b', count: accs.length };
   }).filter(function(f) { return f.count > 0; });
@@ -11798,16 +11813,16 @@ function openGainsCard(version) {
 
   modal.innerHTML = ''
     // Top bar: title + V1/V2 toggle (fixed)
-    + '<div style="display:flex;align-items:center;justify-content:space-between;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:960px;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
     + '<div style="font-size:15px;font-weight:800;color:#f0eee8;">📸 Your Performance Card</div>'
     + vToggle
     + '</div>'
-    // Scrollable card preview area — card renders at full 960px, no scaling
-    + '<div style="flex:1;overflow-y:auto;width:960px;max-width:100%;min-height:0;pointer-events:auto;">'
-      + cardHTML
+    // Scrollable card preview area — scale card to fit viewport
+    + '<div style="flex:1;overflow-y:auto;max-width:100%;min-height:0;pointer-events:auto;display:flex;justify-content:center;">'
+      + '<div id="gainsCardScaler" style="transform-origin:top center;width:960px;flex-shrink:0;">' + cardHTML + '</div>'
     + '</div>'
     // Fixed buttons at bottom (always visible)
-    + '<div style="display:flex;gap:10px;width:960px;max-width:100%;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
+    + '<div style="display:flex;gap:10px;width:100%;max-width:960px;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
       + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
       + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       + '<button onclick="closeGainsCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
@@ -11815,6 +11830,19 @@ function openGainsCard(version) {
     + '<div id="gainsCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;pointer-events:auto;"></div>';
 
   document.body.appendChild(modal);
+
+  // Scale card to fit viewport
+  setTimeout(function() {
+    var scaler = document.getElementById('gainsCardScaler');
+    if (scaler) {
+      var vw = window.innerWidth - 40;
+      if (vw < 960) {
+        var s = vw / 960;
+        scaler.style.transform = 'scale(' + s + ')';
+        scaler.style.marginBottom = '-' + Math.round(scaler.offsetHeight * (1 - s)) + 'px';
+      }
+    }
+  }, 50);
 
   // Clean up selection state
   delete window._gcSelectedTrading;
