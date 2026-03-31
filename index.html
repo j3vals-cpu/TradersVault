@@ -3557,7 +3557,7 @@ function updateBalance(id){
   var inp=document.getElementById('balin-'+id);
   var val=parseFloat(inp.value);if(isNaN(val)||val<0)return;
   var a=state.accounts.find(function(x){return x.id===id;});if(!a)return;
-  var prev=a.currentBalance;a.currentBalance=val;
+  var prev=a.currentBalance||a.balance||a.startBalance||0;a.currentBalance=val;
   var pnlChange=val-prev;
   a.dailyLogs.push({date:today(),balance:val,pnl:pnlChange});
   inp.value='';save();renderTrading();
@@ -3595,7 +3595,7 @@ function renderTrading(){
   var al=document.getElementById('accountsList');
   if(!ts||!tp||!al)return;
   var totalStart=0,totalCurrent=0,totalTarget=0;
-  accounts.forEach(function(a){totalStart+=a.startBalance;totalCurrent+=a.currentBalance;totalTarget+=a.totalProfitNeeded||0;});
+  accounts.forEach(function(a){totalStart+=(a.startBalance||0);totalCurrent+=(a.currentBalance||a.balance||a.startBalance||0);totalTarget+=a.totalProfitNeeded||0;});
   var totalPnl=totalCurrent-totalStart;
   var pnlCls=totalPnl>0?'pos':totalPnl<0?'neg':'neu';
   ts.innerHTML='<div class="ts-card"><div class="ts-val neu">'+fmtM(totalCurrent)+'</div><div class="ts-lbl">Balance</div></div>'
@@ -3621,13 +3621,15 @@ function renderTrading(){
   if(!accounts.length){al.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px 0;color:var(--text3);font-size:11px;">No accounts. Click + Account.</div>';return;}
   var html='';
   accounts.forEach(function(a){
-    var pnl=a.currentBalance-a.startBalance;
+    var pnl=(a.currentBalance||a.balance||a.startBalance||0)-(a.startBalance||0);
     var pnlCls2=pnl>0?'pos':pnl<0?'neg':'';
     var firm=state.firms.find(function(f){return f.id===a.firmId;});
     var color=a.color||'#e8b84b';
-    var label=a.label||(a.firmName+' '+(a.startBalance/1000).toFixed(0)+'K');
+    var sb=a.startBalance||0;
+    var cb=a.currentBalance||a.balance||sb;
+    var label=a.label||(a.firmName+' '+(sb/1000).toFixed(0)+'K');
     var acType=a.acType||'evaluation';
-    var size='$'+(a.startBalance>=1000?(a.startBalance/1000).toFixed(0)+'K':a.startBalance);
+    var size='$'+(sb>=1000?(sb/1000).toFixed(0)+'K':sb);
     var acTarget=a.totalProfitNeeded||a.profitTarget||0;
     var acPct=acTarget>0?Math.min(100,Math.max(0,Math.round(pnl/acTarget*100))):0;
     var acRem=acTarget>0?Math.max(0,acTarget-pnl):0;
@@ -3646,8 +3648,8 @@ function renderTrading(){
       +'<button class="ac-del" data-id="'+a.id+'" onclick="delAccount(this.dataset.id)">&#10005;</button>'
       +'</div>'
       +'<div class="ac-stats">'
-      +'<div class="ac-stat"><div class="ac-stat-lbl">Start</div><div class="ac-stat-val">'+fmtMF(a.startBalance)+'</div></div>'
-      +'<div class="ac-stat"><div class="ac-stat-lbl">Balance</div><div class="ac-stat-val '+(pnl>=0?'pos':'neg')+'">'+fmtMF(a.currentBalance)+'</div></div>'
+      +'<div class="ac-stat"><div class="ac-stat-lbl">Start</div><div class="ac-stat-val">'+fmtMF(sb)+'</div></div>'
+      +'<div class="ac-stat"><div class="ac-stat-lbl">Balance</div><div class="ac-stat-val '+(pnl>=0?'pos':'neg')+'">'+fmtMF(cb)+'</div></div>'
       +'<div class="ac-stat"><div class="ac-stat-lbl">P&amp;L</div><div class="ac-stat-val '+pnlCls2+'">'+(pnl>=0?'+':'')+fmtMF(pnl)+'</div></div>'
       +'</div>'
       +progBar
@@ -8903,8 +8905,9 @@ function projectXConnect(){
     state.accounts.push({
       id:uid(), firmId:firm.id, firmName:firm.name,
       acType: accType,
-      balance: balance, startBalance: balance,
-      pnl:0, target:0, totalProfitNeeded:0,
+      startBalance: balance, currentBalance: balance,
+      profitTarget:0, totalProfitNeeded:0, consistency:0,
+      dailyLogs:[],
       label: user + ' ('+platform+')',
       apiUser: user,
       color: firm.color
@@ -8930,8 +8933,9 @@ function saveProjectXAccount(){
   var firm = state.firms.find(function(f){ return f.id===firmId; });
   state.accounts.push({
     id:uid(), firmId:firmId, firmName:firm?firm.name:'',
-    acType:accType, balance:bal, startBalance:bal,
-    pnl:0, target:target, totalProfitNeeded:totalProfit,
+    acType:accType, startBalance:bal, currentBalance:bal,
+    profitTarget:target, totalProfitNeeded:totalProfit, consistency:0,
+    dailyLogs:[],
     label:label||'Project X account', color:(firm?firm.color:'#7c3aed')
   });
   save();
