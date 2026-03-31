@@ -3989,9 +3989,57 @@ function openPropCard(version) {
     'position:relative','overflow:hidden','border:1px solid rgba(201,168,76,.2)',
     "font-family:'Cabinet Grotesk','Plus Jakarta Sans',sans-serif"
   ].join(';');
+  var isV2Prop = _propCardVersion === 'v2';
+  var propCardWidth = isV2Prop ? 1100 : 960;
+  var cardHTML;
 
-  var isPropV2 = _propCardVersion === 'v2';
-  var cardHTML='<div id="propCardCanvas" style="'+cardStyle+'">'
+  if (isV2Prop) {
+    // ── V2: Split layout ──
+    cardHTML = '<div id="propCardCanvas" style="width:'+propCardWidth+'px;background:#07070e;border-radius:24px;overflow:hidden;font-family:Inter,-apple-system,sans-serif;color:#f0eee8;border:1px solid rgba(232,184,75,.1);display:flex;min-height:620px;">'
+    // LEFT
+    + '<div style="width:460px;background:linear-gradient(180deg,rgba(232,184,75,.05) 0%,rgba(232,184,75,.01) 30%,transparent 60%);padding:48px 44px;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.04);position:relative;">'
+      + '<div style="position:absolute;top:0;left:0;width:80px;height:80px;border-left:2px solid rgba(232,184,75,.15);border-top:2px solid rgba(232,184,75,.15);border-radius:24px 0 0 0;pointer-events:none;"></div>'
+      + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;"><div style="width:36px;height:36px;border-radius:9px;border:1.5px solid rgba(232,184,75,.3);display:flex;align-items:center;justify-content:center;font-size:15px;background:rgba(232,184,75,.06);">💰</div><div><div style="font-size:13px;font-weight:900;letter-spacing:3px;color:#f0eee8;text-transform:uppercase;">Traders Vault</div><div style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(232,184,75,.5);text-transform:uppercase;margin-top:1px;">Prop Tracker</div></div></div>'
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:1.5px;margin-top:4px;margin-bottom:40px;">' + today + '</div>'
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:8px;font-weight:800;letter-spacing:4px;color:#5f5f78;text-transform:uppercase;margin-bottom:6px;">Net P&L</div>'
+      + '<div style="font-size:56px;font-weight:900;color:' + (net>=0?'#22d46a':'#ff4d6d') + ';font-family:JetBrains Mono,monospace;letter-spacing:-2px;line-height:1;">' + (net>=0?'+':'-') + '$' + Math.abs(net).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}) + '<span style="font-size:28px;color:' + (net>=0?'rgba(34,212,106,.5)':'rgba(255,77,109,.5)') + ';font-weight:800;vertical-align:top;margin-left:2px;">.00</span></div>'
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:10px;margin-bottom:36px;">' + totalEntries + ' ACCOUNTS &middot; ' + groupOrder.length + ' FIRMS</div>'
+      // 2x2 stats grid
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto;">'
+        + '<div style="padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;"><div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#ff4d6d;">$' + Math.abs(totalSpent).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}) + '</div><div style="font-family:JetBrains Mono,monospace;font-size:7px;font-weight:700;letter-spacing:2px;color:#5f5f78;text-transform:uppercase;margin-top:4px;">Total Spent</div></div>'
+        + '<div style="padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;"><div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#22d46a;">$' + Math.abs(totalEarned).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}) + '</div><div style="font-family:JetBrains Mono,monospace;font-size:7px;font-weight:700;letter-spacing:2px;color:#5f5f78;text-transform:uppercase;margin-top:4px;">Payouts</div></div>'
+        + '<div style="padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;"><div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#f0eee8;"' + totalEntries + '</div><div style="font-family:JetBrains Mono,monospace;font-size:7px;font-weight:700;letter-spacing:2px;color:#5f5f78;text-transform:uppercase;margin-top:4px;">Accounts</div></div>'
+        + '<div style="padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;"><div style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#f0eee8;">' + groupOrder.length + '</div><div style="font-family:JetBrains Mono,monospace;font-size:7px;font-weight:700;letter-spacing:2px;color:#5f5f78;text-transform:uppercase;margin-top:4px;">Firms</div></div>'
+      + '</div>'
+      // ROI bar
+      + '<div style="margin-top:12px;padding:16px 18px;background:linear-gradient(90deg,rgba(0,212,170,.04),rgba(0,212,170,.01));border:1px solid rgba(0,212,170,.1);border-radius:12px;display:flex;align-items:center;justify-content:space-between;"><div style="font-family:JetBrains Mono,monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#5f5f78;text-transform:uppercase;">Return on Investment</div><div style="font-family:JetBrains Mono,monospace;font-size:26px;font-weight:900;color:#00d4aa;">+' + roiPct.toFixed(1) + '%</div></div>'
+      + '<div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(232,184,75,.1);"><div style="font-size:24px;font-weight:900;color:#e8b84b;">tradersvault.app</div><div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.15);letter-spacing:1.5px;margin-top:4px;">THE ALL-IN-ONE TRADING TOOLKIT</div></div>'
+    + '</div>'
+    // RIGHT
+    + '<div style="flex:1;padding:48px 44px;display:flex;flex-direction:column;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;"><div style="font-family:JetBrains Mono,monospace;font-size:9px;font-weight:800;letter-spacing:3px;color:#5f5f78;text-transform:uppercase;">Firm Breakdown</div><div style="font-family:JetBrains Mono,monospace;font-size:8px;font-weight:800;letter-spacing:2px;color:#e8b84b;padding:5px 14px;border:1px solid rgba(232,184,75,.2);border-radius:6px;background:rgba(232,184,75,.05);">PROP TRACKER</div></div>'
+      // Table header
+      + '<div style="display:flex;padding:0 20px 12px;font-family:JetBrains Mono,monospace;font-size:7px;font-weight:800;letter-spacing:2px;color:#5f5f78;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.06);"><div style="flex:1;">Firm</div><div style="width:70px;text-align:center;">Accts</div><div style="width:100px;text-align:right;">Spent</div><div style="width:100px;text-align:right;">Payouts</div><div style="width:110px;text-align:right;">Net</div></div>'
+      + '<div style="flex:1;">'
+        + groupOrder.map(function(key) {
+            var g = groups[key];
+            var gNet = g.earned - g.spent;
+            var fp = gNet >= 0;
+            var dotColor = fp ? '#e8b84b' : '#ff4d6d';
+            return '<div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.03);">'
+              + '<div style="flex:1;display:flex;align-items:center;gap:12px;"><div style="width:8px;height:8px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;"></div><span style="font-size:14px;font-weight:700;">' + g.name + '</span></div>'
+              + '<div style="width:70px;text-align:center;font-family:JetBrains Mono,monospace;font-size:13px;color:#9a9ab2;">' + g.qty + '</div>'
+              + '<div style="width:100px;text-align:right;font-family:JetBrains Mono,monospace;font-size:13px;color:#ff4d6d;">-$' + Math.abs(g.spent).toLocaleString() + '</div>'
+              + '<div style="width:100px;text-align:right;font-family:JetBrains Mono,monospace;font-size:13px;color:#22d46a;">+$' + Math.abs(g.earned).toLocaleString() + '</div>'
+              + '<div style="width:110px;text-align:right;font-family:JetBrains Mono,monospace;font-size:16px;font-weight:900;color:' + (fp?'#22d46a':'#ff4d6d') + ';">' + (fp?'+':'-') + '$' + Math.abs(gNet).toLocaleString() + '</div>'
+            + '</div>';
+          }).join('')
+      + '</div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:24px;border-top:1px solid rgba(255,255,255,.04);"><div style="font-size:22px;font-weight:900;color:#f0eee8;">VaultedDesk</div><div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.15);letter-spacing:1px;">v' + _appVersion + '</div></div>'
+    + '</div>'
+    + '</div>'; // end V2 prop card
+  } else {
+    var cardHTML='<div id="propCardCanvas" style="'+cardStyle+'">'
     // Background
     +'<div style="position:absolute;inset:0;background:'
       +'radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,.1) 0%,transparent 60%),'
@@ -4049,19 +4097,21 @@ function openPropCard(version) {
       +'<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRACKER</div>'
     +'</div>'
     +'</div>'; // end card
+  } // end prop V2 if/else
+
 
   // Modal
   var old=document.getElementById('propCardModal');if(old)old.remove();
   var modal=document.createElement('div');
   modal.id='propCardModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(6px);padding:20px;pointer-events:auto;';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999990;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(8px);padding:16px;pointer-events:auto;-webkit-app-region:no-drag;cursor:default;';
   modal.onclick=function(e){if(e.target===modal)closePropCard();};
   // Disable click-through so modal is fully interactive
   if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
   var pv1Active=_propCardVersion==='v1';
-  var pvToggle='<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;position:relative;z-index:70000;">'
-    +'<button onclick="event.stopPropagation();_propCardVersion=\'v1\';openPropCard(\'v1\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;'+(pv1Active?'background:#e8b84b;color:#07070a;':'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);')+'">V1</button>'
-    +'<button onclick="event.stopPropagation();_propCardVersion=\'v2\';openPropCard(\'v2\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;'+(!pv1Active?'background:#e8b84b;color:#07070a;':'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);')+'">V2</button>'
+  var pvToggle='<div style="display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;position:relative;z-index:999999;-webkit-app-region:no-drag;pointer-events:auto;">'
+    +'<button onclick="event.stopPropagation();event.preventDefault();_propCardVersion=\'v1\';openPropCard(\'v1\');return false;" style="padding:10px 20px;border-radius:6px;border:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:999999;-webkit-app-region:no-drag;pointer-events:auto;'+(pv1Active?'background:#e8b84b;color:#07070a;':'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);')+'">V1</button>'
+    +'<button onclick="event.stopPropagation();event.preventDefault();_propCardVersion=\'v2\';openPropCard(\'v2\');return false;" style="padding:10px 20px;border-radius:6px;border:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:999999;-webkit-app-region:no-drag;pointer-events:auto;'+(!pv1Active?'background:#e8b84b;color:#07070a;':'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);')+'">V2</button>'
     +'</div>';
   modal.innerHTML=''
     // Top bar: title + V1/V2 toggle (fixed)
@@ -4071,12 +4121,12 @@ function openPropCard(version) {
     +'</div>'
     // Scrollable card preview area — scale card to fit viewport
     +'<div style="flex:1;overflow-y:auto;max-width:100%;min-height:0;pointer-events:auto;display:flex;justify-content:center;">'
-      +'<div id="propCardScaler" style="transform-origin:top center;width:960px;flex-shrink:0;">'+cardHTML+'</div>'
+      +'<div id="propCardScaler" style="transform-origin:top center;width:' + propCardWidth + 'px;flex-shrink:0;">'+cardHTML+'</div>'
     +'</div>'
     // Fixed buttons at bottom (always visible)
     +'<div style="display:flex;gap:10px;width:100%;max-width:960px;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
-      +'<button onclick="downloadPropCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
-      +'<button onclick="copyPropCard()" id="propCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
+      +'<button onclick="downloadPropCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);-webkit-app-region:no-drag;pointer-events:auto;border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
+      +'<button onclick="copyPropCard()" id="propCardCopyBtn" style="flex:1;height:42px;background:transparent;-webkit-app-region:no-drag;pointer-events:auto;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       +'<button onclick="closePropCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
     +'</div>'
     +'<div id="propCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;pointer-events:auto;"></div>';
@@ -4085,14 +4135,18 @@ function openPropCard(version) {
   setTimeout(function() {
     var scaler = document.getElementById('propCardScaler');
     if (scaler) {
-      var vw = window.innerWidth - 40;
-      if (vw < 960) {
-        var s = vw / 960;
+      var vw = window.innerWidth - 32;
+      var vh = window.innerHeight - 160;
+      var pcw = propCardWidth || 960;
+      var scaleW = vw < pcw ? vw / pcw : 1;
+      var scaleH = scaler.offsetHeight > vh ? vh / scaler.offsetHeight : 1;
+      var s = Math.min(scaleW, scaleH);
+      if (s < 1) {
         scaler.style.transform = 'scale(' + s + ')';
         scaler.style.marginBottom = '-' + Math.round(scaler.offsetHeight * (1 - s)) + 'px';
       }
     }
-  }, 50);
+  }, 80);
 }
 
 function closePropCard(){
@@ -4111,7 +4165,7 @@ function propCardToCanvas(callback){
     clone.style.position='fixed';
     clone.style.left='-9999px';
     clone.style.top='0';
-    clone.style.width='960px';
+    clone.style.width=(document.getElementById('propCardCanvas')?document.getElementById('propCardCanvas').style.width:'960px');
     clone.style.zIndex='-1';
     document.body.appendChild(clone);
     html2canvas(clone,{backgroundColor:'#07070e',scale:3,useCORS:true,logging:false,allowTaint:true})
@@ -11740,7 +11794,57 @@ function openGainsCard(version) {
   ].join(';');
 
   var isV2 = _gainsCardVersion === 'v2';
-  var cardHTML = '<div id="gainsCardCanvas" style="' + cardStyle + '">'
+  var cardWidth = isV2 ? 1100 : 960;
+  var cardHTML;
+
+  if (isV2) {
+    // ── V2: Split layout design ──
+    cardHTML = '<div id="gainsCardCanvas" style="width:'+cardWidth+'px;background:#07070e;border-radius:24px;overflow:hidden;font-family:Inter,-apple-system,sans-serif;color:#f0eee8;border:1px solid rgba(232,184,75,.1);display:flex;min-height:620px;">'
+    // LEFT PANEL
+    + '<div style="width:460px;background:linear-gradient(180deg,rgba(232,184,75,.05) 0%,rgba(232,184,75,.01) 30%,transparent 60%);padding:48px 44px;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.04);position:relative;">'
+      // Corner accent
+      + '<div style="position:absolute;top:0;left:0;width:80px;height:80px;border-left:2px solid rgba(232,184,75,.15);border-top:2px solid rgba(232,184,75,.15);border-radius:24px 0 0 0;pointer-events:none;"></div>'
+      // Brand
+      + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">'
+        + '<div style="width:36px;height:36px;border-radius:9px;border:1.5px solid rgba(232,184,75,.3);display:flex;align-items:center;justify-content:center;font-size:15px;background:rgba(232,184,75,.06);">📊</div>'
+        + '<div><div style="font-size:13px;font-weight:900;letter-spacing:3px;color:#f0eee8;text-transform:uppercase;">Traders Vault</div><div style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(232,184,75,.5);text-transform:uppercase;margin-top:1px;">Vaulted Desk</div></div>'
+      + '</div>'
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:1.5px;margin-top:4px;margin-bottom:40px;">' + today + '</div>'
+      // P&L
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:8px;font-weight:800;letter-spacing:4px;color:#5f5f78;text-transform:uppercase;margin-bottom:6px;">All-Time P&L</div>'
+      + '<div style="font-size:56px;font-weight:900;color:' + (isPos ? '#22d46a' : '#ff4d6d') + ';font-family:JetBrains Mono,monospace;letter-spacing:-2px;line-height:1;">' + (isPos?'+':'-') + '$' + Math.abs(totalPnl).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}) + '<span style="font-size:28px;color:' + (isPos ? 'rgba(34,212,106,.5)' : 'rgba(255,77,109,.5)') + ';font-weight:800;vertical-align:top;margin-left:2px;">.' + Math.abs(totalPnl % 1 * 100).toFixed(0).padStart(2,'0') + '</span></div>'
+      + '<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:10px;margin-bottom:40px;">' + allAccounts.length + ' ACCOUNTS &middot; ' + firms.length + ' FIRMS &middot; ' + totalDays + ' DAYS</div>'
+      // Stats
+      + '<div style="display:flex;flex-direction:column;margin-top:auto;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#5f5f78;text-transform:uppercase;">Win Rate</span><span style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#22d46a;">' + winRateStr + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#5f5f78;text-transform:uppercase;">Best Day</span><span style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#22d46a;">' + bestDayStr + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#5f5f78;text-transform:uppercase;">Days Logged</span><span style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#f0eee8;">' + totalDays + '</span></div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;"><span style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1.5px;color:#5f5f78;text-transform:uppercase;">Accounts</span><span style="font-family:JetBrains Mono,monospace;font-size:22px;font-weight:900;color:#f0eee8;">' + allAccounts.length + '</span></div>'
+      + '</div>'
+      // Footer left
+      + '<div style="margin-top:32px;padding-top:20px;border-top:1px solid rgba(232,184,75,.1);"><div style="font-size:24px;font-weight:900;color:#e8b84b;">tradersvault.app</div><div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.15);letter-spacing:1.5px;margin-top:4px;">THE ALL-IN-ONE TRADING TOOLKIT</div></div>'
+    + '</div>'
+    // RIGHT PANEL
+    + '<div style="flex:1;padding:48px 44px;display:flex;flex-direction:column;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;"><div style="font-family:JetBrains Mono,monospace;font-size:9px;font-weight:800;letter-spacing:3px;color:#5f5f78;text-transform:uppercase;">Firm Breakdown</div><div style="font-family:JetBrains Mono,monospace;font-size:8px;font-weight:800;letter-spacing:2px;color:#e8b84b;padding:5px 14px;border:1px solid rgba(232,184,75,.2);border-radius:6px;background:rgba(232,184,75,.05);">' + _cardBadge + '</div></div>'
+      + '<div style="display:flex;flex-direction:column;gap:10px;flex:1;">'
+        + firms.map(function(f) {
+            var fp = f.pnl >= 0;
+            var dotColor = fp ? (f.color || '#22d46a') : '#ff4d6d';
+            var glowColor = fp ? 'rgba(34,212,106,.3)' : 'rgba(255,77,109,.3)';
+            return '<div style="padding:18px 22px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:14px;display:flex;align-items:center;justify-content:space-between;">'
+              + '<div style="display:flex;align-items:center;gap:14px;"><div style="width:10px;height:10px;border-radius:50%;background:' + dotColor + ';box-shadow:0 0 8px ' + glowColor + ';flex-shrink:0;"></div><div><div style="font-size:16px;font-weight:800;">' + f.name + '</div><div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#5f5f78;letter-spacing:1px;margin-top:2px;">' + f.count + ' ACCOUNTS</div></div></div>'
+              + '<div style="font-family:JetBrains Mono,monospace;font-size:20px;font-weight:900;color:' + (fp ? '#22d46a' : '#ff4d6d') + ';">' + (fp?'+':'-') + '$' + Math.abs(f.pnl).toLocaleString() + '</div>'
+            + '</div>';
+          }).join('')
+      + '</div>'
+      // Footer right
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:24px;border-top:1px solid rgba(255,255,255,.04);"><div style="font-size:22px;font-weight:900;color:#f0eee8;">VaultedDesk</div><div style="font-family:JetBrains Mono,monospace;font-size:9px;color:rgba(255,255,255,.15);letter-spacing:1px;">v' + _appVersion + '</div></div>'
+    + '</div>'
+    + '</div>'; // end V2 card
+  } else {
+    // ── V1: Original design ──
+    cardHTML = '<div id="gainsCardCanvas" style="' + cardStyle + '">'
 
     // Background layers
     + '<div style="position:absolute;inset:0;background:'
@@ -11818,7 +11922,8 @@ function openGainsCard(version) {
       + '<div style="font-family:Geist Mono,monospace;font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(22,201,106,.08);border:1px solid rgba(22,201,106,.15);color:rgba(22,201,106,.7);letter-spacing:1px;">PROP TRADER</div>'
     + '</div>'
 
-    + '</div>'; // end card
+    + '</div>'; // end V1 card
+  } // end if/else V2
 
   // ── Modal wrapper ─────────────────────────────────────────────
   var old = document.getElementById('gainsCardModal');
@@ -11826,16 +11931,16 @@ function openGainsCard(version) {
 
   var modal = document.createElement('div');
   modal.id = 'gainsCardModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:60000;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(6px);padding:20px;pointer-events:auto;';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999990;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(8px);padding:16px;pointer-events:auto;-webkit-app-region:no-drag;cursor:default;';
   modal.onclick = function(e) { if (e.target === modal) closeGainsCard(); };
 
   // Disable click-through so modal is fully interactive
   if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
 
   var v1Active = _gainsCardVersion === 'v1';
-  var vToggle = '<div style="display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;position:relative;z-index:70000;">'
-    + '<button onclick="event.stopPropagation();_gainsCardVersion=\'v1\';openGainsCard(\'v1\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;' + (v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);') + '">V1</button>'
-    + '<button onclick="event.stopPropagation();_gainsCardVersion=\'v2\';openGainsCard(\'v2\');" style="padding:6px 14px;border-radius:6px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:70001;' + (!v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);') + '">V2</button>'
+  var vToggle = '<div style="display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:8px;padding:3px;position:relative;z-index:999999;-webkit-app-region:no-drag;pointer-events:auto;">'
+    + '<button onclick="event.stopPropagation();event.preventDefault();_gainsCardVersion=\'v1\';openGainsCard(\'v1\');return false;" style="padding:10px 20px;border-radius:6px;border:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:999999;-webkit-app-region:no-drag;pointer-events:auto;' + (v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);') + '">V1</button>'
+    + '<button onclick="event.stopPropagation();event.preventDefault();_gainsCardVersion=\'v2\';openGainsCard(\'v2\');return false;" style="padding:10px 20px;border-radius:6px;border:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;position:relative;z-index:999999;-webkit-app-region:no-drag;pointer-events:auto;' + (!v1Active ? 'background:#e8b84b;color:#07070a;' : 'background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);') + '">V2</button>'
     + '</div>';
 
   modal.innerHTML = ''
@@ -11846,12 +11951,12 @@ function openGainsCard(version) {
     + '</div>'
     // Scrollable card preview area — scale card to fit viewport
     + '<div style="flex:1;overflow-y:auto;max-width:100%;min-height:0;pointer-events:auto;display:flex;justify-content:center;">'
-      + '<div id="gainsCardScaler" style="transform-origin:top center;width:960px;flex-shrink:0;">' + cardHTML + '</div>'
+      + '<div id="gainsCardScaler" style="transform-origin:top center;width:' + cardWidth + 'px;flex-shrink:0;">' + cardHTML + '</div>'
     + '</div>'
     // Fixed buttons at bottom (always visible)
     + '<div style="display:flex;gap:10px;width:100%;max-width:960px;flex-shrink:0;padding:10px 0;pointer-events:auto;">'
-      + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
-      + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
+      + '<button onclick="downloadGainsCard()" style="flex:1;height:42px;background:var(--gold,#e8b84b);-webkit-app-region:no-drag;pointer-events:auto;border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">⬇ Save as PNG</button>'
+      + '<button onclick="copyGainsCard()" id="gainsCardCopyBtn" style="flex:1;height:42px;background:transparent;-webkit-app-region:no-drag;pointer-events:auto;border:1px solid rgba(255,255,255,.15);border-radius:9px;color:rgba(240,238,232,.8);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copy to Clipboard</button>'
       + '<button onclick="closeGainsCard();event.stopPropagation();" style="height:48px;width:48px;padding:0;background:#ff4d6d;border:none;border-radius:9px;color:#fff;font-size:22px;font-weight:900;cursor:pointer;font-family:inherit;z-index:99999;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>'
     + '</div>'
     + '<div id="gainsCardStatus" style="font-family:Geist Mono,monospace;font-size:9px;color:rgba(255,255,255,.3);min-height:14px;flex-shrink:0;pointer-events:auto;"></div>';
@@ -11862,14 +11967,18 @@ function openGainsCard(version) {
   setTimeout(function() {
     var scaler = document.getElementById('gainsCardScaler');
     if (scaler) {
-      var vw = window.innerWidth - 40;
-      if (vw < 960) {
-        var s = vw / 960;
+      var vw = window.innerWidth - 32;
+      var vh = window.innerHeight - 160; // leave room for header + buttons
+      var cw = cardWidth || 960;
+      var scaleW = vw < cw ? vw / cw : 1;
+      var scaleH = scaler.offsetHeight > vh ? vh / scaler.offsetHeight : 1;
+      var s = Math.min(scaleW, scaleH);
+      if (s < 1) {
         scaler.style.transform = 'scale(' + s + ')';
         scaler.style.marginBottom = '-' + Math.round(scaler.offsetHeight * (1 - s)) + 'px';
       }
     }
-  }, 50);
+  }, 80);
 
   // Clean up selection state
   delete window._gcSelectedTrading;
@@ -11896,7 +12005,7 @@ function gainsCardToCanvas(callback) {
     clone.style.position = 'fixed';
     clone.style.left = '-9999px';
     clone.style.top = '0';
-    clone.style.width = '960px';
+    clone.style.width = (document.getElementById('gainsCardCanvas') ? document.getElementById('gainsCardCanvas').style.width : '960px');
     clone.style.zIndex = '-1';
     document.body.appendChild(clone);
     html2canvas(clone, {
