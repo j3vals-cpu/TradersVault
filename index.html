@@ -993,6 +993,7 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
 .squawk-item:hover{border-color:var(--gold-soft);background:var(--panel3);}
 .squawk-item .sq-time{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.5px;}
 .squawk-item .sq-src{font-family:'Geist Mono',monospace;font-size:8px;color:var(--gold);font-weight:700;letter-spacing:.5px;margin-left:6px;}
+.squawk-item .sq-impact{font-family:'Geist Mono',monospace;font-size:7px;font-weight:700;color:#fff;padding:1px 4px;border-radius:3px;margin-left:6px;letter-spacing:.5px;vertical-align:middle;}
 .squawk-item .sq-headline{font-size:11px;font-weight:700;color:var(--text);margin-top:3px;line-height:1.4;}
 .squawk-item .sq-snippet{font-size:9px;color:var(--text2);margin-top:3px;line-height:1.4;display:none;}
 .squawk-item.expanded .sq-snippet{display:block;}
@@ -7594,48 +7595,84 @@ function renderSquawkPanel() {
 }
 
 function fetchSquawkFeed() {
-  // Use multiple RSS feed sources via CORS proxy
+  // Fetch directly — Electron has webSecurity:false so no CORS proxy needed
   var feeds = [
-    { name: 'CNBC', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.cnbc.com/id/100003114/device/rss/rss.html') },
-    { name: 'MarketWatch', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://feeds.marketwatch.com/marketwatch/topstories/') },
-    { name: 'Reuters', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best') }
+    { name: 'CNBC', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114' },
+    { name: 'MarketWatch', url: 'https://feeds.marketwatch.com/marketwatch/topstories/' },
+    { name: 'Google Biz', url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en' },
+    { name: 'Investing', url: 'https://www.investing.com/rss/news.rss' }
   ];
 
   var allItems = [];
   var completed = 0;
+  var errors = [];
 
   feeds.forEach(function(feed) {
-    fetch(feed.url).then(function(r) { return r.text(); }).then(function(xml) {
+    fetch(feed.url, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+    .then(function(r) {
+      if (!r.ok) throw new Error(feed.name + ' returned HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(xml) {
       var parser = new DOMParser();
       var doc = parser.parseFromString(xml, 'text/xml');
+      var parseErr = doc.querySelector('parsererror');
+      if (parseErr) throw new Error(feed.name + ': invalid XML');
       var items = doc.querySelectorAll('item');
       items.forEach(function(item) {
         var title = (item.querySelector('title') || {}).textContent || '';
         var desc = (item.querySelector('description') || {}).textContent || '';
         var link = (item.querySelector('link') || {}).textContent || '';
         var pubDate = (item.querySelector('pubDate') || {}).textContent || '';
-        // Strip HTML from description
         desc = desc.replace(/<[^>]+>/g, '').trim();
         if (desc.length > 200) desc = desc.substring(0, 200) + '...';
-        allItems.push({
-          title: title,
-          desc: desc,
-          link: link,
-          date: pubDate ? new Date(pubDate) : new Date(),
-          source: feed.name
-        });
+        if (title) {
+          allItems.push({
+            title: title,
+            desc: desc,
+            link: link,
+            date: pubDate ? new Date(pubDate) : new Date(),
+            source: feed.name,
+            impact: getImpactLevel(title)
+          });
+        }
       });
-    }).catch(function() {}).finally(function() {
+    })
+    .catch(function(err) {
+      errors.push(feed.name + ': ' + err.message);
+      console.warn('[Squawk] Feed error:', feed.name, err.message);
+    })
+    .finally(function() {
       completed++;
       if (completed === feeds.length) {
         allItems.sort(function(a, b) { return b.date - a.date; });
         _squawkItems = allItems.slice(0, 50);
         renderSquawkFeed();
         var status = document.getElementById('squawkStatus');
-        if (status) status.textContent = 'Last updated: ' + new Date().toLocaleTimeString() + ' · ' + _squawkItems.length + ' articles';
+        if (status) {
+          var msg = 'Updated: ' + new Date().toLocaleTimeString() + ' · ' + _squawkItems.length + ' articles';
+          if (errors.length) msg += ' · ' + errors.length + ' feed(s) failed';
+          status.textContent = msg;
+        }
+        if (!_squawkItems.length && errors.length) {
+          var el = document.getElementById('squawkFeed');
+          if (el) el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--red);font-size:10px;">'
+            + '&#9888; Failed to load feeds:<br><span style="color:var(--text3);font-size:9px;">' + errors.join('<br>') + '</span>'
+            + '<br><br><button onclick="fetchSquawkFeed()" style="padding:4px 12px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;color:var(--gold);cursor:pointer;font-size:9px;">Retry</button>'
+            + '</div>';
+        }
       }
     });
   });
+}
+
+function getImpactLevel(headline) {
+  var h = headline.toLowerCase();
+  var highWords = ['crash', 'surge', 'plunge', 'soar', 'record', 'emergency', 'war', 'crisis', 'recession', 'default', 'bankrupt', 'halt', 'shutdown', 'collapse', 'rate hike', 'rate cut', 'fed ', 'federal reserve', 'breaking'];
+  var medWords = ['rise', 'fall', 'drop', 'gain', 'jump', 'slip', 'rally', 'decline', 'upgrade', 'downgrade', 'earnings', 'revenue', 'profit', 'loss', 'layoff', 'acquisition', 'merger', 'ipo', 'buyback', 'dividend'];
+  for (var i = 0; i < highWords.length; i++) { if (h.indexOf(highWords[i]) !== -1) return 'HIGH'; }
+  for (var j = 0; j < medWords.length; j++) { if (h.indexOf(medWords[j]) !== -1) return 'MED'; }
+  return 'LOW';
 }
 
 function renderSquawkFeed() {
@@ -7650,12 +7687,15 @@ function renderSquawkFeed() {
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:10px;">No articles found</div>';
     return;
   }
-  el.innerHTML = items.map(function(it, idx) {
+  el.innerHTML = items.map(function(it) {
     var timeStr = it.date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     var sentiment = getSentiment(it.title);
     var borderColor = sentiment === 'bull' ? 'var(--green)' : sentiment === 'bear' ? 'var(--red)' : 'var(--border2)';
+    var impact = it.impact || 'LOW';
+    var impactColor = impact === 'HIGH' ? '#ff4444' : impact === 'MED' ? '#ffaa00' : '#666';
     return '<div class="squawk-item" style="border-left:3px solid ' + borderColor + '" onclick="this.classList.toggle(\'expanded\')" data-link="' + esc(it.link) + '">'
-      + '<div><span class="sq-time">' + timeStr + '</span><span class="sq-src">' + esc(it.source) + '</span></div>'
+      + '<div><span class="sq-time">' + timeStr + '</span><span class="sq-src">' + esc(it.source) + '</span>'
+      + '<span class="sq-impact" style="background:' + impactColor + '">' + impact + '</span></div>'
       + '<div class="sq-headline">' + esc(it.title) + '</div>'
       + '<div class="sq-snippet">' + esc(it.desc) + '<br><a href="' + esc(it.link) + '" target="_blank" style="color:var(--gold);font-size:9px;margin-top:4px;display:inline-block;">Open in browser &rarr;</a></div>'
       + '</div>';
