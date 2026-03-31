@@ -1090,6 +1090,8 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
 .layout-dropdown-item .ldi-del{margin-left:auto;color:var(--text3);font-size:10px;opacity:0;transition:opacity .12s;}
 .layout-dropdown-item:hover .ldi-del{opacity:1;}
 .layout-dropdown-item .ldi-del:hover{color:var(--red);}
+.layout-dropdown-item:hover .ldi-action{opacity:1;}
+.layout-dropdown-item .ldi-action:hover{color:var(--gold);}
 .layout-save-row{display:flex;gap:4px;padding:4px 8px;border-top:1px solid var(--border2);margin-top:4px;padding-top:8px;}
 .layout-save-row input{flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;padding:4px 8px;font-size:10px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;outline:none;}
 .layout-save-row input:focus{border-color:var(--gold);}
@@ -8290,12 +8292,41 @@ function deleteLayout(name) {
   delete data.layouts[name];
   if (data.active === name) data.active = '';
   saveLayouts(data);
+  // Clear default if deleted layout was the default
+  if (cfg.defaultLayout === name) {
+    delete cfg.defaultLayout;
+    saveCfg();
+  }
   renderLayoutDropdown();
 }
 
 function toggleLayoutDropdown() {
   _layoutDropdownOpen = !_layoutDropdownOpen;
   renderLayoutDropdown();
+}
+
+function setDefaultLayout(name) {
+  cfg.defaultLayout = name;
+  saveCfg();
+  toast('Default layout set to "' + name + '"', 'success');
+  renderLayoutDropdown();
+}
+
+function clearDefaultLayout() {
+  delete cfg.defaultLayout;
+  saveCfg();
+  toast('Default layout cleared', 'info');
+  renderLayoutDropdown();
+}
+
+function loadDefaultLayoutOnStartup() {
+  if (!cfg.defaultLayout) return;
+  var data = getLayouts();
+  if (data.layouts[cfg.defaultLayout]) {
+    applyLayout(data.layouts[cfg.defaultLayout]);
+    data.active = cfg.defaultLayout;
+    saveLayouts(data);
+  }
 }
 
 function renderLayoutDropdown() {
@@ -8312,16 +8343,29 @@ function renderLayoutDropdown() {
     html += '<div style="padding:8px;text-align:center;color:var(--text3);font-size:9px;">No saved layouts</div>';
   } else {
     names.forEach(function(name) {
-      html += '<div class="layout-dropdown-item' + (name === data.active ? ' active' : '') + '" onclick="loadLayout(\'' + esc(name).replace(/'/g, "\\'") + '\')">'
+      var isDefault = cfg.defaultLayout === name;
+      var escapedName = esc(name).replace(/'/g, "\\'");
+      html += '<div class="layout-dropdown-item' + (name === data.active ? ' active' : '') + '" onclick="loadLayout(\'' + escapedName + '\')">'
+        + (isDefault ? '<span style="color:var(--gold);font-size:11px;flex-shrink:0;" title="Default layout">&#9733;</span> ' : '')
         + esc(name)
-        + '<span class="ldi-del" onclick="event.stopPropagation();deleteLayout(\'' + esc(name).replace(/'/g, "\\'") + '\')">&times;</span>'
+        + '<span style="display:flex;gap:2px;margin-left:auto;align-items:center;">'
+        + (isDefault
+          ? '<span class="ldi-action" onclick="event.stopPropagation();clearDefaultLayout()" title="Remove default" style="color:var(--text3);font-size:8px;opacity:0;cursor:pointer;padding:0 3px;transition:opacity .12s;">&#10005;&#9733;</span>'
+          : '<span class="ldi-action" onclick="event.stopPropagation();setDefaultLayout(\'' + escapedName + '\')" title="Set as default" style="color:var(--text3);font-size:10px;opacity:0;cursor:pointer;padding:0 3px;transition:opacity .12s;">&#9734;</span>')
+        + '<span class="ldi-del" onclick="event.stopPropagation();deleteLayout(\'' + escapedName + '\')">&times;</span>'
+        + '</span>'
         + '</div>';
     });
   }
 
   html += '<div class="layout-save-row">'
-    + '<input id="layoutNameInput" placeholder="Layout name..." maxlength="30" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'){saveCurrentLayout(this.value);this.value=\'\'}">'
-    + '<button onclick="event.stopPropagation();var inp=document.getElementById(\'layoutNameInput\');saveCurrentLayout(inp.value);inp.value=\'\';">Save</button>'
+    + '<input id="layoutNameInput" placeholder="Layout name..." maxlength="30"'
+    + ' style="-webkit-app-region:no-drag;"'
+    + ' onclick="event.stopPropagation()"'
+    + ' onmousedown="event.stopPropagation()"'
+    + ' onkeydown="event.stopPropagation();if(event.key===\'Enter\'){saveCurrentLayout(this.value);this.value=\'\';}"'
+    + '>'
+    + '<button onclick="event.stopPropagation();var inp=document.getElementById(\'layoutNameInput\');if(inp){saveCurrentLayout(inp.value);inp.value=\'\';}">Save</button>'
     + '</div>';
 
   dd.innerHTML = html;
@@ -8352,74 +8396,8 @@ document.addEventListener('click', function(e) {
 });
 
 // ═══════════════════════════════════════════
-// FEATURE: WALKTHROUGH OVERLAY
+// FEATURE: WALKTHROUGH OVERLAY (legacy — replaced by new tour below)
 // ═══════════════════════════════════════════
-var _walkthroughStep = 0;
-var _walkthroughSteps = [
-  { title: 'Welcome to Vaulted Desk', text: 'Your all-in-one trading command centre. Let\'s show you around.', target: null },
-  { title: 'The Dock', text: 'These are your panels. Click any icon to open or close a panel. You can drag and resize them anywhere.', target: '#panelToggles' },
-  { title: 'Settings', text: 'Customize your experience — themes, panels, Discord, and more.', target: '#settingsBtn' },
-  { title: 'Start Trading!', text: 'Open your first panel from the bar above. Happy trading!', target: '#panelToggles' }
-];
-
-function showWalkthrough() {
-  if (localStorage.getItem('vd_walkthrough_done')) return;
-  _walkthroughStep = 0;
-  renderWalkthroughStep();
-}
-
-function renderWalkthroughStep() {
-  // Remove existing
-  var existing = document.querySelector('.walkthrough-overlay');
-  if (existing) existing.remove();
-  var pointer = document.querySelector('.walkthrough-pointer');
-  if (pointer) pointer.remove();
-
-  if (_walkthroughStep >= _walkthroughSteps.length) {
-    localStorage.setItem('vd_walkthrough_done', '1');
-    return;
-  }
-
-  var step = _walkthroughSteps[_walkthroughStep];
-  var overlay = document.createElement('div');
-  overlay.className = 'walkthrough-overlay';
-  overlay.innerHTML = '<div class="walkthrough-card">'
-    + '<div class="wt-step">STEP ' + (_walkthroughStep + 1) + ' OF ' + _walkthroughSteps.length + '</div>'
-    + '<h2>' + step.title + '</h2>'
-    + '<p>' + step.text + '</p>'
-    + '<button class="wt-btn" onclick="nextWalkthroughStep()">' + (_walkthroughStep === _walkthroughSteps.length - 1 ? 'Get Started' : 'Next') + '</button>'
-    + '<br><button class="wt-skip" onclick="skipWalkthrough()">Skip tour</button>'
-    + '</div>';
-  document.body.appendChild(overlay);
-
-  // Highlight target element
-  if (step.target) {
-    var targetEl = document.querySelector(step.target);
-    if (targetEl) {
-      var rect = targetEl.getBoundingClientRect();
-      var p = document.createElement('div');
-      p.className = 'walkthrough-pointer';
-      p.style.left = (rect.left - 4) + 'px';
-      p.style.top = (rect.top - 4) + 'px';
-      p.style.width = (rect.width + 8) + 'px';
-      p.style.height = (rect.height + 8) + 'px';
-      document.body.appendChild(p);
-    }
-  }
-}
-
-function nextWalkthroughStep() {
-  _walkthroughStep++;
-  renderWalkthroughStep();
-}
-
-function skipWalkthrough() {
-  localStorage.setItem('vd_walkthrough_done', '1');
-  var overlay = document.querySelector('.walkthrough-overlay');
-  if (overlay) overlay.remove();
-  var pointer = document.querySelector('.walkthrough-pointer');
-  if (pointer) pointer.remove();
-}
 
 // ═══════════════════════════════════════════
 // DOCK: MORE TOOLS OVERFLOW MENU
@@ -10690,6 +10668,10 @@ function hideLoginScreen() {
   if (el) { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(function(){ el.style.display='none'; }, 400); }
   // Re-enable click-through after login
   if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(true);
+  // Load default layout if configured
+  setTimeout(function() {
+    if (typeof loadDefaultLayoutOnStartup === 'function') loadDefaultLayoutOnStartup();
+  }, 500);
 }
 
 // ── Auth tab switching ──────────────────────────────────────────
@@ -11968,22 +11950,19 @@ updateTopbarTimezone();
 setInterval(updateTopbarTimezone, 60000);
 
 // ═══════════════════════════════════════════
-// WALKTHROUGH TOUR (Task 1)
+// WALKTHROUGH TOUR — full panel tour for fresh users
 // ═══════════════════════════════════════════
 var WT_STEPS = [
-  { target: function(){ return document.querySelector('.ptog[data-wid="trading"]'); }, icon: '&#128200;', title: 'Trading Panel', desc: 'Live TradingView overlay — connect your broker accounts and trade directly from your desktop.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="prop"]'); }, icon: '&#128176;', title: 'Prop Tracker', desc: 'Track your prop firm challenges, funded accounts, and payout progress all in one place.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="calcs"]'); }, icon: '&#128208;', title: 'Position Sizer', desc: 'Calculate position sizes based on risk percentage, stop loss, and account balance.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="bot"]'); }, icon: '&#129302;', title: 'Bot Engine', desc: 'Set up automated trading strategies that run in the background.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="strategy"]'); }, icon: '&#9745;', title: 'Strategy & News', desc: 'View trading strategies and a live market news feed to stay informed.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="acc"]'); }, icon: '&#128293;', title: 'Journal', desc: 'Accountability journal for tracking your trading mindset and daily reflections.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="planner"]'); }, icon: '&#128197;', title: 'Planner', desc: 'Weekly session planner — schedule your trading sessions and stay disciplined.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="quote"]'); }, icon: '&#128161;', title: 'Gains Card', desc: 'Generate shareable P&L cards to showcase your trading results.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="notes"]'); }, icon: '&#128221;', title: 'Studio', desc: 'Creative tools for notes, content creation, and organising your ideas.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="copier"]'); }, icon: '&#128279;', title: 'Copier', desc: 'Copy-trade system to mirror trades across accounts (coming soon).' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="signal"]'); }, icon: '&#128225;', title: 'Signal Bot', desc: 'Send trade signals directly to your Discord server with charts and analysis.' },
-  { target: function(){ return document.querySelector('.ptog[data-wid="todo"]'); }, icon: '&#9989;', title: 'ROI Tracker', desc: 'Track return on investment across all your trading accounts.' },
-  { target: function(){ return document.getElementById('settingsBtn'); }, icon: '&#9881;', title: 'Settings', desc: 'Customise your experience — themes, panels, profile, Discord integration, and more.' }
+  { target: function(){ return null; }, icon: '&#128274;', title: 'Welcome to Traders Vault', desc: 'Your all-in-one trading command centre. Let\u2019s walk you through every tool at your disposal.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="trading"]'); }, icon: '&#128200;', title: 'Trading Panel', desc: 'Track all your prop firm accounts, balances, and P&L in one place.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="prop"]'); }, icon: '&#128176;', title: 'Prop Tracker', desc: 'Log purchases, payouts, and track your ROI across every firm.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="tracker"]'); }, icon: '&#128202;', title: 'Tracker', desc: 'Log individual trades, track expenses, and journal your setups.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="discord"]'); }, icon: '&#128172;', title: 'Discord', desc: 'Chat with your community without leaving your workspace.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="strategy"]'); }, icon: '&#9745;', title: 'Strategy & News', desc: 'Pre-market checklists, economic calendar, and trading plan.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="calcs"]'); }, icon: '&#128208;', title: 'Calculators', desc: 'Position sizing, risk/reward, and drawdown calculators.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="signal"]'); }, icon: '&#128225;', title: 'Signal Bot', desc: 'Send trading signals to Discord with one click.' },
+  { target: function(){ return document.querySelector('.ptog[data-wid="squawk"]'); }, icon: '&#128227;', title: 'Market Squawk', desc: 'Live market news headlines with impact levels.' },
+  { target: function(){ return null; }, icon: '&#127881;', title: 'You\u2019re All Set!', desc: 'Open panels from the dock on the left or the toolbar above. Happy trading!' }
 ];
 
 var _wtStep = 0;
@@ -11991,9 +11970,41 @@ var _wtOverlay = null;
 var _wtSpotlight = null;
 var _wtCard = null;
 
+function _isUserFresh() {
+  // Check if vn5 (app state) has meaningful data — if it does, user is NOT fresh
+  try {
+    var raw = localStorage.getItem('vn5');
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d && typeof d === 'object') {
+        // If any accounts, firms (beyond default), notes, trades, or prop tracker entries exist
+        if (d.accounts && d.accounts.length > 0) return false;
+        if (d.firms && d.firms.length > 1) return false;
+        if (d.notes && d.notes.length > 0) return false;
+        if (d.propTracker && d.propTracker.length > 0) return false;
+        if (d.tracker && d.tracker.items && d.tracker.items.length > 0) return false;
+        if (d.todos && d.todos.length > 0) return false;
+      }
+    }
+  } catch(e) {}
+  return true;
+}
+
+function _closeAllPanelsForTour() {
+  WINS.forEach(function(w) {
+    var el = document.getElementById('win-' + w.id);
+    if (el && !el.classList.contains('hidden')) {
+      el.classList.add('hidden');
+      if (state.windows[w.id]) state.windows[w.id].hidden = true;
+    }
+  });
+  if (typeof updateToggles === 'function') updateToggles();
+}
+
 function startWalkthrough() {
-  // Remove completed flag so tour can restart
+  // Remove completed flags so tour can restart (used by the settings "Restart Tour" button)
   localStorage.removeItem('walkthrough_completed');
+  localStorage.removeItem('vd_walkthrough_done');
   _wtStep = 0;
   showWelcomeScreen();
 }
@@ -12003,6 +12014,8 @@ function showWelcomeScreen() {
   if (window.electronAPI && window.electronAPI.setClickThrough) {
     window.electronAPI.setClickThrough(false);
   }
+  // Close all panels so the screen is clean
+  _closeAllPanelsForTour();
   // Create welcome overlay
   var wel = document.createElement('div');
   wel.className = 'wt-welcome';
@@ -12025,6 +12038,7 @@ function closeWelcome() {
 
 function skipWalkthrough() {
   localStorage.setItem('walkthrough_completed', '1');
+  localStorage.setItem('vd_walkthrough_done', '1');
   cleanupWalkthrough();
 }
 
@@ -12089,6 +12103,7 @@ function showWtStep() {
     + '<div class="wt-progress">' + dots + '</div>';
 
   // Position card near target
+  _wtCard.style.transform = '';
   if (target) {
     var r = target.getBoundingClientRect();
     var cardW = 340;
@@ -12129,6 +12144,7 @@ function wtBack() {
 
 function finishWalkthrough() {
   localStorage.setItem('walkthrough_completed', '1');
+  localStorage.setItem('vd_walkthrough_done', '1');
   cleanupWalkthrough();
 }
 
@@ -12147,10 +12163,13 @@ function cleanupWalkthrough() {
   }
 }
 
-// Auto-trigger on first launch — only if user hasn't completed or skipped before
+// Auto-trigger on first launch — only for truly fresh users
 if (!localStorage.getItem('walkthrough_completed') && !localStorage.getItem('vd_walkthrough_done')) {
-  // Show walkthrough on next tick (after panels are built)
-  setTimeout(function() { if (typeof startWalkthrough === 'function') startWalkthrough(); }, 1500);
+  setTimeout(function() {
+    if (typeof startWalkthrough === 'function' && typeof _isUserFresh === 'function' && _isUserFresh()) {
+      startWalkthrough();
+    }
+  }, 1500);
 }
 
 // ═══════════════════════════════════════════
