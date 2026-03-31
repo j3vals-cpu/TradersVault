@@ -1159,9 +1159,15 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
         <label style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:1px;display:block;margin-bottom:5px;">EMAIL</label>
         <input id="loginEmail" type="email" placeholder="you@email.com" style="width:100%;height:38px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eee8;font-size:13px;padding:0 12px;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <div style="margin-bottom:16px;">
+      <div style="margin-bottom:12px;">
         <label style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:1px;display:block;margin-bottom:5px;">PASSWORD</label>
         <input id="loginPass" type="password" placeholder="••••••••" style="width:100%;height:38px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eee8;font-size:13px;padding:0 12px;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="loginRememberMe" style="accent-color:#e8b84b;width:15px;height:15px;flex-shrink:0;">
+          <span style="font-size:11px;color:#8a8a9c;">Remember me</span>
+        </label>
       </div>
       <button onclick="doLogin()" style="width:100%;height:42px;background:#e8b84b;border:none;border-radius:9px;color:#07070a;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;transition:filter .15s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">Sign In</button>
       <div style="text-align:center;margin-top:10px;">
@@ -1223,32 +1229,44 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
   </div>
 </div>
 
-<!-- ═══ UPDATE BANNER ═══ -->
+<!-- ═══ UPDATE BANNER (centered modal popup) ═══ -->
 <div id="tvUpdateBanner" style="
   display:none;
-  position:fixed;bottom:24px;right:24px;z-index:99997;
-  background:rgba(12,12,18,.95);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid rgba(232,184,75,.2);
-  border-radius:14px;
-  padding:18px 22px;
-  width:340px;
-  box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
+  position:fixed;inset:0;z-index:99997;
+  background:rgba(7,7,10,.6);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;
   font-family:'Cabinet Grotesk',sans-serif;
-  animation:bannerSlideIn .35s cubic-bezier(.4,0,.2,1);
+  animation:updateOverlayFadeIn .3s cubic-bezier(.4,0,.2,1);
 ">
-  <style>@keyframes bannerSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-    <div style="width:32px;height:32px;border-radius:8px;background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.25);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🚀</div>
-    <div style="flex:1;">
-      <div style="font-size:13px;font-weight:800;color:#f0eee8;" id="updateBannerTitle">Update available</div>
-      <div style="font-size:10px;color:#5f5f78;margin-top:1px;" id="updateBannerNotes">New version ready</div>
+  <style>
+    @keyframes updateOverlayFadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes updateModalScaleIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  </style>
+  <div style="
+    background:#0c0c12;
+    border:1px solid rgba(232,184,75,.25);
+    border-radius:16px;
+    padding:32px 28px 28px;
+    width:400px;max-width:90vw;
+    box-shadow:0 24px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.03);
+    position:relative;
+    animation:updateModalScaleIn .35s cubic-bezier(.4,0,.2,1);
+  ">
+    <!-- Close button -->
+    <button onclick="dismissUpdate()" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.05);border:none;color:#5f5f78;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.color='#ff4d6d';this.style.background='rgba(255,77,109,.1)'" onmouseout="this.style.color='#5f5f78';this.style.background='rgba(255,255,255,.05)'">&#10005;</button>
+    <!-- Content -->
+    <div style="text-align:center;">
+      <div style="font-size:36px;margin-bottom:12px;">&#128640;</div>
+      <div style="font-size:18px;font-weight:900;color:#f0eee8;letter-spacing:-.3px;margin-bottom:4px;">Update Available</div>
+      <div style="font-size:14px;font-weight:700;color:#e8b84b;margin-bottom:10px;" id="updateBannerTitle">New version ready</div>
+      <div style="font-size:12px;color:#8a8a9c;line-height:1.5;margin-bottom:24px;max-height:2.8em;overflow:hidden;" id="updateBannerNotes">Improvements and fixes</div>
     </div>
-    <button onclick="dismissUpdate()" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.05);border:none;color:#5f5f78;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
-  </div>
-  <div style="display:flex;gap:8px;">
-    <button onclick="doUpdate()" style="flex:1;height:34px;background:#e8b84b;border:none;border-radius:8px;color:#07070a;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;">Update Now</button>
-    <button onclick="dismissUpdate()" style="flex:1;height:34px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#9a9ab2;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Later</button>
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;">
+      <button onclick="doUpdate()" style="flex:1;height:42px;background:#e8b84b;border:none;border-radius:10px;color:#07070a;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;transition:filter .15s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">Update Now</button>
+      <button onclick="dismissUpdate()" style="flex:1;height:42px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#9a9ab2;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;" onmouseover="this.style.borderColor='rgba(255,255,255,.25)';this.style.color='#c0c0d0'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='#9a9ab2'">Later</button>
+    </div>
   </div>
 </div>
 
@@ -1288,7 +1306,14 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
     </div>
     <div id="forceUpdatePct" style="font-size:13px;font-weight:800;color:#f0eee8;margin-bottom:4px;">0%</div>
     <div id="forceUpdateDetail" style="font-size:11px;color:#5f5f78;">Preparing download...</div>
-    <div style="font-size:10px;color:#3a3a4f;margin-top:20px;">Please wait — the app will restart automatically</div>
+    <div id="forceUpdateWaitMsg" style="font-size:10px;color:#3a3a4f;margin-top:20px;">Please wait — the app will restart automatically</div>
+    <div id="forceUpdateActions" style="display:none;margin-top:20px;">
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px;">
+        <button id="forceUpdateRetryBtn" onclick="retryForceUpdate()" style="height:38px;padding:0 20px;background:#e8b84b;border:none;border-radius:9px;color:#07070a;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;transition:filter .15s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">&#8635; Retry</button>
+        <button id="forceUpdateSkipBtn" onclick="skipForceUpdate()" style="height:38px;padding:0 20px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#9a9ab2;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;" onmouseover="this.style.borderColor='rgba(255,255,255,.25)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)'">Skip</button>
+      </div>
+      <a href="https://tradersvault.app" target="_blank" style="font-size:11px;color:#e8b84b;text-decoration:underline;">Download manually from tradersvault.app</a>
+    </div>
   </div>
 </div>
 
@@ -1498,6 +1523,7 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
   <button class="focus-btn" id="focusBtn" onclick="toggleFocusMode()" title="Focus mode">&#127919;</button>
   <button class="settings-btn" id="profileBtn" onclick="openSettings();setTimeout(function(){var t=document.querySelector('.stab[onclick*=profile]');if(t){t.click();}},100);" title="Profile" style="font-size:12px;">&#127760;</button>
   <button class="settings-btn" id="settingsBtn" onclick="openSettings()" title="Settings">&#9881;</button>
+  <button class="settings-btn" id="topbarUpdateBtn" onclick="manualCheckForUpdate()" title="Check for updates" style="font-size:11px;letter-spacing:0;font-weight:700;">&#8635;</button>
   <button class="overlay-btn" id="overlayBtn" onclick="toggleOverlay()">&#9974; Overlay</button>
   <button class="snap-btn" id="dockBtn" onclick="toggleDockMode()" title="Dock mode — panels line up at top, gaps click-through" style="display:flex;">&#9783; Dock</button>
   <div class="win-controls" id="winControls">
@@ -10662,6 +10688,13 @@ function showLoginScreen() {
   if (el) { el.style.display = 'flex'; el.style.opacity = '0'; requestAnimationFrame(function(){ el.style.transition='opacity .4s'; el.style.opacity='1'; }); }
   // Ensure click-through is OFF so login is fully interactive
   if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(false);
+  // Remember me — pre-fill saved email
+  try {
+    var savedEmail = localStorage.getItem('tv_remember_email');
+    var emailInput = document.getElementById('loginEmail');
+    var rememberCb = document.getElementById('loginRememberMe');
+    if (savedEmail && emailInput) { emailInput.value = savedEmail; if (rememberCb) rememberCb.checked = true; }
+  } catch(e){}
 }
 function hideLoginScreen() {
   var el = document.getElementById('tvLoginScreen');
@@ -10721,6 +10754,10 @@ async function doLogin() {
     // Derive E2E encryption key from password + user ID for cloud sync
     var userId = validate.user_id || validate.id || d.user.id;
     await CloudSync.setEncKey(pass, userId);
+    // Remember me — save or clear email in localStorage
+    var rememberMe = (document.getElementById('loginRememberMe')||{}).checked;
+    if (rememberMe) { try { localStorage.setItem('tv_remember_email', email); } catch(e){} }
+    else { try { localStorage.removeItem('tv_remember_email'); } catch(e){} }
     setAuthStatus('✓ Welcome back!', '#22d46a');
     setTimeout(hideLoginScreen, 600);
     applyLicenceBadge(validate);
@@ -11203,13 +11240,18 @@ function forceUpdateAndDownload(v) {
     } else {
       _updateRetryCount++;
       if (_updateRetryCount >= _maxUpdateRetries) {
-        // Give up after max retries — don't loop forever
+        // Give up after max retries — show retry/skip buttons
         if (titleEl) titleEl.textContent = 'Update failed';
-        if (detailEl) detailEl.textContent = 'Could not download update after ' + _maxUpdateRetries + ' attempts. Please download manually from tradersvault.app';
+        if (detailEl) detailEl.textContent = 'Could not download update after ' + _maxUpdateRetries + ' attempts.';
         if (barEl) barEl.style.width = '0%';
         if (pctEl) pctEl.textContent = '';
         _markUpdateAttempted(v.latest_version);
-        // Don't reset _forceUpdateRunning — keep overlay visible with error message
+        // Show retry/skip action buttons and hide the wait message
+        var actionsEl = document.getElementById('forceUpdateActions');
+        var waitMsgEl = document.getElementById('forceUpdateWaitMsg');
+        if (actionsEl) actionsEl.style.display = 'block';
+        if (waitMsgEl) waitMsgEl.style.display = 'none';
+        _forceUpdateRunning = false;
       } else {
         // Retry with backoff
         var delay = 5000 * _updateRetryCount;
@@ -11245,6 +11287,26 @@ function showUpdateBannerPopup(v) {
 function dismissUpdate() {
   var banner = document.getElementById('tvUpdateBanner');
   if (banner) banner.style.display = 'none';
+}
+
+function retryForceUpdate() {
+  _updateRetryCount = 0;
+  _forceUpdateRunning = false;
+  var actionsEl = document.getElementById('forceUpdateActions');
+  var waitMsgEl = document.getElementById('forceUpdateWaitMsg');
+  if (actionsEl) actionsEl.style.display = 'none';
+  if (waitMsgEl) waitMsgEl.style.display = 'block';
+  if (tvUpdateInfo) forceUpdateAndDownload(tvUpdateInfo);
+}
+
+function skipForceUpdate() {
+  var overlay = document.getElementById('tvForceUpdateOverlay');
+  if (overlay) overlay.style.display = 'none';
+  _forceUpdateRunning = false;
+  var actionsEl = document.getElementById('forceUpdateActions');
+  var waitMsgEl = document.getElementById('forceUpdateWaitMsg');
+  if (actionsEl) actionsEl.style.display = 'none';
+  if (waitMsgEl) waitMsgEl.style.display = 'block';
 }
 
 function manualCheckForUpdate() {
