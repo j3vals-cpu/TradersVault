@@ -1090,7 +1090,8 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
 .layout-dropdown-item .ldi-del{margin-left:auto;color:var(--text3);font-size:10px;opacity:0;transition:opacity .12s;}
 .layout-dropdown-item:hover .ldi-del{opacity:1;}
 .layout-dropdown-item .ldi-del:hover{color:var(--red);}
-.layout-dropdown-item:hover .ldi-action{opacity:1;}
+.layout-dropdown-item .ldi-action{opacity:.4 !important;}
+.layout-dropdown-item:hover .ldi-action{opacity:1 !important;}
 .layout-dropdown-item .ldi-action:hover{color:var(--gold);}
 .layout-save-row{display:flex;gap:4px;padding:4px 8px;border-top:1px solid var(--border2);margin-top:4px;padding-top:8px;}
 .layout-save-row input{flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;padding:4px 8px;font-size:10px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;outline:none;}
@@ -1545,7 +1546,7 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
     </button>
     <div class="layout-dropdown" id="layoutDropdown"></div>
   </div>
-  <button class="snap-btn" onclick="snapToDefault()">
+  <button class="snap-btn" onclick="loadUserDefaultLayout()" title="Load your saved default layout (or reset to built-in default)">
     <svg viewBox="0 0 16 16"><path d="M1 1h6v6H1zm8 0h6v6H9zM1 9h6v6H1zm8 0h6v6H9z" fill-rule="evenodd"/></svg>
     Default Layout
   </button>
@@ -1962,6 +1963,7 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
     <div class="settings-panel" id="stab-layouts">
       <div style="font-size:10px;color:var(--text3);margin-bottom:12px;line-height:1.6;">Choose a layout preset to snap all panels into place.</div>
       <div class="layout-grid" id="layoutGrid"></div>
+      <div id="savedLayoutsSection" style="margin-top:18px;"></div>
     </div>
 
     <!-- TEMPLATES TAB -->
@@ -6138,6 +6140,38 @@ function buildLayoutGrid(){
       +'<div class="layout-card-desc">'+l.desc+'</div>'
       +'</div>';
   }).join('');
+  buildSavedLayoutsGrid();
+}
+
+function buildSavedLayoutsGrid(){
+  var sec = document.getElementById('savedLayoutsSection');
+  if (!sec) return;
+  var data = getLayouts();
+  var names = Object.keys(data.layouts);
+  if (names.length === 0) { sec.innerHTML = ''; return; }
+  var html = '<div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Saved Layouts</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+  names.forEach(function(name){
+    var isDefault = cfg.defaultLayout === name;
+    var escapedName = esc(name).replace(/'/g, "\\'");
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel2);border:1px solid '+(isDefault?'var(--gold)':'var(--border2)')+';border-radius:8px;">';
+    html += '<span style="flex:1;font-size:11px;font-weight:700;color:var(--text);cursor:pointer;" onclick="loadLayout(\''+escapedName+'\');closeSettings();">'+esc(name)+'</span>';
+    if (isDefault) {
+      html += '<span style="color:var(--gold);font-size:12px;" title="Default layout">&#9733;</span>';
+      html += '<button onclick="clearDefaultLayout();buildSavedLayoutsGrid();" style="padding:2px 8px;background:transparent;border:1px solid var(--border2);border-radius:5px;font-size:8px;color:var(--text3);cursor:pointer;font-family:inherit;">Unset Default</button>';
+    } else {
+      html += '<button onclick="setDefaultLayout(\''+escapedName+'\');buildSavedLayoutsGrid();" style="padding:2px 8px;background:var(--gold-dim);border:1px solid rgba(232,184,75,.3);border-radius:5px;font-size:8px;color:var(--gold);cursor:pointer;font-family:inherit;font-weight:700;">&#9734; Set as Default</button>';
+    }
+    html += '<button onclick="deleteLayout(\''+escapedName+'\');buildSavedLayoutsGrid();" style="padding:2px 8px;background:transparent;border:1px solid var(--border2);border-radius:5px;font-size:8px;color:var(--red,#e74c3c);cursor:pointer;font-family:inherit;">&times; Delete</button>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // Save new layout inline
+  html += '<div style="display:flex;gap:8px;margin-top:12px;">';
+  html += '<input id="settingsLayoutNameInput" class="s-input" placeholder="New layout name..." maxlength="30" style="flex:1;" onkeydown="if(event.key===\'Enter\'){saveCurrentLayout(this.value);this.value=\'\';buildSavedLayoutsGrid();}">';
+  html += '<button onclick="var inp=document.getElementById(\'settingsLayoutNameInput\');if(inp&&inp.value.trim()){saveCurrentLayout(inp.value.trim());inp.value=\'\';buildSavedLayoutsGrid();}" style="padding:0 14px;height:36px;background:var(--gold);border:none;border-radius:7px;color:#07070a;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">Save Current</button>';
+  html += '</div>';
+  sec.innerHTML = html;
 }
 
 function selectTheme(id){
@@ -8353,6 +8387,22 @@ function loadDefaultLayoutOnStartup() {
     data.active = cfg.defaultLayout;
     saveLayouts(data);
   }
+}
+
+function loadUserDefaultLayout() {
+  if (cfg.defaultLayout) {
+    var data = getLayouts();
+    if (data.layouts[cfg.defaultLayout]) {
+      applyLayout(data.layouts[cfg.defaultLayout]);
+      data.active = cfg.defaultLayout;
+      saveLayouts(data);
+      toast('Loaded default layout "' + cfg.defaultLayout + '"', 'success');
+      renderLayoutDropdown();
+      return;
+    }
+  }
+  // Fallback to built-in default
+  snapToDefault();
 }
 
 function renderLayoutDropdown() {
@@ -11596,8 +11646,8 @@ function openGainsCardSelector() {
   var html = '<div style="padding:24px;">';
   html += '<div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:16px;">Select Accounts for Card</div>';
   html += '<div style="display:flex;gap:8px;margin-bottom:12px;">';
-  html += '<button onclick="document.querySelectorAll(\'#gcSelectorModal input[type=checkbox]\').forEach(function(c){c.checked=true})" style="padding:4px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;font-size:9px;color:var(--text2);cursor:pointer;font-family:inherit;">Select All</button>';
-  html += '<button onclick="document.querySelectorAll(\'#gcSelectorModal input[type=checkbox]\').forEach(function(c){c.checked=false})" style="padding:4px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;font-size:9px;color:var(--text2);cursor:pointer;font-family:inherit;">Select None</button>';
+  html += '<button onclick="document.querySelectorAll(\'#gcSelectorModal input[type=checkbox]\').forEach(function(c){c.checked=true})" style="padding:4px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;font-size:9px;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-app-region:no-drag;pointer-events:auto;">Select All</button>';
+  html += '<button onclick="document.querySelectorAll(\'#gcSelectorModal input[type=checkbox]\').forEach(function(c){c.checked=false})" style="padding:4px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:5px;font-size:9px;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-app-region:no-drag;pointer-events:auto;">Select None</button>';
   html += '</div>';
 
   if (allAccounts.length > 0) {
@@ -11622,20 +11672,23 @@ function openGainsCardSelector() {
   }
 
   html += '<div style="display:flex;gap:8px;margin-top:16px;">';
-  html += '<button onclick="generateSelectedGainsCard()" style="flex:1;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#07070a;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">Generate Card</button>';
-  html += '<button onclick="document.getElementById(\'gcSelectorModal\').remove()" style="padding:10px 16px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;">Cancel</button>';
+  html += '<button onclick="generateSelectedGainsCard()" style="flex:1;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#07070a;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-app-region:no-drag;pointer-events:auto;">Generate Card</button>';
+  html += '<button onclick="var m=document.getElementById(\'gcSelectorModal\');if(m)m.remove();if(window.electronAPI&&window.electronAPI.setClickThrough)window.electronAPI.setClickThrough(true);" style="padding:10px 16px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;-webkit-app-region:no-drag;pointer-events:auto;">Cancel</button>';
   html += '</div></div>';
 
   var old = document.getElementById('gcSelectorModal');
   if (old) old.remove();
   var modal = document.createElement('div');
   modal.id = 'gcSelectorModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
-  modal.onclick = function(e) { if(e.target === modal) modal.remove(); };
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999990;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-app-region:no-drag;pointer-events:auto;';
+  modal.onclick = function(e) { if(e.target === modal) { modal.remove(); if(window.electronAPI&&window.electronAPI.setClickThrough)window.electronAPI.setClickThrough(true); } };
   var inner = document.createElement('div');
-  inner.style.cssText = 'background:var(--panel);border:1px solid var(--border2);border-radius:14px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;';
+  inner.style.cssText = 'background:var(--panel);border:1px solid var(--border2);border-radius:14px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;-webkit-app-region:no-drag;pointer-events:auto;';
   inner.innerHTML = html;
+  // Ensure all buttons inside are clickable
+  inner.querySelectorAll('button,label,input').forEach(function(el){ el.style.webkitAppRegion='no-drag'; el.style.pointerEvents='auto'; });
   modal.appendChild(inner);
+  if(window.electronAPI&&window.electronAPI.setClickThrough)window.electronAPI.setClickThrough(false);
   document.body.appendChild(modal);
 }
 
@@ -11654,9 +11707,10 @@ function generateSelectedGainsCard() {
   window._gcSelectedTrading = selTrading;
   window._gcSelectedProp = selProp;
 
-  // Close selector
+  // Close selector and re-enable click-through
   var m = document.getElementById('gcSelectorModal');
   if (m) m.remove();
+  if (window.electronAPI && window.electronAPI.setClickThrough) window.electronAPI.setClickThrough(true);
 
   // Open gains card with filtered data
   openGainsCard();
