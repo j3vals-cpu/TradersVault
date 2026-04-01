@@ -1,89 +1,71 @@
 {
-  "name": "traders-vault-demo",
+  "appId": "com.j3traders.vault.demo",
   "productName": "Traders Vault Demo",
-  "version": "2.9.5",
-  "description": "Traders Vault Demo — Vaulted Desk. The overlay trading command centre for prop traders.",
-  "main": "main-demo.js",
-  "author": "J3 | Traders Vault — Vaulted Desk",
-  "license": "MIT",
-  "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev"
+  "copyright": "Copyright \u00a9 2026 J3 | Traders Vault \u2014 Vaulted Desk",
+  "asar": true,
+  "directories": {
+    "output": "dist-demo"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.0.0"
-  },
-  "build": {
-    "appId": "com.j3traders.vault.demo",
-    "productName": "Traders Vault Demo",
-    "copyright": "Copyright © 2026 J3 | Traders Vault — Vaulted Desk",
-    "asar": true,
-    "directories": {
-      "output": "dist-demo"
-    },
-    "files": [
-      "main-demo.js",
-      "preload.js",
-      "index.html",
-      "splash.html",
-      "html2canvas.min.js",
-      "assets/**/*"
+  "files": [
+    "main-demo.js",
+    "preload.js",
+    "index.html",
+    "splash.html",
+    "html2canvas.min.js",
+    "assets/**/*"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      },
+      {
+        "target": "portable",
+        "arch": [
+          "x64"
+        ]
+      }
     ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "assets/icon.ico",
-      "requestedExecutionLevel": "asInvoker",
-      "executableName": "TradersVaultDemo"
-    },
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Traders Vault Demo",
-      "runAfterFinish": true,
-      "deleteAppDataOnUninstall": false
-    },
-    "portable": {
-      "artifactName": "TradersVault-Demo-portable.exe"
-    },
-    "mac": {
-      "target": "pkg",
-      "icon": "assets/icon.png",
-      "category": "public.app-category.finance",
-      "minimumSystemVersion": "10.15",
-      "darkModeSupport": true,
-      "hardenedRuntime": false,
-      "gatekeeperAssess": false
-    },
-    "pkg": {
-      "installLocation": "/Applications",
-      "allowAnywhere": true,
-      "allowCurrentUserHome": true,
-      "allowRootDirectory": true,
-      "artifactName": "Traders-Vault-Demo-${version}-${arch}.pkg"
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "icon": "assets/icon.png",
-      "category": "Finance"
-    }
+    "icon": "assets/icon.ico",
+    "requestedExecutionLevel": "asInvoker",
+    "executableName": "TradersVaultDemo"
+  },
+  "nsis": {
+    "oneClick": true,
+    "perMachine": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Traders Vault Demo",
+    "runAfterFinish": true,
+    "deleteAppDataOnUninstall": false
+  },
+  "portable": {
+    "artifactName": "TradersVault-Demo-portable.exe"
+  },
+  "mac": {
+    "target": "pkg",
+    "icon": "assets/icon.png",
+    "category": "public.app-category.finance",
+    "minimumSystemVersion": "10.15",
+    "darkModeSupport": true,
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false
+  },
+  "pkg": {
+    "installLocation": "/Applications",
+    "allowAnywhere": true,
+    "allowCurrentUserHome": true,
+    "allowRootDirectory": true,
+    "artifactName": "Traders-Vault-Demo-${version}-${arch}.pkg"
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "icon": "assets/icon.png",
+    "category": "Finance"
   }
 }
