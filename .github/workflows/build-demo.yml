@@ -1,0 +1,119 @@
+name: Build Traders Vault Demo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-demo:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows demo exe
+        run: npm run build:demo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version from package.json
+        id: pkg
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload Windows demo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TradersVault-Demo-Windows
+          path: dist-demo/*.exe
+          retention-days: 30
+
+      - name: Upload Windows demo release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: demo-latest
+          name: Traders Vault Demo (latest)
+          body: |
+            **Demo build** — for internal testing only.
+
+            Version: ${{ steps.pkg.outputs.version }}
+            Built: ${{ github.event.repository.updated_at }}
+
+            These builds use a separate data directory and can be installed alongside production.
+          files: |
+            dist-demo/Traders Vault Demo Setup ${{ steps.pkg.outputs.version }}.exe
+            dist-demo/TradersVault-Demo-portable.exe
+          draft: false
+          prerelease: true
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-mac-demo:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build macOS demo pkg (x64)
+        run: electron-builder --mac --x64 --config package-demo.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build macOS demo pkg (arm64)
+        run: electron-builder --mac --arm64 --config package-demo.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get version from package.json
+        id: pkg
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: List dist-demo contents
+        run: ls -la dist-demo/
+
+      - name: Upload macOS demo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TradersVault-Demo-macOS
+          path: dist-demo/*.pkg
+          retention-days: 30
+
+      - name: Upload macOS demo release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: demo-latest
+          name: Traders Vault Demo (latest)
+          files: |
+            dist-demo/Traders-Vault-Demo-${{ steps.pkg.outputs.version }}-arm64.pkg
+            dist-demo/Traders-Vault-Demo-${{ steps.pkg.outputs.version }}-x64.pkg
+          draft: false
+          prerelease: true
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

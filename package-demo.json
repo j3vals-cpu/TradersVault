@@ -1,23 +1,14 @@
 {
-  "name": "traders-vault",
-  "productName": "Traders Vault",
+  "name": "traders-vault-demo",
+  "productName": "Traders Vault Demo",
   "version": "2.9.5",
-  "description": "Traders Vault \u2014 Vaulted Desk. The overlay trading command centre for prop traders.",
-  "main": "main.js",
-  "author": "J3 | Traders Vault \u2014 Vaulted Desk",
+  "description": "Traders Vault Demo — Vaulted Desk. The overlay trading command centre for prop traders.",
+  "main": "main-demo.js",
+  "author": "J3 | Traders Vault — Vaulted Desk",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --dev",
-    "build": "electron-builder --win --x64",
-    "build:portable": "electron-builder --win portable --x64",
-    "build:mac": "electron-builder --mac --x64 && electron-builder --mac --arm64",
-    "build:mac:x64": "electron-builder --mac --x64",
-    "build:mac:arm64": "electron-builder --mac --arm64",
-    "build:all": "electron-builder --win --x64 && electron-builder --mac --x64 && electron-builder --mac --arm64",
-    "demo": "electron main-demo.js",
-    "build:demo": "electron-builder --win --x64 --config package-demo.json",
-    "build:demo:mac": "electron-builder --mac --x64 --config package-demo.json && electron-builder --mac --arm64 --config package-demo.json"
+    "dev": "electron . --dev"
   },
   "dependencies": {},
   "devDependencies": {
@@ -25,15 +16,15 @@
     "electron-builder": "^24.0.0"
   },
   "build": {
-    "appId": "com.j3traders.vault",
-    "productName": "Traders Vault",
-    "copyright": "Copyright \u00a9 2026 J3 | Traders Vault \u2014 Vaulted Desk",
+    "appId": "com.j3traders.vault.demo",
+    "productName": "Traders Vault Demo",
+    "copyright": "Copyright © 2026 J3 | Traders Vault — Vaulted Desk",
     "asar": true,
     "directories": {
-      "output": "dist"
+      "output": "dist-demo"
     },
     "files": [
-      "main.js",
+      "main-demo.js",
       "preload.js",
       "index.html",
       "splash.html",
@@ -57,19 +48,19 @@
       ],
       "icon": "assets/icon.ico",
       "requestedExecutionLevel": "asInvoker",
-      "executableName": "TradersVault"
+      "executableName": "TradersVaultDemo"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Traders Vault",
+      "shortcutName": "Traders Vault Demo",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false
     },
     "portable": {
-      "artifactName": "TradersVault-portable.exe"
+      "artifactName": "TradersVault-Demo-portable.exe"
     },
     "mac": {
       "target": "pkg",
@@ -85,7 +76,7 @@
       "allowAnywhere": true,
       "allowCurrentUserHome": true,
       "allowRootDirectory": true,
-      "artifactName": "Traders-Vault-${version}-${arch}.pkg"
+      "artifactName": "Traders-Vault-Demo-${version}-${arch}.pkg"
     },
     "linux": {
       "target": [
