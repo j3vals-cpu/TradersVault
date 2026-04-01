@@ -67,5 +67,8 @@
     ],
     "icon": "assets/icon.png",
     "category": "Finance"
+  },
+  "extraMetadata": {
+    "main": "main-demo.js"
   }
 }
