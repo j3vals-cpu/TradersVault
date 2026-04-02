@@ -319,8 +319,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .win-title{font-size:11px;font-weight:800;color:var(--text);letter-spacing:.2px;}
 .win-cnt{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);background:var(--panel3);padding:1px 6px;border-radius:10px;}
 .win-gap{flex:1;}
-.win-hide,.win-pop{width:20px;height:20px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;line-height:1;}
+.win-hide,.win-pop{width:22px;height:22px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;line-height:1;}
 .win-hide:hover,.win-pop:hover{background:var(--panel3);color:var(--text);}
+.win-close{width:22px;height:22px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;line-height:1;margin-left:2px;}
+.win-close:hover{background:rgba(255,77,109,.15);color:#ff4d6d;}
+.win-hide,.win-pop,.win-close{-webkit-app-region:no-drag;pointer-events:auto;}
 
 /* Window resize handle — see enhanced styles below */
 
@@ -2875,7 +2878,8 @@ function createWindow(cfg){
     +'<div class="win-gap"></div>'
     +(cfg.extraBtns||'')
     +'<button class="win-pop" title="Pop Out to Desktop" onclick="popOutPanel(\''+cfg.id+'\')" style="font-style:normal;">&#10697;</button>'
-    +'<button class="win-hide" title="Hide" onclick="toggleWin(\''+cfg.id+'\')" style="font-style:normal;font-size:11px;">&#8211;</button>';
+    +'<button class="win-hide" title="Hide" onclick="toggleWin(\''+cfg.id+'\')" style="font-style:normal;font-size:11px;">&#8211;</button>'
+    +'<button class="win-close" title="Close" onclick="toggleWin(\''+cfg.id+'\')" style="font-style:normal;">&#10005;</button>';
   el.appendChild(bar);
 
   // Content container
