@@ -11364,7 +11364,7 @@ function forceUpdateAndDownload(v) {
   }
   var platform = window.electronAPI ? window.electronAPI.platform : 'win32';
   if (platform === 'darwin' && dlUrl.indexOf('.exe') !== -1) {
-    var arch = (navigator.userAgent.indexOf('ARM') !== -1 || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 0) ? 'arm64' : 'x64';
+    var arch = (window.electronAPI && window.electronAPI.arch === 'arm64') ? 'arm64' : 'x64';
     var ver = dlUrl.match(/(\d+\.\d+\.\d+)/);
     if (ver) dlUrl = dlUrl.replace(/[^/]+$/, 'Traders-Vault-' + ver[1] + '-' + arch + '.pkg');
   }
