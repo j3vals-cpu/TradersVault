@@ -507,16 +507,34 @@ ipcMain.handle('download-update', async (_, url) => {
   if (!url) return { ok: false, error: 'No URL' };
   const downloadsDir = app.getPath('downloads');
 
-  // Derive a safe .exe filename from the URL.
-  // If the URL doesn't end with .exe (e.g. it's a release page URL like
-  // /releases/tag/v2.8.0), build a proper installer filename so Windows
-  // recognises the downloaded file as an executable.
-  let fileName = (url.split('/').pop() || '').split('?')[0]; // strip query params
-  if (!fileName || !fileName.toLowerCase().endsWith('.exe')) {
+  // Platform-aware URL: if Mac receives a .exe URL, swap to .pkg
+  if (isMac && url.indexOf('.exe') !== -1) {
     const verMatch = url.match(/(\d+\.\d+\.\d+)/);
-    fileName = verMatch
-      ? 'Traders.Vault.Setup.' + verMatch[1] + '.exe'
-      : 'TradersVault-update.exe';
+    if (verMatch) {
+      const arch = process.arch === 'arm64' ? 'arm64' : 'x64';
+      url = url.replace(/[^/]+$/, 'Traders-Vault-' + verMatch[1] + '-' + arch + '.pkg');
+    }
+  }
+
+  // Derive a safe filename from the URL.
+  let fileName = (url.split('/').pop() || '').split('?')[0]; // strip query params
+  if (isMac) {
+    // Mac: ensure .pkg extension
+    if (!fileName || !fileName.toLowerCase().endsWith('.pkg')) {
+      const verMatch = url.match(/(\d+\.\d+\.\d+)/);
+      const arch = process.arch === 'arm64' ? 'arm64' : 'x64';
+      fileName = verMatch
+        ? 'Traders-Vault-' + verMatch[1] + '-' + arch + '.pkg'
+        : 'TradersVault-update.pkg';
+    }
+  } else {
+    // Windows: ensure .exe extension
+    if (!fileName || !fileName.toLowerCase().endsWith('.exe')) {
+      const verMatch = url.match(/(\d+\.\d+\.\d+)/);
+      fileName = verMatch
+        ? 'Traders.Vault.Setup.' + verMatch[1] + '.exe'
+        : 'TradersVault-update.exe';
+    }
   }
 
   let filePath = path.join(downloadsDir, fileName);
@@ -543,9 +561,11 @@ ipcMain.handle('download-update', async (_, url) => {
           }
         }
 
-        // Final safety net: ensure .exe extension on Windows
-        if (process.platform === 'win32' && !filePath.toLowerCase().endsWith('.exe')) {
+        // Final safety net: ensure correct extension per platform
+        if (isWin && !filePath.toLowerCase().endsWith('.exe')) {
           filePath += '.exe';
+        } else if (isMac && !filePath.toLowerCase().endsWith('.pkg')) {
+          filePath += '.pkg';
         }
 
         const totalBytes = parseInt(res.headers['content-length'] || '0', 10);
