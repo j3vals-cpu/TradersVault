@@ -35,7 +35,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .logo-stack{display:flex;flex-direction:column;gap:1px;}
 .logo-txt{font-size:14px;font-weight:900;color:var(--gold);letter-spacing:-.5px;line-height:1;}
 .logo-sub{font-family:'Geist Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
-.topbar-clock{font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--text);letter-spacing:.5px;padding:5px 10px;background:var(--panel2);border-radius:7px;border:1px solid var(--border2);flex-shrink:0;}
+.topbar-clock{font-family:'Geist Mono',monospace;font-size:13px;font-weight:500;color:var(--text);letter-spacing:.5px;padding:5px 10px;background:var(--panel2);border-radius:7px;border:1px solid var(--border2);flex-shrink:0;cursor:pointer;transition:all .2s;-webkit-app-region:no-drag;pointer-events:auto;position:relative;}
+.topbar-clock:hover{color:var(--gold);border-color:var(--gold);background:var(--gold-dim);}
+.tz-dropdown{position:absolute;top:100%;left:0;margin-top:6px;background:#12121a;border:1px solid var(--gold);border-radius:8px;padding:4px 0;z-index:9999;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.6);font-family:'Geist Mono',monospace;font-size:11px;}
+.tz-dropdown-item{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;color:var(--text2);cursor:pointer;transition:background .15s,color .15s;white-space:nowrap;}
+.tz-dropdown-item:hover{background:var(--gold-dim);color:var(--gold);}
+.tz-dropdown-item.active{color:var(--gold);font-weight:600;}
+.tz-dropdown-item .tz-name{margin-right:16px;}
+.tz-dropdown-item .tz-time{color:var(--text3);font-size:10px;}
 .topbar-date{font-family:'Geist Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:.8px;padding:3px 8px;background:var(--panel2);border-radius:5px;border:1px solid var(--border);flex-shrink:0;}
 .tb-div{width:1px;height:22px;background:var(--border2);flex-shrink:0;}
 .topbar-gap{flex:1;}
@@ -754,9 +761,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .win-resize::before{content:'';position:absolute;bottom:5px;right:12px;width:0;height:7px;border-right:2px solid var(--gold);opacity:.5;}
 .win:hover .win-resize{opacity:1;filter:drop-shadow(0 0 6px var(--gold-glow));}
 
-/* ───── TIMEZONE DISPLAY (Task 5) ───── */
-.topbar-tz{font-family:'Geist Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);padding:4px 10px;background:var(--panel2);border-radius:7px;border:1px solid var(--border2);cursor:default;transition:all .2s;flex-shrink:0;white-space:nowrap;letter-spacing:.3px;-webkit-app-region:no-drag;}
-.topbar-tz:hover{color:var(--gold);border-color:var(--gold);background:var(--gold-dim);}
+/* ───── TIMEZONE DISPLAY (Task 5) — merged into topbar-clock ───── */
 
 /* ───── POP OUT BUTTON (Task 3) ───── */
 .win-pop{width:24px !important;height:24px !important;font-size:15px !important;color:var(--gold) !important;border:1px solid var(--border2) !important;background:var(--panel3) !important;border-radius:5px !important;transition:all .18s !important;}
@@ -838,10 +843,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   #promoBarWrap{display:none !important;}
 }
 @media(max-width:1280px){
-  /* Further compact — hide transparency, socials, timezone */
+  /* Further compact — hide transparency, socials */
   .trans-wrap{display:none;}
   .socials{display:none;}
-  .topbar-tz{display:none;}
   .topbar{gap:4px;}
   .social-btn{width:22px;height:22px;font-size:9px;}
   .session-pill{padding:3px 6px;}
@@ -895,14 +899,12 @@ html.screen-narrow .topbar-date,
 html.screen-narrow #promoBarWrap,
 html.screen-narrow .trans-wrap,
 html.screen-narrow .socials,
-html.screen-narrow .topbar-tz{display:none !important;}
 
 html.screen-ultra-compact .topbar-greet,
 html.screen-ultra-compact .topbar-date,
 html.screen-ultra-compact #promoBarWrap,
 html.screen-ultra-compact .trans-wrap,
 html.screen-ultra-compact .socials,
-html.screen-ultra-compact .topbar-tz,
 html.screen-ultra-compact .pomo-wrap,
 html.screen-ultra-compact .quick-colors,
 html.screen-ultra-compact .focus-btn{display:none !important;}
@@ -1493,7 +1495,6 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
     <div class="session-dot closed" id="sessionDot"></div>
     <span class="session-lbl" id="sessionLbl">CLOSED</span>
   </div>
-  <div class="topbar-tz" id="topbarTz" title="Your local timezone">--:-- ---</div>
   <div class="tb-div"></div>
   <div class="pomo-wrap" id="pomoWrap" onclick="togglePomo()" title="Click to start · Right-click to reset">
     <span class="pomo-lbl" id="pomoLbl">FOCUS</span>
@@ -4726,7 +4727,7 @@ function repositionAfterUndock() {
 function snapWindowsToDock() {
   var wins = Array.from(document.querySelectorAll('.win:not(.hidden)'));
   if (!wins.length) return;
-  var screenW = window.screen.width || window.innerWidth;
+  var screenW = window.innerWidth;
   var screenH = window.innerHeight;
   var gap = 8;
 
@@ -4763,6 +4764,22 @@ function snapWindowsToDock() {
       w.style.top = topY + 'px';
     });
   }
+  // Clamp all panels to viewport
+  wins.forEach(function(w) {
+    var l = parseInt(w.style.left) || 0;
+    var t = parseInt(w.style.top) || 0;
+    var pw = parseInt(w.style.width) || w.offsetWidth;
+    var ph = parseInt(w.style.height) || w.offsetHeight;
+    if (l + pw > window.innerWidth) l = Math.max(0, window.innerWidth - pw);
+    if (t + ph > window.innerHeight) t = Math.max(0, window.innerHeight - ph);
+    if (l < 0) l = 0;
+    if (t < 0) t = 0;
+    w.style.left = l + 'px';
+    w.style.top = t + 'px';
+    var wid = w.id.replace('win-','');
+    var ws = state.windows[wid];
+    if (ws) { ws.x = l; ws.y = t; }
+  });
 }
 
 function renderDockPanelBtns() {
@@ -6348,17 +6365,108 @@ function resetSettings(){
 
 
 
-// ─── FEATURE 1: Live Clock ─────────────────
+// ─── FEATURE 1: Live Clock with Timezone Picker ─────────────────
+var _clockTz = localStorage.getItem('tv_clock_tz') || 'local';
+var _clockTzOptions = [
+  { label: 'Local', iana: 'local' },
+  { label: 'New York (ET)', iana: 'America/New_York' },
+  { label: 'Chicago (CT)', iana: 'America/Chicago' },
+  { label: 'London (GMT/BST)', iana: 'Europe/London' },
+  { label: 'Tokyo (JST)', iana: 'Asia/Tokyo' },
+  { label: 'Sydney (AEST)', iana: 'Australia/Sydney' },
+  { label: 'Dubai (GST)', iana: 'Asia/Dubai' }
+];
+
+function getClockTimeStr(tz) {
+  var now = new Date();
+  var opts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZoneName: 'short' };
+  if (tz !== 'local') opts.timeZone = tz;
+  try {
+    var parts = new Intl.DateTimeFormat('en-GB', opts).formatToParts(now);
+    var time = '', tzAbbr = '';
+    parts.forEach(function(p) {
+      if (p.type === 'hour' || p.type === 'minute' || p.type === 'second' || p.type === 'literal') time += p.value;
+      if (p.type === 'timeZoneName') tzAbbr = p.value;
+    });
+    return time.trim() + ' ' + tzAbbr;
+  } catch(e) {
+    var h = now.getHours().toString().padStart(2,'0');
+    var m = now.getMinutes().toString().padStart(2,'0');
+    var s = now.getSeconds().toString().padStart(2,'0');
+    return h + ':' + m + ':' + s;
+  }
+}
+
+function getClockTimeShort(tz) {
+  var now = new Date();
+  var opts = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+  if (tz !== 'local') opts.timeZone = tz;
+  try {
+    return now.toLocaleTimeString('en-GB', opts);
+  } catch(e) {
+    return '--:--:--';
+  }
+}
+
 function startClock(){
   function tick(){
     var now=new Date();
-    var h=now.getHours().toString().padStart(2,'0');
-    var m=now.getMinutes().toString().padStart(2,'0');
-    var s=now.getSeconds().toString().padStart(2,'0');
     var el=document.getElementById('liveClock');
-    if(el) el.textContent=h+':'+m+':'+s;
+    if(el) {
+      // Preserve dropdown if open
+      var dd = el.querySelector('.tz-dropdown');
+      var txt = el.querySelector('.clock-text');
+      if (txt) {
+        txt.textContent = getClockTimeStr(_clockTz);
+      } else {
+        el.textContent = getClockTimeStr(_clockTz);
+      }
+      // Update dropdown times if open
+      if (dd) {
+        dd.querySelectorAll('.tz-dropdown-item').forEach(function(item) {
+          var iana = item.dataset.iana;
+          var timeEl = item.querySelector('.tz-time');
+          if (timeEl) timeEl.textContent = getClockTimeShort(iana);
+        });
+      }
+    }
     updateMarketSession(now);
     updateDockSessionTimer();
+  }
+  // Set up clock element with span for text and click handler
+  var clockEl = document.getElementById('liveClock');
+  if (clockEl) {
+    clockEl.innerHTML = '<span class="clock-text">' + getClockTimeStr(_clockTz) + '</span>';
+    clockEl.onclick = function(e) {
+      e.stopPropagation();
+      var existing = clockEl.querySelector('.tz-dropdown');
+      if (existing) { existing.remove(); return; }
+      var dd = document.createElement('div');
+      dd.className = 'tz-dropdown';
+      _clockTzOptions.forEach(function(opt) {
+        var item = document.createElement('div');
+        item.className = 'tz-dropdown-item' + (opt.iana === _clockTz ? ' active' : '');
+        item.dataset.iana = opt.iana;
+        item.innerHTML = '<span class="tz-name">' + opt.label + '</span><span class="tz-time">' + getClockTimeShort(opt.iana) + '</span>';
+        item.onclick = function(ev) {
+          ev.stopPropagation();
+          _clockTz = opt.iana;
+          localStorage.setItem('tv_clock_tz', _clockTz);
+          clockEl.querySelector('.clock-text').textContent = getClockTimeStr(_clockTz);
+          dd.remove();
+        };
+        dd.appendChild(item);
+      });
+      clockEl.appendChild(dd);
+      // Close on outside click
+      setTimeout(function() {
+        document.addEventListener('click', function closeTzDd() {
+          var d = clockEl.querySelector('.tz-dropdown');
+          if (d) d.remove();
+          document.removeEventListener('click', closeTzDd);
+        });
+      }, 0);
+    };
   }
   tick(); setInterval(tick,1000);
 }
@@ -12043,31 +12151,8 @@ function copyGainsCard() {
 }
 
 // ═══════════════════════════════════════════
-// TIMEZONE DISPLAY (Task 5)
+// TIMEZONE DISPLAY (Task 5) — merged into liveClock
 // ═══════════════════════════════════════════
-function updateTopbarTimezone() {
-  var el = document.getElementById('topbarTz');
-  if (!el) return;
-  var now = new Date();
-  var timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-  var tzAbbr = '';
-  try {
-    var parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(now);
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i].type === 'timeZoneName') { tzAbbr = parts[i].value; break; }
-    }
-  } catch(e) {
-    // Fallback: extract from toString
-    var match = now.toString().match(/\(([^)]+)\)/);
-    if (match) {
-      tzAbbr = match[1].replace(/[a-z ]/g, '');
-    }
-  }
-  el.textContent = timeStr + ' ' + tzAbbr;
-  el.title = 'Your local timezone: ' + tzAbbr;
-}
-updateTopbarTimezone();
-setInterval(updateTopbarTimezone, 60000);
 
 // ═══════════════════════════════════════════
 // WALKTHROUGH TOUR — full panel tour for fresh users
