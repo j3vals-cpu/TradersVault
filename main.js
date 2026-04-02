@@ -259,12 +259,11 @@ function startMousePoller() {
     const ly = (cursor.y - cachedBounds.y) / cachedScale;
 
     // Expand hit rects slightly on macOS for better click reliability
-    const pad = isMac ? 4 : 0;
-    const hitPad = pad + 6;  // extra tolerance for DPI scaling edge cases
+    const pad = isMac ? 4 : 6;
     let over = false;
     for (let i = 0, len = hitRects.length; i < len; i++) {
       const r = hitRects[i];
-      if (lx >= r.x - hitPad && lx <= r.x + r.w + hitPad && ly >= r.y - hitPad && ly <= r.y + r.h + hitPad) {
+      if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
         over = true;
         break;
       }
