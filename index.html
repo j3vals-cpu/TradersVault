@@ -8674,13 +8674,18 @@ try{
 }catch(e){console.error('[INIT ERROR] default-hidden:',e);}
 
 var _initErrors=[];
-try{buildToggles();}catch(e){_initErrors.push('buildToggles:'+e.message);console.error('[INIT ERROR] buildToggles:',e);}
-try{initElectron();}catch(e){_initErrors.push('initElectron:'+e.message);console.error('[INIT ERROR] initElectron:',e);}
-try{applyAllCfg();}catch(e){_initErrors.push('applyAllCfg:'+e.message);console.error('[INIT ERROR] applyAllCfg:',e);}
-try{startClock();}catch(e){_initErrors.push('startClock:'+e.message);console.error('[INIT ERROR] startClock:',e);}
-try{buildQuickColors();}catch(e){_initErrors.push('buildQuickColors:'+e.message);console.error('[INIT ERROR] buildQuickColors:',e);}
-// Write errors to file immediately
-if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-errors',{errors:_initErrors,panelErrors:window.__TVD?window.__TVD.e:[],ts:Date.now()});
+var _dbg=function(step){if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-step',{step:step,errors:_initErrors.slice(),ts:Date.now()});};
+_dbg('pre-toggles');
+try{buildToggles();}catch(e){_initErrors.push('buildToggles:'+e.message);}
+_dbg('post-toggles');
+try{initElectron();}catch(e){_initErrors.push('initElectron:'+e.message);}
+_dbg('post-electron');
+try{applyAllCfg();}catch(e){_initErrors.push('applyAllCfg:'+e.message);}
+_dbg('post-cfg');
+try{startClock();}catch(e){_initErrors.push('startClock:'+e.message);}
+_dbg('post-clock');
+try{buildQuickColors();}catch(e){_initErrors.push('buildQuickColors:'+e.message);}
+_dbg('post-quickcolors');
 
 // === ONE-TIME FIX: if too many panels visible on small screen, hide extras ===
 (function(){
