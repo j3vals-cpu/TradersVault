@@ -2849,13 +2849,18 @@ function getWinState(id){
     state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:false};
   }
   var ws=state.windows[id];
-  // Clamp to visible viewport
+  // Clamp to visible viewport — ensure header (close/hide buttons) is always reachable
   var vw=window.innerWidth||1920;
   var vh=window.innerHeight||1080;
+  var pw=ws.w||400, ph=ws.h||300;
+  // Shrink panel if wider/taller than viewport
+  if(pw > vw - 60) { ws.w = vw - 60; pw = ws.w; }
+  if(ph > vh - 50) { ws.h = vh - 50; ph = ws.h; }
+  // Keep fully on-screen — no negative, no overflow
+  if(ws.x < 0) ws.x = 0;
   if(ws.y < 0) ws.y = 0;
-  if(ws.x < -50) ws.x = 10;
-  if(ws.y + (ws.h||300) > vh) ws.y = Math.max(0, vh - (ws.h||300));
-  if(ws.x + (ws.w||400) > vw + 50) ws.x = Math.max(10, vw - (ws.w||400));
+  if(ws.x + pw > vw) ws.x = Math.max(0, vw - pw);
+  if(ws.y + ph > vh) ws.y = Math.max(0, vh - ph);
   return ws;
 }
 
@@ -4730,56 +4735,72 @@ function snapWindowsToDock() {
   var screenW = window.innerWidth;
   var screenH = window.innerHeight;
   var gap = 8;
+  var minPanelH = 180, minPanelW = 240;
 
   if (_dockPosition === 'left' || _dockPosition === 'right') {
-    // Vertical dock: stack panels to the right/left of dock
-    var dockW = 50; // dock bar width + gap
-    var maxW = Math.min(screenW - dockW - 20, 520);
-    var panelH = Math.floor((screenH - gap * (wins.length + 1)) / wins.length);
-    panelH = Math.max(200, Math.min(panelH, 500));
-    var totalH = wins.length * panelH + (wins.length - 1) * gap;
-    var startY = Math.max(gap, Math.floor((screenH - totalH) / 2));
+    var dockW = 55;
+    var availW = screenW - dockW - 20;
+    var maxW = Math.min(availW, 520);
+    // Calculate how many panels can fit vertically
+    var maxFit = Math.max(1, Math.floor((screenH - gap) / (minPanelH + gap)));
+    var cols = Math.ceil(wins.length / maxFit);
+    var perCol = Math.ceil(wins.length / cols);
+    var colW = cols > 1 ? Math.floor((availW - gap * (cols - 1)) / cols) : maxW;
+    colW = Math.min(colW, 520);
+    var panelH = Math.floor((screenH - gap * (perCol + 1)) / perCol);
+    panelH = Math.max(minPanelH, Math.min(panelH, 500));
     var startX = _dockPosition === 'left' ? dockW : gap;
     wins.forEach(function(w, i) {
-      var curW = parseInt(w.style.width) || w.offsetWidth || 340;
-      if (curW > maxW) w.style.width = maxW + 'px';
+      var col = Math.floor(i / perCol);
+      var row = i % perCol;
+      var totalRowH = perCol * panelH + (perCol - 1) * gap;
+      var startY = Math.max(gap, Math.floor((screenH - totalRowH) / 2));
+      w.style.width = colW + 'px';
       w.style.height = panelH + 'px';
-      w.style.left = startX + 'px';
-      w.style.top = (startY + i * (panelH + gap)) + 'px';
+      w.style.left = (startX + col * (colW + gap)) + 'px';
+      w.style.top = (startY + row * (panelH + gap)) + 'px';
     });
   } else {
-    // Horizontal dock (top/bottom)
-    var dockH = 44; // dock bar height + gap
-    var maxH = Math.min(screenH - dockH - 20, 500);
-    var panelW = Math.floor((screenW - gap * (wins.length + 1)) / wins.length);
-    panelW = Math.max(260, Math.min(panelW, 520));
-    var totalW = wins.length * panelW + (wins.length - 1) * gap;
-    var startX = Math.max(gap, Math.floor((screenW - totalW) / 2));
+    var dockH = 48;
+    var availH = screenH - dockH - 20;
+    var maxH = Math.min(availH, 500);
+    // Calculate how many panels can fit horizontally
+    var maxFit = Math.max(1, Math.floor((screenW - gap) / (minPanelW + gap)));
+    var rows = Math.ceil(wins.length / maxFit);
+    var perRow = Math.ceil(wins.length / rows);
+    var panelW = Math.floor((screenW - gap * (perRow + 1)) / perRow);
+    panelW = Math.max(minPanelW, Math.min(panelW, 520));
+    var rowH = rows > 1 ? Math.floor((availH - gap * (rows - 1)) / rows) : maxH;
+    rowH = Math.min(rowH, 500);
     var topY = _dockPosition === 'bottom' ? gap : dockH;
     wins.forEach(function(w, i) {
+      var row = Math.floor(i / perRow);
+      var col = i % perRow;
+      var totalRowW = perRow * panelW + (perRow - 1) * gap;
+      var startX = Math.max(gap, Math.floor((screenW - totalRowW) / 2));
       w.style.width = panelW + 'px';
-      var h = parseInt(w.style.height) || w.offsetHeight || 340;
-      if (h > maxH) w.style.height = maxH + 'px';
-      w.style.left = (startX + i * (panelW + gap)) + 'px';
-      w.style.top = topY + 'px';
+      w.style.height = rowH + 'px';
+      w.style.left = (startX + col * (panelW + gap)) + 'px';
+      w.style.top = (topY + row * (rowH + gap)) + 'px';
     });
   }
-  // Clamp all panels to viewport
+  // Final clamp — nothing off-screen
   wins.forEach(function(w) {
     var l = parseInt(w.style.left) || 0;
     var t = parseInt(w.style.top) || 0;
     var pw = parseInt(w.style.width) || w.offsetWidth;
     var ph = parseInt(w.style.height) || w.offsetHeight;
-    if (l + pw > window.innerWidth) l = Math.max(0, window.innerWidth - pw);
-    if (t + ph > window.innerHeight) t = Math.max(0, window.innerHeight - ph);
+    if (l + pw > screenW) { l = Math.max(0, screenW - pw); }
+    if (t + ph > screenH) { t = Math.max(0, screenH - ph); }
     if (l < 0) l = 0;
     if (t < 0) t = 0;
     w.style.left = l + 'px';
     w.style.top = t + 'px';
     var wid = w.id.replace('win-','');
     var ws = state.windows[wid];
-    if (ws) { ws.x = l; ws.y = t; }
+    if (ws) { ws.x = l; ws.y = t; ws.w = pw; ws.h = ph; }
   });
+  save();
 }
 
 function renderDockPanelBtns() {
