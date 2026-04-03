@@ -8647,6 +8647,8 @@ document.addEventListener('click', function(e) {
 // INIT — all definitions above, calls below
 // ═══════════════════════════════════════════
 load().then(function(){
+// DEBUG: write immediately so we know .then fired
+if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-then-fired',{fired:true,ts:Date.now(),vw:window.innerWidth,vh:window.innerHeight});
 try{initHeader();}catch(e){console.error('[INIT ERROR] initHeader:',e);}
 try{buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);}catch(e){console.error('[INIT ERROR] buildCP:',e);}
 try{buildSlotHours(new Date().getHours());}catch(e){console.error('[INIT ERROR] buildSlotHours:',e);}
@@ -8671,11 +8673,14 @@ try{
   });
 }catch(e){console.error('[INIT ERROR] default-hidden:',e);}
 
-try{buildToggles();}catch(e){console.error('[INIT ERROR] buildToggles:',e);}
-try{initElectron();}catch(e){console.error('[INIT ERROR] initElectron:',e);}
-try{applyAllCfg();}catch(e){console.error('[INIT ERROR] applyAllCfg:',e);}
-try{startClock();}catch(e){console.error('[INIT ERROR] startClock:',e);}
-try{buildQuickColors();}catch(e){console.error('[INIT ERROR] buildQuickColors:',e);}
+var _initErrors=[];
+try{buildToggles();}catch(e){_initErrors.push('buildToggles:'+e.message);console.error('[INIT ERROR] buildToggles:',e);}
+try{initElectron();}catch(e){_initErrors.push('initElectron:'+e.message);console.error('[INIT ERROR] initElectron:',e);}
+try{applyAllCfg();}catch(e){_initErrors.push('applyAllCfg:'+e.message);console.error('[INIT ERROR] applyAllCfg:',e);}
+try{startClock();}catch(e){_initErrors.push('startClock:'+e.message);console.error('[INIT ERROR] startClock:',e);}
+try{buildQuickColors();}catch(e){_initErrors.push('buildQuickColors:'+e.message);console.error('[INIT ERROR] buildQuickColors:',e);}
+// Write errors to file immediately
+if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-errors',{errors:_initErrors,panelErrors:window.__TVD?window.__TVD.e:[],ts:Date.now()});
 
 // === ONE-TIME FIX: if too many panels visible on small screen, hide extras ===
 (function(){
