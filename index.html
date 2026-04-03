@@ -2849,13 +2849,17 @@ function getWinState(id){
     state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:false};
   }
   var ws=state.windows[id];
-  // Clamp to visible viewport
+  // Clamp to visible viewport — panels must be fully reachable
   var vw=window.innerWidth||1920;
   var vh=window.innerHeight||1080;
+  // Cap panel size to screen if needed
+  if(ws.w && ws.w > vw - 20) ws.w = Math.max(200, vw - 20);
+  if(ws.h && ws.h > vh - 20) ws.h = Math.max(150, vh - 20);
+  // Keep panel on-screen
+  if(ws.x < 0) ws.x = 0;
   if(ws.y < 0) ws.y = 0;
-  if(ws.x < -50) ws.x = 10;
+  if(ws.x + (ws.w||400) > vw) ws.x = Math.max(0, vw - (ws.w||400));
   if(ws.y + (ws.h||300) > vh) ws.y = Math.max(0, vh - (ws.h||300));
-  if(ws.x + (ws.w||400) > vw + 50) ws.x = Math.max(10, vw - (ws.w||400));
   return ws;
 }
 
