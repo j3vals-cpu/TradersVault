@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-// === TV DEBUG v2.9.26 — captures all errors + panel diagnostics ===
-window.__TVD={e:[],t0:Date.now()};
-window.addEventListener('error',function(ev){
-  window.__TVD.e.push({ms:Date.now()-window.__TVD.t0,msg:ev.message,src:(ev.filename||"").split('/').pop(),ln:ev.lineno,stack:ev.error?ev.error.stack.substring(0,300):null});
-});
-window.addEventListener('unhandledrejection',function(ev){
-  window.__TVD.e.push({ms:Date.now()-window.__TVD.t0,msg:'Promise:'+((ev.reason&&ev.reason.message)||String(ev.reason)).substring(0,200)});
-});
-var _oce=console.error;
-console.error=function(){_oce.apply(console,arguments);window.__TVD.e.push({ms:Date.now()-window.__TVD.t0,msg:Array.from(arguments).join(' ').substring(0,300)});};
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Traders Vault — Vaulted Desk</title>
@@ -306,8 +294,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 /* ───── FLOATING WINDOWS ───── */
 .win{
   position:fixed;
-  background:#1a1a2e;
-  border:2px solid #e8b84b;
+  background:var(--panel);
+  border:1px solid var(--border2);
   border-radius:var(--r);
   display:flex;
   flex-direction:column;
@@ -318,6 +306,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
   transition:box-shadow .2s,opacity .2s;
   user-select:none;
   contain:layout style;
+  pointer-events:auto;
 }
 .win.dragging{box-shadow:0 24px 60px rgba(0,0,0,.8);opacity:.95;z-index:500!important;}
 .win.hidden{display:none;}
@@ -2642,25 +2631,38 @@ var WINS=[
   {id:'featurereq',title:'Feature Requests', icon:'&#128161;'},
 ];
 
-var DEFAULT_LAYOUT={
-  trading:  {x:10,   y:90,  w:520, h:420},
-  prop:     {x:540,  y:90,  w:380, h:350},
-  tracker:  {x:540,  y:450, w:380, h:400},
-  strategy: {x:930,  y:90,  w:380, h:500},
-  acc:      {x:10,   y:440, w:380, h:300},
-  notes:    {x:400,  y:440, w:360, h:300},
-  todo:     {x:770,  y:440, w:280, h:200},
-  planner:  {x:770,  y:650, w:280, h:240},
-  quote:    {x:1060, y:90,  w:280, h:160},
-  calcs:    {x:1060, y:260, w:380, h:480},
-  bot:      {x:540,  y:460, w:560, h:440},
-  signal:   {x:10,   y:520, w:340, h:300},
-  copier:   {x:540,  y:520, w:400, h:460},
-  squawk:   {x:10,   y:90,  w:400, h:500},
-  music:    {x:420,  y:90,  w:380, h:320},
-  streaming:{x:810,  y:90,  w:400, h:450},
-  featurereq:{x:420, y:420, w:380, h:400},
-};
+var DEFAULT_LAYOUT=(function(){
+  var vw=window.innerWidth||1920;
+  var vh=window.innerHeight||1080;
+  var s=Math.min(vw/1920, vh/1080, 1); // scale factor (<=1)
+  var maxW=vw-60, maxH=vh-100;
+  function r(x,y,w,h){
+    w=Math.min(Math.round(w*s),maxW);
+    h=Math.min(Math.round(h*s),maxH);
+    x=Math.min(Math.round(x*s),Math.max(0,vw-w-10));
+    y=Math.min(Math.round(y*s),Math.max(0,vh-h-10));
+    return {x:x,y:y,w:w,h:h};
+  }
+  return {
+    trading:  r(10,  90, 520,420),
+    prop:     r(540, 90, 380,350),
+    tracker:  r(540, 450,380,400),
+    strategy: r(930, 90, 380,500),
+    acc:      r(10,  440,380,300),
+    notes:    r(400, 440,360,300),
+    todo:     r(770, 440,280,200),
+    planner:  r(770, 650,280,240),
+    quote:    r(1060,90, 280,160),
+    calcs:    r(1060,260,380,480),
+    bot:      r(540, 460,560,440),
+    signal:   r(10,  520,340,300),
+    copier:   r(540, 520,400,460),
+    squawk:   r(10,  90, 400,500),
+    music:    r(420, 90, 380,320),
+    streaming:r(810, 90, 400,450),
+    featurereq:r(420,420,380,400),
+  };
+})();
 
 // Save: file-based (Electron) + localStorage fallback
 var _saveTimer = null;
@@ -2854,21 +2856,24 @@ function pickColor(el){
 var zTop=10;
 
 function getWinState(id){
+  var vw=window.innerWidth||1920;
+  var vh=window.innerHeight||1080;
+  var maxW=vw-60, maxH=vh-100;
   if(!state.windows[id]){
     var def=DEFAULT_LAYOUT[id]||{x:50,y:80,w:400,h:300};
-    // Only Trading, Prop, Signal visible by default — rest hidden
     var _defaultOn=['trading','prop','signal'];
     var h=(_defaultOn.indexOf(id)===-1);
     state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:h};
   }
   var ws=state.windows[id];
-  // Clamp to visible viewport
-  var vw=window.innerWidth||1920;
-  var vh=window.innerHeight||1080;
-  if(ws.y < 0) ws.y = 0;
-  if(ws.x < -50) ws.x = 10;
-  if(ws.y + (ws.h||300) > vh) ws.y = Math.max(0, vh - (ws.h||300));
-  if(ws.x + (ws.w||400) > vw + 50) ws.x = Math.max(10, vw - (ws.w||400));
+  // Clamp size to viewport
+  if(ws.w>maxW) ws.w=maxW;
+  if(ws.h>maxH) ws.h=maxH;
+  // Clamp position strictly within viewport
+  if(ws.x<0) ws.x=0;
+  if(ws.y<0) ws.y=0;
+  if(ws.x+ws.w>vw) ws.x=Math.max(0,vw-ws.w);
+  if(ws.y+ws.h>vh) ws.y=Math.max(0,vh-ws.h);
   return ws;
 }
 
@@ -8647,17 +8652,24 @@ document.addEventListener('click', function(e) {
 // INIT — all definitions above, calls below
 // ═══════════════════════════════════════════
 load().then(function(){
-// DEBUG: write immediately so we know .then fired
-if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-then-fired',{fired:true,ts:Date.now(),vw:window.innerWidth,vh:window.innerHeight});
-try{initHeader();}catch(e){console.error('[INIT ERROR] initHeader:',e);}
-try{buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);}catch(e){console.error('[INIT ERROR] buildCP:',e);}
-try{buildSlotHours(new Date().getHours());}catch(e){console.error('[INIT ERROR] buildSlotHours:',e);}
+try{initHeader();}catch(e){console.error('initHeader:',e);}
+try{buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);}catch(e){console.error('buildCP:',e);}
+try{buildSlotHours(new Date().getHours());}catch(e){console.error('buildSlotHours:',e);}
 
-// Build panels — essential first, then rest deferred
+// Build 3 essential panels synchronously
 try{buildTradingWin();}catch(e){console.error('trading:',e);}
 try{buildPropWin();}catch(e){console.error('prop:',e);}
 try{buildSignalWin();}catch(e){console.error('signal:',e);}
-// Defer non-essential panels to avoid blocking init
+
+// Run critical UI functions immediately — do not wait for deferred panels
+try{buildToggles();}catch(e){console.error('buildToggles:',e);}
+try{initElectron();}catch(e){console.error('initElectron:',e);}
+try{applyAllCfg();}catch(e){console.error('applyAllCfg:',e);}
+try{startClock();}catch(e){console.error('startClock:',e);}
+try{buildQuickColors();}catch(e){console.error('buildQuickColors:',e);}
+try{scheduleHitRects();}catch(e){console.error('scheduleHitRects:',e);}
+
+// Defer non-essential panels so they don't block the event loop
 setTimeout(function(){
   var rest=[
     ['tracker',buildTrackerWin],['strategy',buildStrategyWin],['acc',buildAccWin],
@@ -8667,108 +8679,24 @@ setTimeout(function(){
     ['music',buildMusicWin],['streaming',buildStreamingWin],['featurereq',buildFeatureReqWin]
   ];
   rest.forEach(function(p){try{p[1]();}catch(e){console.error(p[0]+':',e);}});
-  // Hide non-default panels
-  ['tracker','strategy','acc','notes','todo','planner','quote','calcs','bot',
-   'copier','discord','squawk','music','streaming','featurereq'].forEach(function(id){
+  // Ensure deferred panels respect hidden state
+  rest.forEach(function(p){
+    var id=p[0];
     var ws=getWinState(id);
     var el=document.getElementById('win-'+id);
     if(el&&ws.hidden)el.classList.add('hidden');
   });
   try{updateToggles();}catch(e){}
   try{scheduleHitRects();}catch(e){}
-}, 100);
+}, 0);
 
-// New panels default to hidden
-try{
-  ['squawk','music','streaming','featurereq'].forEach(function(id) {
-    var ws = getWinState(id);
-    if (ws && typeof ws.hidden === 'undefined') ws.hidden = true;
-    var el = document.getElementById('win-' + id);
-    if (el && ws.hidden) el.classList.add('hidden');
-  });
-}catch(e){console.error('[INIT ERROR] default-hidden:',e);}
-
-var _initErrors=[];
-var _dbg=function(step){if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-step',{step:step,errors:_initErrors.slice(),ts:Date.now()});};
-_dbg('pre-toggles');
-try{buildToggles();}catch(e){_initErrors.push('buildToggles:'+e.message);}
-_dbg('post-toggles');
-try{initElectron();}catch(e){_initErrors.push('initElectron:'+e.message);}
-_dbg('post-electron');
-try{applyAllCfg();}catch(e){_initErrors.push('applyAllCfg:'+e.message);}
-_dbg('post-cfg');
-try{startClock();}catch(e){_initErrors.push('startClock:'+e.message);}
-_dbg('post-clock');
-try{buildQuickColors();}catch(e){_initErrors.push('buildQuickColors:'+e.message);}
-_dbg('post-quickcolors');
-
-// === ONE-TIME FIX: if too many panels visible on small screen, hide extras ===
-(function(){
-  var vis=document.querySelectorAll('.win:not(.hidden)');
-  if(vis.length>6 && window.innerWidth<1500){
-    var keep=['trading','prop','signal'];
-    vis.forEach(function(el){
-      var id=el.id.replace('win-','');
-      if(keep.indexOf(id)===-1){
-        el.classList.add('hidden');
-        if(state.windows[id]) state.windows[id].hidden=true;
-      }
-    });
-    save();
-    updateToggles();
-    scheduleHitRects();
-  }
-})();
-
-// === DEBUG DUMP — writes to file + shows in title bar ===
-setTimeout(function(){
-  var d=window.__TVD||{e:[]};
-  var wins=document.querySelectorAll('.win');
-  var vis=document.querySelectorAll('.win:not(.hidden)');
-  var info=[];
-  info.push('v2.9.27 DEBUG');
-  info.push('viewport: '+window.innerWidth+'x'+window.innerHeight);
-  info.push('dpr: '+window.devicePixelRatio);
-  info.push('screen: '+window.screen.width+'x'+window.screen.height);
-  info.push('panels_total: '+wins.length);
-  info.push('panels_visible: '+vis.length);
-  vis.forEach(function(el){
-    var id=el.id.replace('win-','');
-    var r=el.getBoundingClientRect();
-    info.push('VIS '+id+': rect('+Math.round(r.x)+','+Math.round(r.y)+','+Math.round(r.width)+','+Math.round(r.height)+') close='+!!el.querySelector('.win-close')+' bar='+!!el.querySelector('.win-bar'));
-  });
-  var hiddenIds=[];
-  wins.forEach(function(el){if(el.classList.contains('hidden'))hiddenIds.push(el.id.replace('win-',''));});
-  info.push('hidden: '+hiddenIds.join(','));
-  if(d.e.length){
-    info.push('ERRORS: '+d.e.length);
-    d.e.forEach(function(err,i){if(i<15) info.push('ERR['+err.ms+'ms]: '+err.msg+(err.src?' @'+err.src+':'+err.ln:'')+(err.stack?'\n  '+err.stack.split('\n')[1]:''));});
-  } else { info.push('ERRORS: 0'); }
-  var root=getComputedStyle(document.documentElement);
-  info.push('css_gold: '+root.getPropertyValue('--gold'));
-  var cb=document.querySelector('.win-close');
-  if(cb){var cs=getComputedStyle(cb);info.push('closeBtn: d='+cs.display+' w='+cs.width+' h='+cs.height+' c='+cs.color);}
-  else info.push('closeBtn: MISSING');
-  var fns=['createWindow','toggleWin','scheduleHitRects','applyAllCfg','startClock','buildToggles'];
-  info.push('funcs: '+fns.map(function(f){return f+'='+(typeof window[f]==='function'?'OK':'MISSING');}).join(' '));
-  if(typeof state!=='undefined'&&state.windows) info.push('state_windows: '+Object.keys(state.windows).length);
-  // SAVE TO FILE via electronAPI
-  var diagText=info.join('\n');
-  if(window.electronAPI&&window.electronAPI.saveData){
-    window.electronAPI.saveData('tv-debug-diag',{text:diagText,ts:new Date().toISOString()});
-  }
-  // Also set window title so it's visible in taskbar
-  document.title='DEBUG: '+vis.length+'vis '+wins.length+'tot '+(d.e.length?d.e.length+'ERR':'0err')+' '+window.innerWidth+'x'+window.innerHeight;
-  // Log to console too
-  console.log('\n=== TV DEBUG ===\n'+diagText+'\n================');
-}, 3000);
 // Load custom promo on startup (before admin promos arrive)
-try{applyPromotions([]);}catch(e){console.error('[INIT ERROR] applyPromotions:',e);}
-try{applyWinTints();}catch(e){console.error('[INIT ERROR] applyWinTints:',e);}
-try{fetchNews(false);}catch(e){console.error('[INIT ERROR] fetchNews:',e);}
-try{if(cfg.dxtradeCredentials&&cfg.dxtradeCredentials.token) startDXTradeSync();}catch(e){console.error('[INIT ERROR] DXTrade:',e);}
-try{startEconCountdown();}catch(e){console.error('[INIT ERROR] startEconCountdown:',e);}
-try{setTimeout(showWalkthrough, 1000);}catch(e){console.error('[INIT ERROR] walkthrough:',e);}
+try{applyPromotions([]);}catch(e){console.error('applyPromotions:',e);}
+try{applyWinTints();}catch(e){console.error('applyWinTints:',e);}
+try{fetchNews(false);}catch(e){console.error('fetchNews:',e);}
+try{if(cfg.dxtradeCredentials&&cfg.dxtradeCredentials.token) startDXTradeSync();}catch(e){console.error('DXTrade:',e);}
+try{startEconCountdown();}catch(e){console.error('startEconCountdown:',e);}
+try{setTimeout(showWalkthrough, 1000);}catch(e){console.error('walkthrough:',e);}
 
 // ── Popout mode: if ?popout=<panelId>, show only that panel ──
 (function handlePopoutMode(){

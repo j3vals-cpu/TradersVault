@@ -229,13 +229,10 @@ function startMousePoller() {
   if (mousePoller) clearInterval(mousePoller);
   // Cache bounds to avoid repeated IPC — updated only when window moves
   let cachedBounds = mainWindow ? mainWindow.getBounds() : null;
-  let cachedScale = 1;
   if (mainWindow && !mainWindow.isDestroyed()) {
     const updateBoundsCache = () => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         cachedBounds = mainWindow.getBounds();
-        const disp = screen.getDisplayNearestPoint({ x: cachedBounds.x, y: cachedBounds.y });
-        cachedScale = disp.scaleFactor || 1;
       }
     };
     mainWindow.on('move', updateBoundsCache);
@@ -254,30 +251,20 @@ function startMousePoller() {
     if (clickThroughLocked) return;
     if (!cachedBounds) return;
 
+    // Electron returns DIP coordinates for both cursor and bounds — no scaling needed
     const cursor = screen.getCursorScreenPoint();
-    // Try BOTH coordinate interpretations:
-    // 1) DIP (no division) — correct per Electron docs
-    // 2) Physical (divide by scale) — some Windows configs return physical
-    const rawX = cursor.x - cachedBounds.x;
-    const rawY = cursor.y - cachedBounds.y;
-    const scaledX = rawX / cachedScale;
-    const scaledY = rawY / cachedScale;
+    const lx = cursor.x - cachedBounds.x;
+    const ly = cursor.y - cachedBounds.y;
 
     const pad = isMac ? 4 : 6;
     let over = false;
-    
-    function hitsAny(lx, ly) {
-      for (let i = 0, len = hitRects.length; i < len; i++) {
-        const r = hitRects[i];
-        if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
-          return true;
-        }
+    for (let i = 0, len = hitRects.length; i < len; i++) {
+      const r = hitRects[i];
+      if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
+        over = true;
+        break;
       }
-      return false;
     }
-    
-    // Accept either interpretation — if cursor hits in either coord space, it's interactive
-    over = hitsAny(rawX, rawY) || hitsAny(scaledX, scaledY);
 
     if (over) {
       overCount++;
