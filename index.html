@@ -2781,10 +2781,11 @@ function snapToDefault(){
   var layout={
     trading:  {x:col1x, y:y1,          w:col1W, h:row1H,    hidden:false},
     prop:     {x:col1x, y:y2,          w:col1W, h:row2H,    hidden:false},
-    acc:      {x:col2x, y:y1,          w:col2W, h:row1H,    hidden:false},
-    strategy: {x:col2x, y:y2,          w:col2W, h:row2H,    hidden:false},
-    calcs:    {x:col3x, y:y1,          w:col3W, h:Math.round(ch*0.55), hidden:false},
-    bot:      {x:col3x, y:y1+Math.round(ch*0.55)+gap, w:col3W, h:Math.round(ch*0.42), hidden:false},
+    signal:   {x:col2x, y:y1,          w:col2W, h:row1H,    hidden:false},
+    acc:      {x:col2x, y:y2,          w:col2W, h:row2H,    hidden:true},
+    strategy: {x:col3x, y:y1,          w:col3W, h:Math.round(ch*0.55), hidden:true},
+    calcs:    {x:col3x, y:y1+Math.round(ch*0.55)+gap, w:col3W, h:Math.round(ch*0.42), hidden:true},
+    bot:      {x:col2x, y:y2,          w:col2W, h:row2H,    hidden:true},
     tracker:  {x:col1x, y:y2,          w:col1W, h:row2H,    hidden:true},
     notes:    {x:col1x, y:y1,          w:col1W, h:row1H,    hidden:true},
     todo:     {x:col2x, y:y1,          w:col2W, h:200,      hidden:true},
@@ -2846,7 +2847,10 @@ var zTop=10;
 function getWinState(id){
   if(!state.windows[id]){
     var def=DEFAULT_LAYOUT[id]||{x:50,y:80,w:400,h:300};
-    state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:false};
+    // Only show trading, prop, signal by default — everything else hidden
+    var defaultVisible = ['trading','prop','signal'];
+    var isHidden = def.hidden !== undefined ? def.hidden : (defaultVisible.indexOf(id) === -1);
+    state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:isHidden};
   }
   var ws=state.windows[id];
   // Clamp to visible viewport — ensure header (close/hide buttons) is always reachable
@@ -4734,64 +4738,72 @@ function snapWindowsToDock() {
   if (!wins.length) return;
   var screenW = window.innerWidth;
   var screenH = window.innerHeight;
-  var gap = 8;
-  var minPanelH = 180, minPanelW = 240;
+  var gap = 6;
 
   if (_dockPosition === 'left' || _dockPosition === 'right') {
     var dockW = 55;
-    var availW = screenW - dockW - 20;
-    var maxW = Math.min(availW, 520);
-    // Calculate how many panels can fit vertically
-    var maxFit = Math.max(1, Math.floor((screenH - gap) / (minPanelH + gap)));
-    var cols = Math.ceil(wins.length / maxFit);
-    var perCol = Math.ceil(wins.length / cols);
-    var colW = cols > 1 ? Math.floor((availW - gap * (cols - 1)) / cols) : maxW;
+    var availW = screenW - dockW - 10;
+    var availH = screenH - 10;
+    // Figure out grid: try 1 col first, then 2, then 3
+    var cols = 1, perCol, pH;
+    for (cols = 1; cols <= 4; cols++) {
+      perCol = Math.ceil(wins.length / cols);
+      pH = Math.floor((availH - gap * (perCol + 1)) / perCol);
+      if (pH >= 140) break; // fits
+    }
+    pH = Math.max(100, Math.min(pH, 500));
+    var colW = Math.floor((availW - gap * (cols - 1)) / cols);
     colW = Math.min(colW, 520);
-    var panelH = Math.floor((screenH - gap * (perCol + 1)) / perCol);
-    panelH = Math.max(minPanelH, Math.min(panelH, 500));
     var startX = _dockPosition === 'left' ? dockW : gap;
     wins.forEach(function(w, i) {
-      var col = Math.floor(i / perCol);
-      var row = i % perCol;
-      var totalRowH = perCol * panelH + (perCol - 1) * gap;
-      var startY = Math.max(gap, Math.floor((screenH - totalRowH) / 2));
+      var c = Math.floor(i / perCol);
+      var r = i % perCol;
+      var rowsInCol = (c < cols - 1) ? perCol : (wins.length - c * perCol);
+      var totalH = rowsInCol * pH + (rowsInCol - 1) * gap;
+      var startY = Math.max(gap, Math.floor((availH - totalH) / 2));
       w.style.width = colW + 'px';
-      w.style.height = panelH + 'px';
-      w.style.left = (startX + col * (colW + gap)) + 'px';
-      w.style.top = (startY + row * (panelH + gap)) + 'px';
+      w.style.height = pH + 'px';
+      w.style.left = (startX + c * (colW + gap)) + 'px';
+      w.style.top = (startY + r * (pH + gap)) + 'px';
     });
   } else {
     var dockH = 48;
-    var availH = screenH - dockH - 20;
-    var maxH = Math.min(availH, 500);
-    // Calculate how many panels can fit horizontally
-    var maxFit = Math.max(1, Math.floor((screenW - gap) / (minPanelW + gap)));
-    var rows = Math.ceil(wins.length / maxFit);
-    var perRow = Math.ceil(wins.length / rows);
-    var panelW = Math.floor((screenW - gap * (perRow + 1)) / perRow);
-    panelW = Math.max(minPanelW, Math.min(panelW, 520));
-    var rowH = rows > 1 ? Math.floor((availH - gap * (rows - 1)) / rows) : maxH;
+    var availH = screenH - dockH - 10;
+    var availW = screenW - 10;
+    // Figure out grid: try 1 row first, then 2, then 3
+    var rows = 1, perRow, pW;
+    for (rows = 1; rows <= 4; rows++) {
+      perRow = Math.ceil(wins.length / rows);
+      pW = Math.floor((availW - gap * (perRow + 1)) / perRow);
+      if (pW >= 200) break; // fits
+    }
+    pW = Math.max(160, Math.min(pW, 520));
+    var rowH = Math.floor((availH - gap * (rows - 1)) / rows);
     rowH = Math.min(rowH, 500);
     var topY = _dockPosition === 'bottom' ? gap : dockH;
     wins.forEach(function(w, i) {
-      var row = Math.floor(i / perRow);
-      var col = i % perRow;
-      var totalRowW = perRow * panelW + (perRow - 1) * gap;
-      var startX = Math.max(gap, Math.floor((screenW - totalRowW) / 2));
-      w.style.width = panelW + 'px';
+      var r = Math.floor(i / perRow);
+      var c = i % perRow;
+      var colsInRow = (r < rows - 1) ? perRow : (wins.length - r * perRow);
+      var totalW = colsInRow * pW + (colsInRow - 1) * gap;
+      var startX = Math.max(gap, Math.floor((availW - totalW) / 2));
+      w.style.width = pW + 'px';
       w.style.height = rowH + 'px';
-      w.style.left = (startX + col * (panelW + gap)) + 'px';
-      w.style.top = (topY + row * (rowH + gap)) + 'px';
+      w.style.left = (startX + c * (pW + gap)) + 'px';
+      w.style.top = (topY + r * (rowH + gap)) + 'px';
     });
   }
-  // Final clamp — nothing off-screen
+  // Final clamp — absolutely nothing off-screen
   wins.forEach(function(w) {
     var l = parseInt(w.style.left) || 0;
     var t = parseInt(w.style.top) || 0;
     var pw = parseInt(w.style.width) || w.offsetWidth;
     var ph = parseInt(w.style.height) || w.offsetHeight;
-    if (l + pw > screenW) { l = Math.max(0, screenW - pw); }
-    if (t + ph > screenH) { t = Math.max(0, screenH - ph); }
+    // Shrink if still too big
+    if (pw > screenW - 60) { pw = screenW - 60; w.style.width = pw + 'px'; }
+    if (ph > screenH - 10) { ph = screenH - 10; w.style.height = ph + 'px'; }
+    if (l + pw > screenW) l = Math.max(0, screenW - pw);
+    if (t + ph > screenH) t = Math.max(0, screenH - ph);
     if (l < 0) l = 0;
     if (t < 0) t = 0;
     w.style.left = l + 'px';
