@@ -8653,15 +8653,21 @@ try{initHeader();}catch(e){console.error('[INIT ERROR] initHeader:',e);}
 try{buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);}catch(e){console.error('[INIT ERROR] buildCP:',e);}
 try{buildSlotHours(new Date().getHours());}catch(e){console.error('[INIT ERROR] buildSlotHours:',e);}
 
-// Every panel wrapped in try/catch — one failure must not break the rest
-[
-  ['trading',buildTradingWin],['prop',buildPropWin],['tracker',buildTrackerWin],
-  ['strategy',buildStrategyWin],['acc',buildAccWin],['notes',buildNotesWin],
-  ['todo',buildTodoWin],['planner',buildPlannerWin],['quote',buildQuoteWin],
-  ['calcs',buildCalcsWin],['bot',buildBotWin],['signal',buildSignalWin],
-  ['copier',buildCopierWin],['discord',buildDiscordWin],['squawk',buildSquawkWin],
-  ['music',buildMusicWin],['streaming',buildStreamingWin],['featurereq',buildFeatureReqWin]
-].forEach(function(p){ try{p[1]();}catch(e){console.error('[PANEL ERROR] '+p[0]+':',e);} });
+// Every panel built individually with debug tracking
+var _panelList=['trading','prop','tracker','strategy','acc','notes','todo','planner','quote','calcs','bot','signal','copier','discord','squawk','music','streaming','featurereq'];
+var _panelFns={trading:buildTradingWin,prop:buildPropWin,tracker:buildTrackerWin,strategy:buildStrategyWin,acc:buildAccWin,notes:buildNotesWin,todo:buildTodoWin,planner:buildPlannerWin,quote:buildQuoteWin,calcs:buildCalcsWin,bot:buildBotWin,signal:buildSignalWin,copier:buildCopierWin,discord:buildDiscordWin,squawk:buildSquawkWin,music:buildMusicWin,streaming:buildStreamingWin,featurereq:buildFeatureReqWin};
+var _panelResults=[];
+for(var _pi=0;_pi<_panelList.length;_pi++){
+  var _pid=_panelList[_pi];
+  try{
+    _panelFns[_pid]();
+    _panelResults.push({id:_pid,ok:true});
+  }catch(e){
+    _panelResults.push({id:_pid,ok:false,err:e.message,stack:(e.stack||'').substring(0,200)});
+  }
+  // Write after each panel so we know which one kills it
+  if(window.electronAPI&&window.electronAPI.saveData)window.electronAPI.saveData('tv-debug-panels',{built:_panelResults.slice(),current:_pid,index:_pi,ts:Date.now()});
+}
 
 // New panels default to hidden
 try{
