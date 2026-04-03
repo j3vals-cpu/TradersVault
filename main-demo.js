@@ -8,6 +8,12 @@ const http = require('http');
 app.setPath('userData', path.join(app.getPath('appData'), 'TradersVaultDemo'));
 process.env.TV_DEMO = '1'; // Flag for preload/renderer to detect demo mode
 
+// Clear old vault-state on demo startup so fresh install is truly fresh
+try {
+  const oldState = path.join(app.getPath('appData'), 'TradersVaultDemo', 'vault-data', 'vault-state.json');
+  if (fs.existsSync(oldState)) { fs.unlinkSync(oldState); console.log('[DEMO] Cleared old vault-state'); }
+} catch(e) { console.error('[DEMO] Clear state error:', e.message); }
+
 app.setName('Traders Vault [DEMO]');
 
 let mainWindow;
