@@ -31,7 +31,7 @@ console.error=function(){_oce.apply(console,arguments);window.__TVD.e.push({ms:D
   --text:#f0eee8;--text2:#9a9ab2;--text3:#5f5f78;
   --r:12px;--r-sm:7px;
 }
-html,body{height:100%;overflow:hidden;background:transparent;}
+html,body{height:100%;overflow:hidden;background:rgba(0,0,0,0.01);}
 body{font-family:'Cabinet Grotesk',sans-serif;background:transparent;color:var(--text);}
 
 /* ───── NOISE GRAIN — static small tile, no SVG filter at runtime ───── */
@@ -196,7 +196,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .topbar2 button,.topbar2 input{-webkit-app-region:no-drag;}
 
 /* ───── DESKTOP CANVAS ───── */
-.canvas{position:relative;flex:1;overflow:visible;pointer-events:none;contain:layout style;}
+.canvas{position:relative;flex:1;overflow:visible;pointer-events:none;contain:layout style;min-height:0;}
 .chrome{display:flex;flex-direction:column;height:100vh;pointer-events:none;}
 /* Panels and topbars need clicks */
 .win,.topbar,.topbar2,.footer-bar,.overlay,.modal,.dock-bar,.dock-hover-zone{pointer-events:auto;}
@@ -306,8 +306,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;o
 /* ───── FLOATING WINDOWS ───── */
 .win{
   position:fixed;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,0.07);
+  background:#1a1a2e;
+  border:2px solid #e8b84b;
   border-radius:var(--r);
   display:flex;
   flex-direction:column;
