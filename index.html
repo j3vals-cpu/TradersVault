@@ -2849,17 +2849,13 @@ function getWinState(id){
     state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:false};
   }
   var ws=state.windows[id];
-  // Clamp to visible viewport — panels must be fully reachable
+  // Clamp to visible viewport
   var vw=window.innerWidth||1920;
   var vh=window.innerHeight||1080;
-  // Cap panel size to screen if needed
-  if(ws.w && ws.w > vw - 20) ws.w = Math.max(200, vw - 20);
-  if(ws.h && ws.h > vh - 20) ws.h = Math.max(150, vh - 20);
-  // Keep panel on-screen
-  if(ws.x < 0) ws.x = 0;
   if(ws.y < 0) ws.y = 0;
-  if(ws.x + (ws.w||400) > vw) ws.x = Math.max(0, vw - (ws.w||400));
+  if(ws.x < -50) ws.x = 10;
   if(ws.y + (ws.h||300) > vh) ws.y = Math.max(0, vh - (ws.h||300));
+  if(ws.x + (ws.w||400) > vw + 50) ws.x = Math.max(10, vw - (ws.w||400));
   return ws;
 }
 
@@ -8642,30 +8638,24 @@ initHeader();
 buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);
 buildSlotHours(new Date().getHours());
 
-// Wrap ALL panel builds in try/catch so one failure doesn't break the entire app
-var _panelBuilders = [
-  ['trading',  buildTradingWin],
-  ['prop',     buildPropWin],
-  ['tracker',  buildTrackerWin],
-  ['strategy', buildStrategyWin],
-  ['acc',      buildAccWin],
-  ['notes',    buildNotesWin],
-  ['todo',     buildTodoWin],
-  ['planner',  buildPlannerWin],
-  ['quote',    buildQuoteWin],
-  ['calcs',    buildCalcsWin],
-  ['bot',      buildBotWin],
-  ['signal',   buildSignalWin],
-  ['copier',   buildCopierWin],
-  ['discord',  buildDiscordWin],
-  ['squawk',   buildSquawkWin],
-  ['music',    buildMusicWin],
-  ['streaming',buildStreamingWin],
-  ['featurereq',buildFeatureReqWin],
-];
-_panelBuilders.forEach(function(p) {
-  try { p[1](); } catch(e) { console.error('Panel init error [' + p[0] + ']:', e); }
-});
+buildTradingWin();
+buildPropWin();
+buildTrackerWin();
+buildStrategyWin();
+buildAccWin();
+buildNotesWin();
+buildTodoWin();
+buildPlannerWin();
+buildQuoteWin();
+buildCalcsWin();
+buildBotWin();
+buildSignalWin();
+try { buildCopierWin(); } catch(e) { console.error('Copier init error:', e); }
+try { buildDiscordWin(); } catch(e) { console.error('Discord init error:', e); }
+try { buildSquawkWin(); } catch(e) { console.error('Squawk init error:', e); }
+try { buildMusicWin(); } catch(e) { console.error('Music init error:', e); }
+try { buildStreamingWin(); } catch(e) { console.error('Streaming init error:', e); }
+try { buildFeatureReqWin(); } catch(e) { console.error('Feature Requests init error:', e); }
 
 // New panels default to hidden
 ['squawk','music','streaming','featurereq'].forEach(function(id) {
@@ -8675,44 +8665,11 @@ _panelBuilders.forEach(function(p) {
   if (el && ws.hidden) el.classList.add('hidden');
 });
 
-try { buildToggles(); } catch(e) { console.error('buildToggles error:', e); }
-try { initElectron(); } catch(e) { console.error('initElectron error:', e); }
-try { applyAllCfg(); } catch(e) { console.error('applyAllCfg error:', e); }
-try { startClock(); } catch(e) { console.error('startClock error:', e); }
-try { buildQuickColors(); } catch(e) { console.error('buildQuickColors error:', e); }
-
-// DEBUG: show diagnostic info on screen (remove after fixing)
-(function showDebugOverlay(){
-  var errs = [];
-  _panelBuilders.forEach(function(p) {
-    var el = document.getElementById('win-' + p[0]);
-    if (!el) errs.push(p[0] + ':MISSING');
-    else {
-      var l=parseInt(el.style.left)||0, t=parseInt(el.style.top)||0;
-      var w=parseInt(el.style.width)||0, h=parseInt(el.style.height)||0;
-      var hid=el.classList.contains('hidden');
-      if(w<10||h<10) errs.push(p[0]+':tiny('+w+'x'+h+')');
-      if(l>window.innerWidth||t>window.innerHeight) errs.push(p[0]+':offscreen('+l+','+t+')');
-    }
-  });
-  var all=document.querySelectorAll('.win');
-  var vis=document.querySelectorAll('.win:not(.hidden)');
-  var dpr = window.devicePixelRatio||1;
-  var info='v2.9.22 DEBUG | vw:'+window.innerWidth+' vh:'+window.innerHeight+' dpr:'+dpr
-    +' | panels:'+all.length+' vis:'+vis.length
-    +' | wins:'+JSON.stringify(Object.keys(state.windows).length);
-  if(errs.length) info += ' | ERRORS: '+errs.join(', ');
-  // Show first 3 panel positions
-  var sample=[];
-  vis.forEach(function(el,i){ if(i<3) sample.push(el.id.replace('win-','')+':'+el.style.left+','+el.style.top+' '+el.style.width+'x'+el.style.height); });
-  if(sample.length) info += ' | pos: '+sample.join(' | ');
-  var d=document.createElement('div');
-  d.style.cssText='position:fixed;bottom:40px;left:0;right:0;background:rgba(0,0,0,0.9);color:#50c878;font-family:monospace;font-size:10px;padding:6px 10px;z-index:999999;pointer-events:none;white-space:nowrap;overflow:hidden;';
-  d.textContent=info;
-  document.body.appendChild(d);
-  // Auto-remove after 30 seconds
-  setTimeout(function(){ d.remove(); }, 30000);
-})();
+buildToggles();
+initElectron();
+applyAllCfg();
+startClock();
+buildQuickColors();
 // Load custom promo on startup (before admin promos arrive)
 applyPromotions([]);
 applyWinTints();
