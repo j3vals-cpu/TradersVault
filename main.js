@@ -255,21 +255,29 @@ function startMousePoller() {
     if (!cachedBounds) return;
 
     const cursor = screen.getCursorScreenPoint();
-    // Electron returns DIP (logical) coords for both cursor and bounds.
-    // No scaleFactor division needed — DIP already matches CSS layout pixels.
-    const lx = cursor.x - cachedBounds.x;
-    const ly = cursor.y - cachedBounds.y;
+    // Try BOTH coordinate interpretations:
+    // 1) DIP (no division) — correct per Electron docs
+    // 2) Physical (divide by scale) — some Windows configs return physical
+    const rawX = cursor.x - cachedBounds.x;
+    const rawY = cursor.y - cachedBounds.y;
+    const scaledX = rawX / cachedScale;
+    const scaledY = rawY / cachedScale;
 
-    // Expand hit rects slightly on macOS for better click reliability
     const pad = isMac ? 4 : 6;
     let over = false;
-    for (let i = 0, len = hitRects.length; i < len; i++) {
-      const r = hitRects[i];
-      if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
-        over = true;
-        break;
+    
+    function hitsAny(lx, ly) {
+      for (let i = 0, len = hitRects.length; i < len; i++) {
+        const r = hitRects[i];
+        if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
+          return true;
+        }
       }
+      return false;
     }
+    
+    // Accept either interpretation — if cursor hits in either coord space, it's interactive
+    over = hitsAny(rawX, rawY) || hitsAny(scaledX, scaledY);
 
     if (over) {
       overCount++;
