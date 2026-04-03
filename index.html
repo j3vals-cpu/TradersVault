@@ -8642,24 +8642,30 @@ initHeader();
 buildCP('nColorRow',noteColor);buildCP('slotColorRow',slotColor);buildCP('fmColorRow',firmColor);
 buildSlotHours(new Date().getHours());
 
-buildTradingWin();
-buildPropWin();
-buildTrackerWin();
-buildStrategyWin();
-buildAccWin();
-buildNotesWin();
-buildTodoWin();
-buildPlannerWin();
-buildQuoteWin();
-buildCalcsWin();
-buildBotWin();
-buildSignalWin();
-try { buildCopierWin(); } catch(e) { console.error('Copier init error:', e); }
-try { buildDiscordWin(); } catch(e) { console.error('Discord init error:', e); }
-try { buildSquawkWin(); } catch(e) { console.error('Squawk init error:', e); }
-try { buildMusicWin(); } catch(e) { console.error('Music init error:', e); }
-try { buildStreamingWin(); } catch(e) { console.error('Streaming init error:', e); }
-try { buildFeatureReqWin(); } catch(e) { console.error('Feature Requests init error:', e); }
+// Wrap ALL panel builds in try/catch so one failure doesn't break the entire app
+var _panelBuilders = [
+  ['trading',  buildTradingWin],
+  ['prop',     buildPropWin],
+  ['tracker',  buildTrackerWin],
+  ['strategy', buildStrategyWin],
+  ['acc',      buildAccWin],
+  ['notes',    buildNotesWin],
+  ['todo',     buildTodoWin],
+  ['planner',  buildPlannerWin],
+  ['quote',    buildQuoteWin],
+  ['calcs',    buildCalcsWin],
+  ['bot',      buildBotWin],
+  ['signal',   buildSignalWin],
+  ['copier',   buildCopierWin],
+  ['discord',  buildDiscordWin],
+  ['squawk',   buildSquawkWin],
+  ['music',    buildMusicWin],
+  ['streaming',buildStreamingWin],
+  ['featurereq',buildFeatureReqWin],
+];
+_panelBuilders.forEach(function(p) {
+  try { p[1](); } catch(e) { console.error('Panel init error [' + p[0] + ']:', e); }
+});
 
 // New panels default to hidden
 ['squawk','music','streaming','featurereq'].forEach(function(id) {
@@ -8669,11 +8675,11 @@ try { buildFeatureReqWin(); } catch(e) { console.error('Feature Requests init er
   if (el && ws.hidden) el.classList.add('hidden');
 });
 
-buildToggles();
-initElectron();
-applyAllCfg();
-startClock();
-buildQuickColors();
+try { buildToggles(); } catch(e) { console.error('buildToggles error:', e); }
+try { initElectron(); } catch(e) { console.error('initElectron error:', e); }
+try { applyAllCfg(); } catch(e) { console.error('applyAllCfg error:', e); }
+try { startClock(); } catch(e) { console.error('startClock error:', e); }
+try { buildQuickColors(); } catch(e) { console.error('buildQuickColors error:', e); }
 // Load custom promo on startup (before admin promos arrive)
 applyPromotions([]);
 applyWinTints();
