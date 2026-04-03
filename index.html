@@ -6375,7 +6375,7 @@ function saveSettings(){
   closeSettings();
 }
 
-function fixMe(){
+function fixMe(silent){
   // Exit dock mode if active
   if (_dockMode) { _dockMode = false; applyDockMode(); }
   _preDockWindows = null;
@@ -6401,8 +6401,8 @@ function fixMe(){
   buildToggles();
   updateToggles();
   scheduleHitRects();
-  closeSettings();
-  toast('Panels reset to defaults', 'success');
+  try { closeSettings(); } catch(e) {}
+  if (!silent) toast('Panels reset to defaults', 'success');
 }
 
 function resetSettings(){
@@ -8744,6 +8744,36 @@ try { buildFeatureReqWin(); } catch(e) { console.error('Feature Requests init er
   var el = document.getElementById('win-' + id);
   if (el && ws.hidden) el.classList.add('hidden');
 });
+
+// ── AUTO-REPAIR: detect broken panel state and fix on startup ──
+(function autoRepairPanels() {
+  var vw = window.innerWidth || 1920;
+  var vh = window.innerHeight || 1080;
+  var visibleWins = document.querySelectorAll('.win:not(.hidden)');
+  var broken = 0;
+  visibleWins.forEach(function(el) {
+    var l = parseInt(el.style.left) || 0;
+    var t = parseInt(el.style.top) || 0;
+    var w = parseInt(el.style.width) || 0;
+    var h = parseInt(el.style.height) || 0;
+    // Panel is broken if: off-screen, zero-sized, or header unreachable
+    if (l + w < 10 || t + 40 < 0 || l > vw - 10 || t > vh - 10 || w < 50 || h < 50) {
+      broken++;
+    }
+  });
+  // If more than half of visible panels are broken, auto-fix
+  if (visibleWins.length > 0 && broken >= Math.ceil(visibleWins.length * 0.5)) {
+    console.warn('[AutoRepair] Detected ' + broken + '/' + visibleWins.length + ' broken panels — resetting layout');
+    fixMe();
+    return; // fixMe already calls buildToggles
+  }
+  // Also check: if NO panels are visible at all on a non-fresh install, show defaults
+  if (visibleWins.length === 0 && Object.keys(state.windows).length > 3) {
+    console.warn('[AutoRepair] No visible panels — resetting layout');
+    fixMe();
+    return;
+  }
+})();
 
 buildToggles();
 initElectron();
