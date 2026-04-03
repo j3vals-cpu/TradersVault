@@ -4671,6 +4671,8 @@ var _dockAutoHide = false;
 var _dockHideTimer = null;
 var _dockPosition = 'top'; // 'top' | 'bottom' | 'left' | 'right'
 
+var _preDockWindows = null; // snapshot of window states before docking
+
 function toggleDockMode() {
   _dockMode = !_dockMode;
   applyDockMode();
@@ -4680,23 +4682,21 @@ function applyDockMode() {
   var chrome = document.querySelector('.chrome');
   var btn = document.getElementById('dockBtn');
   if (_dockMode) {
+    // Save pre-dock window positions so we can restore on undock
+    _preDockWindows = {};
+    Object.keys(state.windows).forEach(function(id) {
+      var w = state.windows[id];
+      _preDockWindows[id] = {x:w.x, y:w.y, w:w.w, h:w.h, hidden:w.hidden};
+    });
     chrome.classList.add('dock-mode');
-    // Apply saved dock position
     applyDockPositionClass();
     if (btn) { btn.style.borderColor='var(--purple)'; btn.style.color='var(--purple)'; }
-    // Snap all visible windows to top row
     snapWindowsToDock();
-    // Sync dock panel buttons
     renderDockPanelBtns();
-    // Start clock sync
     updateDockClock();
-    // Start quote rotation
     startDockQuoteRotation();
-    // Auto-hide setup
     setupDockAutoHide();
-    // Update hit rects for new position
     scheduleHitRects();
-    // Fit vertical dock to screen
     setTimeout(fitVerticalDock, 150);
   } else {
     chrome.classList.remove('dock-mode','dock-hidden','dock-pos-top','dock-pos-bottom','dock-pos-left','dock-pos-right');
@@ -4705,31 +4705,44 @@ function applyDockMode() {
     var autoBtn = document.getElementById('dockAutoHideBtn');
     if (autoBtn) autoBtn.classList.remove('on');
     cleanupDockAutoHide();
-    // Rebuild toggles as horizontal text-only pills
     buildToggles();
-    // Reposition windows below restored topbar + topbar2
-    repositionAfterUndock();
+    restorePreDockState();
     scheduleHitRects();
   }
 }
 
-function repositionAfterUndock() {
-  // After undocking, topbar (52px) + topbar2 (32px) = 84px restored
-  // Windows were docked at top:44px — push them below the toolbars
+function restorePreDockState() {
   var topbarH = (document.querySelector('.topbar')||{offsetHeight:52}).offsetHeight;
   var topbar2H = (document.querySelector('.topbar2')||{offsetHeight:32}).offsetHeight;
   var minTop = topbarH + topbar2H;
-  var wins = Array.from(document.querySelectorAll('.win:not(.hidden)'));
-  wins.forEach(function(w) {
-    var curTop = parseInt(w.style.top) || 0;
-    if (curTop < minTop) {
-      w.style.top = minTop + 'px';
-      // Update saved state too
-      var wid = w.id.replace('win-','');
-      var ws = getWinState(wid);
-      ws.y = minTop;
+  var vw = window.innerWidth || 1920;
+  var vh = window.innerHeight || 1080;
+
+  WINS.forEach(function(w) {
+    var el = document.getElementById('win-' + w.id);
+    if (!el) return;
+    // Restore saved pre-dock state if available
+    var pre = _preDockWindows ? _preDockWindows[w.id] : null;
+    if (pre) {
+      state.windows[w.id] = {x:pre.x, y:pre.y, w:pre.w, h:pre.h, hidden:pre.hidden};
     }
+    var ws = state.windows[w.id];
+    if (!ws) return;
+    // Ensure panel is below topbars
+    if (ws.y < minTop) ws.y = minTop;
+    // Clamp to viewport
+    if (ws.w > vw - 60) ws.w = vw - 60;
+    if (ws.h > vh - minTop - 10) ws.h = vh - minTop - 10;
+    if (ws.x + ws.w > vw) ws.x = Math.max(0, vw - ws.w);
+    if (ws.y + ws.h > vh) ws.y = Math.max(minTop, vh - ws.h);
+    // Apply to DOM
+    el.style.left = ws.x + 'px';
+    el.style.top = ws.y + 'px';
+    el.style.width = ws.w + 'px';
+    el.style.height = ws.h + 'px';
+    el.classList.toggle('hidden', !!ws.hidden);
   });
+  _preDockWindows = null;
   save();
 }
 
