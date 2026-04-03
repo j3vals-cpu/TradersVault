@@ -1629,10 +1629,8 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
   <div style="position:relative;flex-shrink:0;">
     <button class="dock-pos-btn" id="dockPosBtn" onclick="toggleDockPosMenu()" title="Change dock position">&#9646; Position</button>
     <div class="dock-pos-menu" id="dockPosMenu">
-      <button onclick="setDockPosition('top')" data-pos="top" class="active">&#9650; Top</button>
-      <button onclick="setDockPosition('bottom')" data-pos="bottom">&#9660; Bottom</button>
       <button onclick="setDockPosition('left')" data-pos="left">&#9668; Left</button>
-      <button onclick="setDockPosition('right')" data-pos="right">&#9658; Right</button>
+      <button onclick="setDockPosition('right')" data-pos="right" class="active">&#9658; Right</button>
     </div>
   </div>
   <button class="dock-autohide-btn" id="dockAutoHideBtn" onclick="toggleDockAutoHide()" ondblclick="pinDock()" title="Click: auto-hide | Double-click: pin">&#9654; Auto-hide</button>
@@ -1900,10 +1898,8 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
       <div class="s-lbl">Dock Position</div>
       <div style="font-size:9px;color:var(--text3);margin-bottom:8px;">Choose which edge of the screen the dock bar appears on when in Dock mode.</div>
       <div id="settingsDockPos" style="display:flex;gap:6px;">
-        <button class="snap-btn dock-pos-opt active" data-pos="top" onclick="setDockPosition('top')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9650; Top</button>
-        <button class="snap-btn dock-pos-opt" data-pos="bottom" onclick="setDockPosition('bottom')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9660; Bottom</button>
         <button class="snap-btn dock-pos-opt" data-pos="left" onclick="setDockPosition('left')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9668; Left</button>
-        <button class="snap-btn dock-pos-opt" data-pos="right" onclick="setDockPosition('right')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9658; Right</button>
+        <button class="snap-btn dock-pos-opt active" data-pos="right" onclick="setDockPosition('right')" style="flex:1;padding:8px;font-size:10px;font-weight:800;">&#9658; Right</button>
       </div>
     </div>
 
@@ -4678,7 +4674,7 @@ var _overlayActive=false;
 var _dockMode = false;
 var _dockAutoHide = false;
 var _dockHideTimer = null;
-var _dockPosition = 'top'; // 'top' | 'bottom' | 'left' | 'right'
+var _dockPosition = 'right'; // 'left' | 'right'
 
 function toggleDockMode() {
   _dockMode = !_dockMode;
@@ -4924,7 +4920,7 @@ function applyDockPositionClass() {
   if (!chrome) return;
   chrome.classList.remove('dock-pos-top','dock-pos-bottom','dock-pos-left','dock-pos-right');
   // Only apply dock position classes when dock mode is actually active
-  if (_dockMode && _dockPosition && _dockPosition !== 'top') {
+  if (_dockMode && _dockPosition) {
     chrome.classList.add('dock-pos-' + _dockPosition);
   }
   // Update position menu active state
@@ -4938,7 +4934,7 @@ function applyDockPositionClass() {
 }
 
 function setDockPosition(pos) {
-  if (!pos) pos = 'top';
+  if (pos !== 'left' && pos !== 'right') pos = 'right';
   _dockPosition = pos;
   cfg.dockPosition = pos;
   saveCfg();
@@ -5040,8 +5036,11 @@ function toggleDockPosMenu() {
 (function() {
   // Defer to ensure cfg is loaded from file (async)
   setTimeout(function() {
-    if (cfg.dockPosition) {
+    if (cfg.dockPosition === 'left' || cfg.dockPosition === 'right') {
       _dockPosition = cfg.dockPosition;
+    } else {
+      _dockPosition = 'right';
+      cfg.dockPosition = 'right';
     }
     // If dock mode is already active, apply the position
     var chrome = document.querySelector('.chrome');
@@ -8809,15 +8808,11 @@ function updateHitRects() {
     // Dock hidden: thin hover zone at the dock's edge
     var zone = document.getElementById('dockHoverZone');
     if (zone) {
-      var dp = (typeof _dockPosition !== 'undefined') ? _dockPosition : 'top';
-      if (dp === 'bottom') {
-        rects.push({ x: 0, y: window.innerHeight - 20, w: window.innerWidth, h: 20 });
-      } else if (dp === 'left') {
+      var dp = (typeof _dockPosition !== 'undefined') ? _dockPosition : 'right';
+      if (dp === 'left') {
         rects.push({ x: 0, y: 0, w: 20, h: window.innerHeight });
-      } else if (dp === 'right') {
-        rects.push({ x: window.innerWidth - 20, y: 0, w: 20, h: window.innerHeight });
       } else {
-        rects.push({ x: 0, y: 0, w: window.innerWidth, h: 20 });
+        rects.push({ x: window.innerWidth - 20, y: 0, w: 20, h: window.innerHeight });
       }
     }
     // dock bar is off-screen — do NOT add it
