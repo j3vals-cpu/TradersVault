@@ -2858,7 +2858,10 @@ var zTop=10;
 function getWinState(id){
   if(!state.windows[id]){
     var def=DEFAULT_LAYOUT[id]||{x:50,y:80,w:400,h:300};
-    state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:false};
+    // Only Trading, Prop, Signal visible by default — rest hidden
+    var _defaultOn=['trading','prop','signal'];
+    var h=(_defaultOn.indexOf(id)===-1);
+    state.windows[id]={x:def.x,y:def.y,w:def.w,h:def.h,hidden:h};
   }
   var ws=state.windows[id];
   // Clamp to visible viewport
@@ -8673,6 +8676,24 @@ try{initElectron();}catch(e){console.error('[INIT ERROR] initElectron:',e);}
 try{applyAllCfg();}catch(e){console.error('[INIT ERROR] applyAllCfg:',e);}
 try{startClock();}catch(e){console.error('[INIT ERROR] startClock:',e);}
 try{buildQuickColors();}catch(e){console.error('[INIT ERROR] buildQuickColors:',e);}
+
+// === ONE-TIME FIX: if too many panels visible on small screen, hide extras ===
+(function(){
+  var vis=document.querySelectorAll('.win:not(.hidden)');
+  if(vis.length>6 && window.innerWidth<1500){
+    var keep=['trading','prop','signal'];
+    vis.forEach(function(el){
+      var id=el.id.replace('win-','');
+      if(keep.indexOf(id)===-1){
+        el.classList.add('hidden');
+        if(state.windows[id]) state.windows[id].hidden=true;
+      }
+    });
+    save();
+    updateToggles();
+    scheduleHitRects();
+  }
+})();
 
 // === DEBUG DUMP — writes to file + shows in title bar ===
 setTimeout(function(){
