@@ -8674,70 +8674,48 @@ try{applyAllCfg();}catch(e){console.error('[INIT ERROR] applyAllCfg:',e);}
 try{startClock();}catch(e){console.error('[INIT ERROR] startClock:',e);}
 try{buildQuickColors();}catch(e){console.error('[INIT ERROR] buildQuickColors:',e);}
 
-// === DEBUG DUMP — shows diagnostic overlay on screen ===
+// === DEBUG DUMP — writes to file + shows in title bar ===
 setTimeout(function(){
   var d=window.__TVD||{e:[]};
   var wins=document.querySelectorAll('.win');
   var vis=document.querySelectorAll('.win:not(.hidden)');
   var info=[];
-  info.push('v2.9.26 DEBUG | '+window.innerWidth+'x'+window.innerHeight+' dpr='+window.devicePixelRatio);
-  info.push('Panels: '+wins.length+' total, '+vis.length+' visible');
-  // Check each visible panel
-  var panelInfo=[];
+  info.push('v2.9.27 DEBUG');
+  info.push('viewport: '+window.innerWidth+'x'+window.innerHeight);
+  info.push('dpr: '+window.devicePixelRatio);
+  info.push('screen: '+window.screen.width+'x'+window.screen.height);
+  info.push('panels_total: '+wins.length);
+  info.push('panels_visible: '+vis.length);
   vis.forEach(function(el){
     var id=el.id.replace('win-','');
     var r=el.getBoundingClientRect();
-    var hasClose=!!el.querySelector('.win-close');
-    var hasBar=!!el.querySelector('.win-bar');
-    var hasBody=!!el.querySelector('.win-body');
-    panelInfo.push(id+':'+Math.round(r.x)+','+Math.round(r.y)+' '+Math.round(r.width)+'x'+Math.round(r.height)+' close='+hasClose+' bar='+hasBar+' body='+hasBody);
+    info.push('VIS '+id+': rect('+Math.round(r.x)+','+Math.round(r.y)+','+Math.round(r.width)+','+Math.round(r.height)+') close='+!!el.querySelector('.win-close')+' bar='+!!el.querySelector('.win-bar'));
   });
-  if(panelInfo.length) info.push('Vis: '+panelInfo.join(' | '));
-  else info.push('NO VISIBLE PANELS!');
-  // Hidden panels
   var hiddenIds=[];
   wins.forEach(function(el){if(el.classList.contains('hidden'))hiddenIds.push(el.id.replace('win-',''));});
-  if(hiddenIds.length) info.push('Hidden: '+hiddenIds.join(','));
-  // Errors
-  if(d.e.length) info.push('ERRORS ('+d.e.length+'):');
-  d.e.forEach(function(err,i){
-    if(i<10) info.push('  ['+err.ms+'ms] '+err.msg+(err.src?' @'+err.src+':'+err.ln:''));
-  });
-  // CSS check
+  info.push('hidden: '+hiddenIds.join(','));
+  if(d.e.length){
+    info.push('ERRORS: '+d.e.length);
+    d.e.forEach(function(err,i){if(i<15) info.push('ERR['+err.ms+'ms]: '+err.msg+(err.src?' @'+err.src+':'+err.ln:'')+(err.stack?'\n  '+err.stack.split('\n')[1]:''));});
+  } else { info.push('ERRORS: 0'); }
   var root=getComputedStyle(document.documentElement);
-  info.push('CSS: gold='+root.getPropertyValue('--gold')+' bg='+root.getPropertyValue('--bg'));
-  // Close button CSS
+  info.push('css_gold: '+root.getPropertyValue('--gold'));
   var cb=document.querySelector('.win-close');
-  if(cb){var cs=getComputedStyle(cb);info.push('CloseBtn: display='+cs.display+' w='+cs.width+' h='+cs.height+' color='+cs.color);}
-  else info.push('CloseBtn: NOT FOUND IN DOM');
-  // Functions
-  var fns=['createWindow','toggleWin','scheduleHitRects','applyAllCfg'];
-  var missing=fns.filter(function(f){return typeof window[f]!=='function';});
-  if(missing.length) info.push('MISSING FUNCS: '+missing.join(','));
-  else info.push('All key functions: OK');
-  // State
-  if(typeof state!=='undefined'&&state.windows){
-    var sw=Object.keys(state.windows);
-    info.push('State windows: '+sw.length);
+  if(cb){var cs=getComputedStyle(cb);info.push('closeBtn: d='+cs.display+' w='+cs.width+' h='+cs.height+' c='+cs.color);}
+  else info.push('closeBtn: MISSING');
+  var fns=['createWindow','toggleWin','scheduleHitRects','applyAllCfg','startClock','buildToggles'];
+  info.push('funcs: '+fns.map(function(f){return f+'='+(typeof window[f]==='function'?'OK':'MISSING');}).join(' '));
+  if(typeof state!=='undefined'&&state.windows) info.push('state_windows: '+Object.keys(state.windows).length);
+  // SAVE TO FILE via electronAPI
+  var diagText=info.join('\n');
+  if(window.electronAPI&&window.electronAPI.saveData){
+    window.electronAPI.saveData('tv-debug-diag',{text:diagText,ts:new Date().toISOString()});
   }
-  // Render overlay
-  var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;top:80px;left:10px;right:10px;background:rgba(0,0,0,0.95);color:#50c878;font-family:monospace;font-size:11px;padding:12px;z-index:999999;pointer-events:auto;border:2px solid #50c878;border-radius:8px;max-height:70vh;overflow:auto;white-space:pre-wrap;line-height:1.6;';
-  overlay.textContent=info.join('\n');
-  // Add close button
-  var closeBtn=document.createElement('button');
-  closeBtn.textContent='X CLOSE DEBUG';
-  closeBtn.style.cssText='position:absolute;top:8px;right:8px;background:#dc5050;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:bold;';
-  closeBtn.onclick=function(){overlay.remove();};
-  overlay.appendChild(closeBtn);
-  // Add copy button
-  var copyBtn=document.createElement('button');
-  copyBtn.textContent='COPY TO CLIPBOARD';
-  copyBtn.style.cssText='position:absolute;top:8px;right:120px;background:#e8b84b;color:#000;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:bold;';
-  copyBtn.onclick=function(){navigator.clipboard.writeText(info.join('\n')).then(function(){copyBtn.textContent='COPIED!';});};
-  overlay.appendChild(copyBtn);
-  document.body.appendChild(overlay);
-}, 4000);
+  // Also set window title so it's visible in taskbar
+  document.title='DEBUG: '+vis.length+'vis '+wins.length+'tot '+(d.e.length?d.e.length+'ERR':'0err')+' '+window.innerWidth+'x'+window.innerHeight;
+  // Log to console too
+  console.log('\n=== TV DEBUG ===\n'+diagText+'\n================');
+}, 3000);
 // Load custom promo on startup (before admin promos arrive)
 applyPromotions([]);
 applyWinTints();
