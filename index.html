@@ -4756,26 +4756,55 @@ function snapWindowsToDock() {
   var screenW = window.innerWidth;
   var screenH = window.innerHeight;
   var gap = 6;
+  var minW = 220, minH = 130;
+
+  // Calculate max panels that fit on this screen (max 3 cols x 4 rows = 12)
+  var maxCols, maxRows;
+  if (_dockPosition === 'left' || _dockPosition === 'right') {
+    var dockW = 55;
+    var availW = screenW - dockW - 10;
+    var availH = screenH - 10;
+    maxCols = Math.max(1, Math.floor((availW + gap) / (minW + gap)));
+    maxRows = Math.max(1, Math.floor((availH + gap) / (minH + gap)));
+  } else {
+    var dockH = 48;
+    var availW = screenW - 10;
+    var availH = screenH - dockH - 10;
+    maxCols = Math.max(1, Math.floor((availW + gap) / (minW + gap)));
+    maxRows = Math.max(1, Math.floor((availH + gap) / (minH + gap)));
+  }
+  var maxPanels = maxCols * maxRows;
+
+  // If too many panels, only show what fits — hide the rest
+  var shown = wins.slice(0, maxPanels);
+  var overflow = wins.slice(maxPanels);
+  overflow.forEach(function(w) {
+    w.classList.add('hidden');
+    var wid = w.id.replace('win-','');
+    if (state.windows[wid]) state.windows[wid].hidden = true;
+  });
+
+  if (!shown.length) return;
 
   if (_dockPosition === 'left' || _dockPosition === 'right') {
     var dockW = 55;
     var availW = screenW - dockW - 10;
     var availH = screenH - 10;
-    // Figure out grid: try 1 col first, then 2, then 3
+    // Grid: find best fit
     var cols = 1, perCol, pH;
-    for (cols = 1; cols <= 4; cols++) {
-      perCol = Math.ceil(wins.length / cols);
+    for (cols = 1; cols <= maxCols; cols++) {
+      perCol = Math.ceil(shown.length / cols);
       pH = Math.floor((availH - gap * (perCol + 1)) / perCol);
-      if (pH >= 140) break; // fits
+      if (pH >= minH) break;
     }
-    pH = Math.max(100, Math.min(pH, 500));
+    pH = Math.max(minH, Math.min(pH, 500));
     var colW = Math.floor((availW - gap * (cols - 1)) / cols);
     colW = Math.min(colW, 520);
     var startX = _dockPosition === 'left' ? dockW : gap;
-    wins.forEach(function(w, i) {
+    shown.forEach(function(w, i) {
       var c = Math.floor(i / perCol);
       var r = i % perCol;
-      var rowsInCol = (c < cols - 1) ? perCol : (wins.length - c * perCol);
+      var rowsInCol = (c < cols - 1) ? perCol : (shown.length - c * perCol);
       var totalH = rowsInCol * pH + (rowsInCol - 1) * gap;
       var startY = Math.max(gap, Math.floor((availH - totalH) / 2));
       w.style.width = colW + 'px';
@@ -4787,21 +4816,20 @@ function snapWindowsToDock() {
     var dockH = 48;
     var availH = screenH - dockH - 10;
     var availW = screenW - 10;
-    // Figure out grid: try 1 row first, then 2, then 3
     var rows = 1, perRow, pW;
-    for (rows = 1; rows <= 4; rows++) {
-      perRow = Math.ceil(wins.length / rows);
+    for (rows = 1; rows <= maxRows; rows++) {
+      perRow = Math.ceil(shown.length / rows);
       pW = Math.floor((availW - gap * (perRow + 1)) / perRow);
-      if (pW >= 200) break; // fits
+      if (pW >= minW) break;
     }
-    pW = Math.max(160, Math.min(pW, 520));
+    pW = Math.max(minW, Math.min(pW, 520));
     var rowH = Math.floor((availH - gap * (rows - 1)) / rows);
     rowH = Math.min(rowH, 500);
     var topY = _dockPosition === 'bottom' ? gap : dockH;
-    wins.forEach(function(w, i) {
+    shown.forEach(function(w, i) {
       var r = Math.floor(i / perRow);
       var c = i % perRow;
-      var colsInRow = (r < rows - 1) ? perRow : (wins.length - r * perRow);
+      var colsInRow = (r < rows - 1) ? perRow : (shown.length - r * perRow);
       var totalW = colsInRow * pW + (colsInRow - 1) * gap;
       var startX = Math.max(gap, Math.floor((availW - totalW) / 2));
       w.style.width = pW + 'px';
@@ -4810,13 +4838,12 @@ function snapWindowsToDock() {
       w.style.top = (topY + r * (rowH + gap)) + 'px';
     });
   }
-  // Final clamp — absolutely nothing off-screen
-  wins.forEach(function(w) {
+  // Final clamp
+  shown.forEach(function(w) {
     var l = parseInt(w.style.left) || 0;
     var t = parseInt(w.style.top) || 0;
     var pw = parseInt(w.style.width) || w.offsetWidth;
     var ph = parseInt(w.style.height) || w.offsetHeight;
-    // Shrink if still too big
     if (pw > screenW - 60) { pw = screenW - 60; w.style.width = pw + 'px'; }
     if (ph > screenH - 10) { ph = screenH - 10; w.style.height = ph + 'px'; }
     if (l + pw > screenW) l = Math.max(0, screenW - pw);
@@ -4829,6 +4856,7 @@ function snapWindowsToDock() {
     var ws = state.windows[wid];
     if (ws) { ws.x = l; ws.y = t; ws.w = pw; ws.h = ph; }
   });
+  if (overflow.length) updateToggles();
   save();
 }
 
@@ -8749,33 +8777,79 @@ try { buildFeatureReqWin(); } catch(e) { console.error('Feature Requests init er
 (function autoRepairPanels() {
   var vw = window.innerWidth || 1920;
   var vh = window.innerHeight || 1080;
+  var allWins = document.querySelectorAll('.win');
   var visibleWins = document.querySelectorAll('.win:not(.hidden)');
   var broken = 0;
+  var totalPanels = allWins.length;
+
+  // Check 1: Are visible panels actually usable?
   visibleWins.forEach(function(el) {
     var l = parseInt(el.style.left) || 0;
     var t = parseInt(el.style.top) || 0;
     var w = parseInt(el.style.width) || 0;
     var h = parseInt(el.style.height) || 0;
-    // Panel is broken if: off-screen, zero-sized, or header unreachable
     if (l + w < 10 || t + 40 < 0 || l > vw - 10 || t > vh - 10 || w < 50 || h < 50) {
       broken++;
     }
   });
-  // If more than half of visible panels are broken, auto-fix
+
+  var needsRepair = false;
+
+  // If visible panels are broken
   if (visibleWins.length > 0 && broken >= Math.ceil(visibleWins.length * 0.5)) {
-    console.warn('[AutoRepair] Detected ' + broken + '/' + visibleWins.length + ' broken panels — resetting layout');
-    fixMe();
-    return; // fixMe already calls buildToggles
+    console.warn('[AutoRepair] ' + broken + '/' + visibleWins.length + ' panels broken');
+    needsRepair = true;
   }
-  // Also check: if NO panels are visible at all on a non-fresh install, show defaults
-  if (visibleWins.length === 0 && Object.keys(state.windows).length > 3) {
-    console.warn('[AutoRepair] No visible panels — resetting layout');
-    fixMe();
-    return;
+
+  // If NO panels are visible but we have panels in DOM
+  if (!needsRepair && visibleWins.length === 0 && totalPanels > 0) {
+    console.warn('[AutoRepair] No visible panels');
+    needsRepair = true;
+  }
+
+  // Check 2: Are all saved windows hidden? (corruption from dock/undock)
+  if (!needsRepair && Object.keys(state.windows).length > 0) {
+    var allHidden = true;
+    var hiddenCount = 0;
+    Object.keys(state.windows).forEach(function(id) {
+      if (state.windows[id].hidden) hiddenCount++;
+      else allHidden = false;
+    });
+    if (allHidden || hiddenCount >= Object.keys(state.windows).length - 1) {
+      console.warn('[AutoRepair] All/most saved windows are hidden (' + hiddenCount + '/' + Object.keys(state.windows).length + ')');
+      needsRepair = true;
+    }
+  }
+
+  // Check 3: Are saved sizes all zero or tiny?
+  if (!needsRepair) {
+    var tinyCount = 0;
+    Object.keys(state.windows).forEach(function(id) {
+      var ws = state.windows[id];
+      if (!ws.hidden && (ws.w < 50 || ws.h < 50)) tinyCount++;
+    });
+    if (tinyCount > 0) {
+      console.warn('[AutoRepair] ' + tinyCount + ' panels have zero/tiny size');
+      needsRepair = true;
+    }
+  }
+
+  if (needsRepair) {
+    console.warn('[AutoRepair] Resetting layout...');
+    fixMe(true);
   }
 })();
 
 buildToggles();
+
+// Keyboard shortcut: Ctrl+Shift+F = Fix Me (emergency reset)
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+    e.preventDefault();
+    fixMe();
+  }
+});
+
 initElectron();
 applyAllCfg();
 startClock();

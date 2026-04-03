@@ -258,14 +258,21 @@ function startMousePoller() {
     const lx = (cursor.x - cachedBounds.x) / cachedScale;
     const ly = (cursor.y - cachedBounds.y) / cachedScale;
 
-    // Expand hit rects slightly on macOS for better click reliability
     const pad = isMac ? 4 : 6;
     let over = false;
-    for (let i = 0, len = hitRects.length; i < len; i++) {
-      const r = hitRects[i];
-      if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
-        over = true;
-        break;
+
+    // Failsafe: top 90px of screen is ALWAYS interactive (topbar + toggles)
+    if (ly >= 0 && ly <= 90 && lx >= 0 && lx <= cachedBounds.width / cachedScale) {
+      over = true;
+    }
+
+    if (!over) {
+      for (let i = 0, len = hitRects.length; i < len; i++) {
+        const r = hitRects[i];
+        if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
+          over = true;
+          break;
+        }
       }
     }
 
