@@ -261,9 +261,17 @@ function startMousePoller() {
     const pad = isMac ? 4 : 6;
     let over = false;
 
-    // Failsafe: top 90px of screen is ALWAYS interactive (topbar + toggles)
-    if (ly >= 0 && ly <= 90 && lx >= 0 && lx <= cachedBounds.width / cachedScale) {
-      over = true;
+    // Failsafe: edges of screen are ALWAYS interactive for UI chrome
+    // Top 90px (topbar + toggles), left/right 50px (dock bar), bottom 40px (footer)
+    const sw = (cachedBounds.width || 1920) / cachedScale;
+    const sh = (cachedBounds.height || 1080) / cachedScale;
+    if (lx >= 0 && lx <= sw) {
+      if (ly >= 0 && ly <= 90) over = true;       // topbar zone
+      if (ly >= sh - 40) over = true;              // footer zone
+    }
+    if (ly >= 0 && ly <= sh) {
+      if (lx <= 50) over = true;                    // left dock zone
+      if (lx >= sw - 50) over = true;              // right dock zone
     }
 
     if (!over) {
