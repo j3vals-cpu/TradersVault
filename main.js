@@ -255,8 +255,10 @@ function startMousePoller() {
     if (!cachedBounds) return;
 
     const cursor = screen.getCursorScreenPoint();
-    const lx = (cursor.x - cachedBounds.x) / cachedScale;
-    const ly = (cursor.y - cachedBounds.y) / cachedScale;
+    // Electron returns DIP (logical) coords for both cursor and bounds.
+    // No scaleFactor division needed — DIP already matches CSS layout pixels.
+    const lx = cursor.x - cachedBounds.x;
+    const ly = cursor.y - cachedBounds.y;
 
     // Expand hit rects slightly on macOS for better click reliability
     const pad = isMac ? 4 : 6;
