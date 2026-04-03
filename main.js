@@ -174,7 +174,7 @@ function createTray() {
   tray = new Tray(nativeImage.createFromBuffer(iconData));
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Vaulted Desk', enabled: false },
+    { label: 'Vaulted Desk — Traders Vault', enabled: false },
     { type: 'separator' },
     { label: 'Show / Hide', click: () => { mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show(); } },
     {
@@ -195,7 +195,7 @@ function createTray() {
     { label: 'Quit Vaulted Desk', click: () => { app.isQuitting = true; app.quit(); } }
   ]);
 
-  tray.setToolTip('Vaulted Desk');
+  tray.setToolTip('Vaulted Desk — Traders Vault');
   tray.setContextMenu(contextMenu);
   tray.on('double-click', () => { mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show(); });
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vaulted Desk</title>
+<title>Vaulted Desk — Traders Vault</title>
 <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -1134,8 +1134,8 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
   <div style="width:380px;background:rgba(14,14,19,.95);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:32px;box-shadow:0 40px 100px rgba(0,0,0,.8);position:relative;">
     <button onclick="if(window.electronAPI&&window.electronAPI.close){window.electronAPI.close();}else{window.close();}" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#5f5f78;font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s;" onmouseover="this.style.color='#ff4d6d';this.style.background='rgba(255,77,109,.1)'" onmouseout="this.style.color='#5f5f78';this.style.background='none'" title="Quit app">&#10005;</button>
     <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:22px;font-weight:900;letter-spacing:.5px;margin-bottom:2px;">TRADERS <span style="color:#e8b84b;">VAULT</span></div>
-      <div style="font-family:'Geist Mono',monospace;font-size:9px;color:rgba(201,168,76,.45);letter-spacing:3px;margin-bottom:2px;">VAULTED DESK</div>
+      <div style="font-size:22px;font-weight:900;letter-spacing:.5px;margin-bottom:2px;">VAULTED <span style="color:#e8b84b;">DESK</span></div>
+      <div style="font-family:'Geist Mono',monospace;font-size:9px;color:rgba(201,168,76,.45);letter-spacing:3px;margin-bottom:2px;">TRADERS VAULT</div>
       <div style="font-family:'Geist Mono',monospace;font-size:8px;color:#5f5f78;letter-spacing:3px;" id="headerVersionTag">v2.5.2 · J3</div>
     </div>
     <!-- Tabs -->
@@ -1416,7 +1416,7 @@ html.screen-ultra-compact .focus-btn{display:none !important;}
     <div class="vault-light" id="vaultLight"></div>
   </div>
 
-  <div id="vaultBrandName">TRADERS VAULT<div style="font-family:'Geist Mono',monospace;font-size:11px;color:rgba(201,168,76,.45);letter-spacing:4px;margin-top:6px;">VAULTED DESK</div></div>
+  <div id="vaultBrandName">VAULTED DESK<div style="font-family:'Geist Mono',monospace;font-size:11px;color:rgba(201,168,76,.45);letter-spacing:4px;margin-top:6px;">TRADERS VAULT</div></div>
   <div id="vaultTagline">J3 | v2.2.2</div>
   <div id="vaultStatus">INITIALISING...</div>
 </div>
@@ -3985,8 +3985,8 @@ function openPropCard() {
   var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}).toUpperCase();
 
   var sb=window._serverBranding||{};
-  var _cardName=sb.cardname||'TRADERS VAULT';
-  var _cardSub=sb.cardsub||'VAULTED DESK';
+  var _cardName=sb.cardname||'VAULTED DESK';
+  var _cardSub=sb.cardsub||'TRADERS VAULT';
   var _cardUrl=sb.cardurl||'tradersvault.app';
   var _userName=cfg.userName||(tvSession&&tvSession.user?tvSession.user.full_name:'')||'';
 
@@ -5621,7 +5621,7 @@ function applyAppTitle(title){
   var t = title || 'Vaulted Desk';
   var el = document.querySelector('.logo-txt');
   if(el) el.textContent = t;
-  document.title = t;
+  document.title = t + ' — Traders Vault';
 }
 
 function applyCurrency(sym){
@@ -9677,7 +9677,7 @@ async function dxtradeRelogin(){
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-//  TRADERS VAULT — BOT ENGINE
+//  VAULTED DESK — BOT ENGINE
 //  Modes: Signal Alerts · Auto-Trader · Backtest · Paper Trade
 //  Brokers: Tradovate · Project X / TopstepX · MetaTrader 5 · Rithmic
 // ═══════════════════════════════════════════════════════════════════
@@ -10231,7 +10231,7 @@ function discordSend(embeds) {
   var url = cfg.discordWebhook;
   if (!url || !url.startsWith('https://discord.com/api/webhooks/')) return Promise.resolve();
   var payload = {
-    username: cfg.discordBotName || 'Vaulted Desk',
+    username: cfg.discordBotName || 'Vaulted Desk — Traders Vault',
     avatar_url: 'https://i.imgur.com/4M34hi2.png',
     embeds: embeds
   };
@@ -10625,7 +10625,7 @@ setInterval(checkDailyReset, 60000);
 </script>
 <script>
 // ═══════════════════════════════════════════════════════════════════
-//  TRADERS VAULT — AUTH + LICENCE + AUTO-UPDATE
+//  VAULTED DESK — AUTH + LICENCE + AUTO-UPDATE
 //  Connects to platform API for login, licence validation, updates
 // ═══════════════════════════════════════════════════════════════════
 
@@ -11222,7 +11222,7 @@ _appVersionReady.then(function(ver) {
   var ht = document.getElementById('headerVersionTag');
   if (ht) ht.textContent = v + ' \u00b7 J3';
   var ls = document.getElementById('loginLogoSub');
-  if (ls) ls.innerHTML = 'Vaulted Desk &nbsp;<span style="opacity:.3;">|</span>&nbsp; ' + v;
+  if (ls) ls.innerHTML = 'Traders Vault &nbsp;<span style="opacity:.3;">|</span>&nbsp; ' + v;
   var vt = document.getElementById('vaultTagline');
   if (vt) vt.textContent = 'J3 | ' + v;
 });
@@ -11851,8 +11851,8 @@ function openGainsCard() {
   var today      = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}).toUpperCase();
   // Use server branding if admin pushed it
   var sb = window._serverBranding || {};
-  var _cardName  = sb.cardname  || 'TRADERS VAULT';
-  var _cardSub   = sb.cardsub   || 'VAULTED DESK';
+  var _cardName  = sb.cardname  || 'VAULTED DESK';
+  var _cardSub   = sb.cardsub   || 'TRADERS VAULT';
   var _cardUrl   = sb.cardurl   || 'tradersvault.app';
   var _cardBadge = sb.cardbadge || 'PROP TRADER';
   var _userName2 = cfg.userName || (tvSession && tvSession.user ? tvSession.user.full_name : '') || '';
