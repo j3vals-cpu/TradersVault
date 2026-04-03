@@ -4,7 +4,7 @@ const fs = require('fs');
 const https = require('https');
 const http = require('http');
 
-app.setName('Traders Vault');
+app.setName('Vaulted Desk');
 
 let mainWindow;
 let splashWindow;
@@ -21,7 +21,7 @@ const isWin = process.platform === 'win32';
 function setupAutoLaunch() {
   try {
     if (isWin) {
-      app.setLoginItemSettings({ openAtLogin: true, name: 'Traders Vault', path: process.execPath });
+      app.setLoginItemSettings({ openAtLogin: true, name: 'Vaulted Desk', path: process.execPath });
     } else if (isMac) {
       app.setLoginItemSettings({ openAtLogin: true });
     }
@@ -174,7 +174,7 @@ function createTray() {
   tray = new Tray(nativeImage.createFromBuffer(iconData));
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Traders Vault — Vaulted Desk', enabled: false },
+    { label: 'Vaulted Desk', enabled: false },
     { type: 'separator' },
     { label: 'Show / Hide', click: () => { mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show(); } },
     {
@@ -192,10 +192,10 @@ function createTray() {
       }
     },
     { type: 'separator' },
-    { label: 'Quit Traders Vault', click: () => { app.isQuitting = true; app.quit(); } }
+    { label: 'Quit Vaulted Desk', click: () => { app.isQuitting = true; app.quit(); } }
   ]);
 
-  tray.setToolTip('Traders Vault — Vaulted Desk');
+  tray.setToolTip('Vaulted Desk');
   tray.setContextMenu(contextMenu);
   tray.on('double-click', () => { mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show(); });
 }
@@ -392,7 +392,7 @@ ipcMain.handle('pop-out-panel', (_, panelId, bounds) => {
     alwaysOnTop: false,
     resizable: true,
     movable: true,
-    title: 'Traders Vault \u2014 ' + panelId,
+    title: 'Vaulted Desk \u2014 ' + panelId,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
