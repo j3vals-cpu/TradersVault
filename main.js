@@ -258,29 +258,14 @@ function startMousePoller() {
     const lx = (cursor.x - cachedBounds.x) / cachedScale;
     const ly = (cursor.y - cachedBounds.y) / cachedScale;
 
+    // Expand hit rects slightly on macOS for better click reliability
     const pad = isMac ? 4 : 6;
     let over = false;
-
-    // Failsafe: edges of screen are ALWAYS interactive for UI chrome
-    // Top 90px (topbar + toggles), left/right 50px (dock bar), bottom 40px (footer)
-    const sw = (cachedBounds.width || 1920) / cachedScale;
-    const sh = (cachedBounds.height || 1080) / cachedScale;
-    if (lx >= 0 && lx <= sw) {
-      if (ly >= 0 && ly <= 90) over = true;       // topbar zone
-      if (ly >= sh - 40) over = true;              // footer zone
-    }
-    if (ly >= 0 && ly <= sh) {
-      if (lx <= 50) over = true;                    // left dock zone
-      if (lx >= sw - 50) over = true;              // right dock zone
-    }
-
-    if (!over) {
-      for (let i = 0, len = hitRects.length; i < len; i++) {
-        const r = hitRects[i];
-        if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
-          over = true;
-          break;
-        }
+    for (let i = 0, len = hitRects.length; i < len; i++) {
+      const r = hitRects[i];
+      if (lx >= r.x - pad && lx <= r.x + r.w + pad && ly >= r.y - pad && ly <= r.y + r.h + pad) {
+        over = true;
+        break;
       }
     }
 
