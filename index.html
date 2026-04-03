@@ -11292,7 +11292,8 @@ function _clearUpdateAttempted() {
 
 // ── PRE-LOGIN update check (no auth needed) ─────────────────────
 _appVersionReady.then(function(currentVer) {
-  fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.stable&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
+  var _tvChannel = (window.electronAPI && window.electronAPI.isDemo) ? 'demo' : 'stable';
+  fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.' + _tvChannel + '&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
     headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
   })
   .then(function(r) { return r.json(); })
@@ -11485,7 +11486,8 @@ function manualCheckForUpdate() {
   if (btn) btn.textContent = '\u23f3 Checking...';
   if (status) { status.style.color = 'var(--text3)'; status.textContent = 'Contacting server...'; }
   _updateCheckedThisSession = false;
-  fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.stable&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
+  var _tvChannel = (window.electronAPI && window.electronAPI.isDemo) ? 'demo' : 'stable';
+  fetch(SUPABASE_URL + '/rest/v1/app_versions?channel=eq.' + _tvChannel + '&order=published_at.desc&limit=1&select=version,download_url,release_notes,is_mandatory', {
     headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
   })
   .then(function(r) { return r.json(); })

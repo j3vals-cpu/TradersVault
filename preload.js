@@ -37,5 +37,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onCTraderAuthFailed: (callback) => ipcRenderer.on('ctrader-auth-failed', (_, data) => callback(data)),
   platform: process.platform,
   arch: process.arch,
+  isDemo: process.env.TV_DEMO === '1',
   isElectron: true,
 });

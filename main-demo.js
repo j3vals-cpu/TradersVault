@@ -6,6 +6,7 @@ const http = require('http');
 
 // ─── DEMO BUILD: separate userData so demo & production don't share data ───
 app.setPath('userData', path.join(app.getPath('appData'), 'TradersVaultDemo'));
+process.env.TV_DEMO = '1'; // Flag for preload/renderer to detect demo mode
 
 app.setName('Traders Vault [DEMO]');
 
