@@ -361,6 +361,10 @@ ipcMain.handle('app-quit', () => {
   if (mousePoller) clearInterval(mousePoller);
   app.quit();
 });
+ipcMain.handle('read-file', (_, filePath) => {
+  if (filePath.includes('..') || path.isAbsolute(filePath)) throw new Error('Invalid file path');
+  return fs.readFileSync(filePath, 'utf8');
+});
 ipcMain.handle('get-overlay-state', () => ({ overlayMode: isOverlayMode, opacity: currentOpacity }));
 ipcMain.handle('get-app-version', () => app.getVersion());
 
@@ -405,7 +409,13 @@ ipcMain.handle('pop-out-panel', (_, panelId, bounds) => {
   // Clamp pop-out window after move/resize
   popWin.on('moved', () => clampWindowToWorkArea(popWin));
 
-  popWin.loadFile('index.html', { query: { popout: panelId } });
+  const base = path.resolve(__dirname);
+  const target = path.resolve(base, 'index.html');
+  const relative = path.relative(base, target);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Invalid file path');
+  }
+  popWin.loadFile(target, { query: { popout: panelId } });
   popoutWindows[panelId] = popWin;
 
   popWin.on('closed', () => {
